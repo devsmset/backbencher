@@ -1,0 +1,234 @@
+{
+  "meta": {
+    "url": "https://maple-aio-m1.otxlab.net/bo/",
+    "timestamp": 1772470716758,
+    "userAgent": "Playwright Automation",
+    "recordedAt": "2026-03-02T16:58:36.758Z",
+    "filteredAt": "2026-03-02T16:58:36.761Z",
+    "originalEventCount": 52,
+    "uiEventCount": 11,
+    "filteredEventCount": 11
+  },
+  "events": [
+    {
+      "type": "ui_event",
+      "action": "input",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"username\"]",
+        "css": "#username",
+        "id": "username",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": "suite",
+      "position": {
+        "x": 768,
+        "y": 359
+      },
+      "timestamp": 1772470651436
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"username\"]",
+        "css": "#username",
+        "id": "username",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": "suite-admin",
+      "position": {
+        "x": 768,
+        "y": 359
+      },
+      "timestamp": 1772470652169
+    },
+    {
+      "type": "ui_event",
+      "action": "keypress",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"password\"]",
+        "css": "#password",
+        "id": "password",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": "Admin_1234",
+      "position": {
+        "x": 768,
+        "y": 415
+      },
+      "timestamp": 1772470654787
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"password\"]",
+        "css": "#password",
+        "id": "password",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": "Admin_1234",
+      "position": {
+        "x": 768,
+        "y": 415
+      },
+      "timestamp": 1772470654790
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"submit\"]",
+        "css": "#submit",
+        "id": "submit",
+        "tag": "button",
+        "text": "Sign in",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 768,
+        "y": 531
+      },
+      "timestamp": 1772470654790
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//div/div/div/div[2]/div/div/div/span[3]",
+        "css": "div.boHomeCatalog > div.boSquare.boSquareTenant > div.boSquareContent > div.boSquareTable > div.boSquareCell > span.boHomeCount",
+        "id": null,
+        "tag": "span",
+        "text": "31",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 160,
+        "y": 354
+      },
+      "timestamp": 1772470660678
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//div[11]/div/div/div[2]/div/div[2]/div/a",
+        "css": "div.fixedDataTableRowLayout_body > div.fixedDataTableCellGroupLayout_cellGroupWrapper > div.fixedDataTableCellGroupLayout_cellGroup > div.fixedDataTableCellLayout_main.public_fixedDataTableCell_main > div.entityGridCell > a",
+        "id": null,
+        "tag": "a",
+        "text": "433469027",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 99,
+        "y": 626
+      },
+      "timestamp": 1772470676927
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//a[normalize-space(text())='Capability settings']",
+        "css": "div.entityDetailPage > div.entityDetailPageBody > div.entityDetailPageSidePanel > ul.entityDetailPageSideNavList > li > a.entityDetailPageSideNavLink",
+        "id": null,
+        "tag": "a",
+        "text": "Capability settings",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 123,
+        "y": 501
+      },
+      "timestamp": 1772470679677
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//div/div/div/div[2]/div/div[6]/div[2]/button[2]",
+        "css": "div.entityDetailPageSection > div.entityDetailPageSectionInner > div > div.entitySectionFieldSet.capabilitySettingsForm > div.entitySectionFooter > button.boNormalButton",
+        "id": null,
+        "tag": "button",
+        "text": "TEST CONNECTION",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 432,
+        "y": 663
+      },
+      "timestamp": 1772470684789
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"boUtilsUserToggle\"]",
+        "css": "#boUtilsUserToggle",
+        "id": "boUtilsUserToggle",
+        "tag": "button",
+        "text": "Administrator, Suite Administration",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 1371,
+        "y": 28
+      },
+      "timestamp": 1772470708897
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//a[normalize-space(text())='Logout']",
+        "css": "li > a",
+        "id": null,
+        "tag": "a",
+        "text": "Logout",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 1432,
+        "y": 129
+      },
+      "timestamp": 1772470710689
+    }
+  ]
+}

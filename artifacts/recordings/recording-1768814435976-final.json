@@ -1,0 +1,176 @@
+{
+  "meta": {
+    "url": "https://maple-aio-2-m1.otxlab.net:443/saw/ess?TENANTID=223791286",
+    "timestamp": 1768814435976,
+    "userAgent": "Playwright Automation",
+    "recordedAt": "2026-01-19T09:20:35.976Z",
+    "filteredAt": "2026-01-19T09:20:35.980Z",
+    "originalEventCount": 120,
+    "uiEventCount": 8,
+    "filteredEventCount": 8,
+    "deduplicatedAt": "2026-01-19T09:20:35.981Z",
+    "deduplicatedCount": 8
+  },
+  "events": [
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"username\"]",
+        "css": "#username",
+        "id": "username",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": "esmTenant1_Admin",
+      "position": {
+        "x": 768,
+        "y": 387
+      },
+      "timestamp": 1768814352050
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id='next']/span",
+        "css": "button.uxa-large.uxa-primary.cdk-focused.cdk-keyboard-focused.uxa-focused > span",
+        "id": null,
+        "tag": "span",
+        "text": "Next",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 768,
+        "y": 503
+      },
+      "timestamp": 1768814354215
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"password\"]",
+        "css": "#password",
+        "id": "password",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 768,
+        "y": 415
+      },
+      "timestamp": 1768814358261
+    },
+    {
+      "type": "ui_event",
+      "action": "keypress",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"password\"]",
+        "css": "#password",
+        "id": "password",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": "Admin_1234",
+      "position": {
+        "x": 768,
+        "y": 415
+      },
+      "timestamp": 1768814362371
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"password\"]",
+        "css": "#password",
+        "id": "password",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": "Admin_1234",
+      "position": {
+        "x": 768,
+        "y": 415
+      },
+      "timestamp": 1768814362372
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"submit\"]",
+        "css": "#submit",
+        "id": "submit",
+        "tag": "button",
+        "text": "Sign in",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 865,
+        "y": 531
+      },
+      "timestamp": 1768814362374
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//div[@data-aid='ess-home-page']/div/ul/li[4]/div/div/div/div[2]",
+        "css": "ul.ess-home-category-ul > li.ess-category-tile.ng-star-inserted > div.ess-category-item-widget.ess-new-catalog.widget > div.ess-category-item-content.widget-content > div.media > div.media-body",
+        "id": null,
+        "tag": "div",
+        "text": "zyxxy",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 969,
+        "y": 367
+      },
+      "timestamp": 1768814404350
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//span[@class='service-portal ng-star-inserted']",
+        "css": "div.header.oob-theme > div.ess-header-right.header-right > a.ess-header-company-logo-link.ess-focus-masthead > span.service-portal.ng-star-inserted",
+        "id": null,
+        "tag": "span",
+        "text": "Service Portal",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 225,
+        "y": 28
+      },
+      "timestamp": 1768814410275
+    }
+  ]
+}

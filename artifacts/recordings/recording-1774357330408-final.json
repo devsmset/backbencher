@@ -1,0 +1,96 @@
+{
+  "meta": {
+    "url": "https://maple-aio-3-m1.otxlab.net/bo",
+    "timestamp": 1774357330408,
+    "userAgent": "Playwright Automation",
+    "recordedAt": "2026-03-24T13:02:10.408Z",
+    "filteredAt": "2026-03-24T13:02:10.414Z",
+    "originalEventCount": 23,
+    "uiEventCount": 7,
+    "filteredEventCount": 6,
+    "deduplicatedAt": "2026-03-24T13:02:10.416Z",
+    "deduplicatedCount": 4
+  },
+  "events": [
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"username\"]",
+        "css": "#username",
+        "id": "username",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": "suite-admin",
+      "position": {
+        "x": 768,
+        "y": 359
+      },
+      "timestamp": 1774357309035
+    },
+    {
+      "type": "ui_event",
+      "action": "input",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"password\"]",
+        "css": "#password",
+        "id": "password",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 768,
+        "y": 415
+      },
+      "timestamp": 1774357311966
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"password\"]",
+        "css": "#password",
+        "id": "password",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": "Admin_1234",
+      "position": {
+        "x": 768,
+        "y": 415
+      },
+      "timestamp": 1774357318670
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"submit\"]",
+        "css": "#submit",
+        "id": "submit",
+        "tag": "button",
+        "text": "Sign in",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 768,
+        "y": 531
+      },
+      "timestamp": 1774357318895
+    }
+  ]
+}

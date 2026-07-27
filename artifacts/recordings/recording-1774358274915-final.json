@@ -1,0 +1,251 @@
+{
+  "meta": {
+    "url": "https://maple-aio-2-m1.otxlab.net:443/saw/ess?TENANTID=211650513",
+    "timestamp": 1774358274915,
+    "userAgent": "Playwright Automation",
+    "recordedAt": "2026-03-24T13:17:54.915Z",
+    "filteredAt": "2026-03-24T13:17:54.924Z",
+    "originalEventCount": 122,
+    "uiEventCount": 15,
+    "filteredEventCount": 15,
+    "deduplicatedAt": "2026-03-24T13:17:54.927Z",
+    "deduplicatedCount": 12
+  },
+  "events": [
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"username\"]",
+        "css": "#username",
+        "id": "username",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": "t10_admin",
+      "position": {
+        "x": 768,
+        "y": 387
+      },
+      "timestamp": 1774358149389
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id='next']/span",
+        "css": "button.uxa-large.uxa-primary.cdk-focused.cdk-mouse-focused > span",
+        "id": null,
+        "tag": "span",
+        "text": "Next",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 768,
+        "y": 503
+      },
+      "timestamp": 1774358149611
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"password\"]",
+        "css": "#password",
+        "id": "password",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": "Admin_1234",
+      "position": {
+        "x": 768,
+        "y": 415
+      },
+      "timestamp": 1774358159110
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id='submit']/span",
+        "css": "button.uxa-large.uxa-primary.cdk-focused.cdk-mouse-focused > span",
+        "id": null,
+        "tag": "span",
+        "text": "Sign in",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 865,
+        "y": 531
+      },
+      "timestamp": 1774358159333
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//a[@data-aid='menu-it-agent-interface']/div",
+        "css": "mat-list-item.mat-mdc-list-item.mdc-list-item.user-summary-item.mat-mdc-list-item-single-line.mdc-list-item--with-one-line.ng-star-inserted > span.mdc-list-item__content > span.mat-mdc-list-item-unscoped-content.mdc-list-item__primary-text > ess-header-user-profile-item > a.mat-mdc-tooltip-trigger.ess-header-item-link.ess-focus-btn.ng-star-inserted.cdk-focused.cdk-mouse-focused > div.ess-header-menu-item-label.without-total-count.ng-star-inserted",
+        "id": null,
+        "tag": "div",
+        "text": "Agent Interface",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 110,
+        "y": 466
+      },
+      "timestamp": 1774358207355
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id='application-menu-main-button']/span",
+        "css": "div.application-menu-main-button.inline-block > span.main-menu-button-icon",
+        "id": null,
+        "tag": "span",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 28,
+        "y": 29
+      },
+      "timestamp": 1774358233443
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//h3[@data-aid='admin-menu-category-open-button']/i",
+        "css": "div.menu-category.admin-menu-category.section-title-in-lower-size > h3.nav-header.admin-menu-category-title.category-title > i.open-section-icon.icon-arrow-med-right",
+        "id": null,
+        "tag": "i",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 83,
+        "y": 489
+      },
+      "timestamp": 1774358239354
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//a[@data-aid='menu-item-ai-settings']",
+        "css": "li.hovered > a",
+        "id": null,
+        "tag": "a",
+        "text": "AI Studio",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 204,
+        "y": 388
+      },
+      "timestamp": 1774358241247
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id='subitems']/div[2]/div/a/span",
+        "css": "div.inline-block > div.sub-menu-items-dropdown.show-dropdown > div.dropdown > a.dropdown-toggle.ng-scope > span.main-menu-button__caret",
+        "id": null,
+        "tag": "span",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 586,
+        "y": 28
+      },
+      "timestamp": 1774358244684
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//a[@data-aid='dd-sub-menu-item-virtual-agent-settings']",
+        "css": "div.inline-block > div.sub-menu-items-dropdown.show-dropdown > div.dropdown.open > ul.dropdown-menu > li.dropdown-menu-subitem > a",
+        "id": null,
+        "tag": "a",
+        "text": "Virtual Agent",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 579,
+        "y": 177
+      },
+      "timestamp": 1774358247338
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//img[@class='smax-header-user-avatar']",
+        "css": "div > img.smax-header-user-avatar",
+        "id": null,
+        "tag": "img",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 1500,
+        "y": 28
+      },
+      "timestamp": 1774358265088
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//a[normalize-space(text())='Logout']",
+        "css": "div.smax-header-toolbar > span.smax-header-more-features > div.smax-header-popover > ul.smax-header-list > li > a",
+        "id": null,
+        "tag": "a",
+        "text": "Logout",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 1440,
+        "y": 141
+      },
+      "timestamp": 1774358267051
+    }
+  ]
+}
