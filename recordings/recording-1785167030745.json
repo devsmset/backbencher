@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "url": "http://te-smax-qa1-m.otxlab.net/bo",
+    "timestamp": 1785167030745,
+    "recordedAt": "2026-07-27T15:43:50.745Z",
+    "userAgent": "unknown",
+    "totalEvents": 1
+  },
+  "events": [
+    {
+      "type": "navigation",
+      "timestamp": 1785167018984,
+      "url": "chrome-error://chromewebdata/"
+    }
+  ]
+}

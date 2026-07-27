@@ -75,7 +75,7 @@ async function record(startUrl) {
 
   // ============ API CAPTURE ============
 
-  page.on("request", async (request) => {
+  page.on("request", (request) => {
     try {
       const resourceType = request.resourceType();
       const url = request.url();
@@ -105,10 +105,22 @@ async function record(startUrl) {
         postData: postData,
       };
 
+      // Register the request immediately so the response handler can find
+      // it even before headers are fully resolved.
       events.push(requestEvent);
       apiRequestMap.set(request, requestEvent);
 
       console.log(`📤 API Request: ${request.method()} ${url.substring(0, 80)}`);
+
+      // request.allHeaders() resolves only once the response comes back, so
+      // enrich the headers asynchronously without blocking correlation above.
+      request.allHeaders()
+        .then((headers) => {
+          requestEvent.headers = headers;
+        })
+        .catch(() => {
+          // Keep the sync headers already captured above.
+        });
     } catch (error) {
       console.error("Error capturing request:", error.message);
     }
@@ -139,11 +151,19 @@ async function record(startUrl) {
         // Response body not available
       }
 
+      let responseHeaders = {};
+      try {
+        responseHeaders = response.headers();
+      } catch (e) {
+        // Headers not available
+      }
+
       const responseEvent = {
         type: "api_response",
         timestamp: Date.now(),
         url: request.url(),
         status: status,
+        headers: responseHeaders,
         responseBody: responseBody,
       };
 

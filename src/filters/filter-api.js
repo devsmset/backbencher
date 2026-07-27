@@ -39,6 +39,7 @@ function filterApiCalls(inputFile, outputFile) {
       requestHeaders: req.headers || null,
       postData: req.postData || null,
       status: response ? response.status : null,
+      responseHeaders: response ? response.headers : null,
       responseBody: response ? response.responseBody : null,
       responseTimestamp: response ? response.timestamp : null,
     };
