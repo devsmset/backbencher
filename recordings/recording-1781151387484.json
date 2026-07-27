@@ -1,0 +1,419 @@
+{
+  "meta": {
+    "url": "https://maple-aio-3-m1.otxlab.net/bo",
+    "timestamp": 1781151387484,
+    "userAgent": "Playwright Automation",
+    "recordedAt": "2026-06-11T04:16:27.484Z"
+  },
+  "events": [
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-3-m1.otxlab.net/bo/userProfile",
+      "postData": null,
+      "timestamp": 1781151305512,
+      "status": 401,
+      "responseBody": null
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-3-m1.otxlab.net/idm-service/idm/v0/assets/i18n/en.json",
+      "postData": null,
+      "timestamp": 1781151308538,
+      "status": 200,
+      "responseBody": "{\n    \"rtl\": \"false\",\n    \"login\": {\n      \"title\": \"Sign In\",\n      \"username\": \"Username\",\n      \"password\": \"Password\",\n      \"passcode\": \"Passcode\",\n      \"re-login\": \"Re-sign in\",\n      \"login\": \"Sign in\",\n      \"next\": \"Next\",\n      \"forgetPassword\": \"Forgot password?\",\n      \"error\": {\n        \"invalid_credentials\": \"Invalid user name/password or user account is locked or expired\",\n        \"invalid_passcode\": \"Invalid user name/Password/passcode or user account is locked or expired\",\n        \"invalid_token\": \"The request code is invalid. It may have already been used or has expired. Return to the site or application that sent you here and try again.\"\n      },\n      \"passwordExpireTitle\":\"Password Expiration Warning\",\n      \"passwordExpireContent\":\"Your password will expire in {{expiredDay}} days. Please change your password at your earliest opportunity to prevent any interruption.\",\n      \"policyWarningTitle\":\"Password Policy Warning\",\n      \"policyWarningContent\":\"Your password"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-3-m1.otxlab.net/idm-service/idm/v0/api/public/token?code=0a923c15-ab7a-4d8b-b321-034771455b36",
+      "postData": null,
+      "timestamp": 1781151308553,
+      "status": 200,
+      "responseBody": "{\"expired\":false,\"supportErrorCallback\":false,\"return_uri\":\"https://maple-aio-3-m1.otxlab.net:443/bo/postBoLogin?LWREQ=https%3A%2F%2Fmaple-aio-3-m1.otxlab.net%3A443%2Fbo\"}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-3-m1.otxlab.net/idm-service/idm/v0/api/public/tenant?id=sysbo",
+      "postData": null,
+      "timestamp": 1781151308553,
+      "status": 200,
+      "responseBody": "{\"name\":\"sysbo\",\"displayName\":\"sysbo\",\"iconUrl\":\"assets/images/suite_icon_white.png\",\"portalTitle\":\"Service Portal\",\"portalWelcomeMsg\":\"Welcome to Service Management\",\"portalFooterMsg\":\"\",\"portalShowLegalNotice\":false,\"portalLegalNoticeUrl\":\"\",\"disclaimerText\":\"\",\"themeName\":\"\",\"enableSecureId\":false,\"enableDbUserSignup\":false,\"modifiable\":false,\"public\":false,\"deletable\":false,\"enableForgetPassword\":false,\"backgroundImageUrl\":\"\",\"loginTheme\":[],\"signUpWelcomeMsg\":\"Welcome To OpenText Identity Management Service\",\"signUpInstructions\":\"\",\"signUpTermsUrl\":\"https://www.opentext.com/about/privacy\",\"signUpTermsAgreeMsg\":\"I have read the\",\"familyName\":\"IT OPERATIONS MANAGEMENT\",\"familyIconText\":\"I\",\"footerLogoUrl\":\"\",\"tryLocal\":false,\"appVersionLabel\":\"26.2\",\"loginFormOpacity\":\"\",\"loginFormBackgroundColor\":\"\",\"tokenExpirationMaxLimit\":\"365\",\"tokenExpirationUnit\":\"day\",\"noTokenExpiration\":false}"
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"username\"]",
+        "css": "#username",
+        "id": "username",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": "suite-admin",
+      "position": {
+        "x": 768,
+        "y": 359
+      },
+      "timestamp": 1781151314642
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"password\"]",
+        "css": "#password",
+        "id": "password",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 768,
+        "y": 415
+      },
+      "timestamp": 1781151317099
+    },
+    {
+      "type": "ui_event",
+      "action": "input",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"password\"]",
+        "css": "#password",
+        "id": "password",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": "Admin_1234",
+      "position": {
+        "x": 768,
+        "y": 415
+      },
+      "timestamp": 1781151321570
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"password\"]",
+        "css": "#password",
+        "id": "password",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": "Admin_1234",
+      "position": {
+        "x": 768,
+        "y": 415
+      },
+      "timestamp": 1781151321880
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id='submit']/span",
+        "css": "button.uxa-large.uxa-primary.cdk-focused.cdk-mouse-focused > span",
+        "id": null,
+        "tag": "span",
+        "text": "Sign in",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 768,
+        "y": 531
+      },
+      "timestamp": 1781151322076
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-3-m1.otxlab.net/idm-service/idm/v0/api/public/authenticate?code=0a923c15-ab7a-4d8b-b321-034771455b36",
+      "postData": "{\"tenantName\":\"sysbo\",\"passwordCredentials\":{\"username\":\"suite-admin\",\"password\":\"Admin_1234\",\"passcode\":\"\"}}",
+      "timestamp": 1781151322081,
+      "status": 200,
+      "responseBody": null
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-3-m1.otxlab.net/bo/userProfile",
+      "postData": null,
+      "timestamp": 1781151323497,
+      "status": 200,
+      "responseBody": "{\"id\":\"1000006\",\"username\":\"suite-admin\",\"email\":\"suite-admin@dummy.com\",\"fullName\":\"Administrator, Suite Administration\",\"firstname\":\"Suite Administration\",\"lastname\":\"Administrator\",\"primaryTenantId\":null,\"roles\":[\"ROLE_TENANT_USER\",\"ROLE_FARM_ADMIN\"],\"tenants\":[\"100000002\"],\"mspManagedTenants\":[],\"locale\":\"en\",\"boUser\":true,\"integrationUser\":false,\"userType\":\"BACKOFFICEUSER\",\"accountId\":10000,\"locked\":false,\"authenticationType\":\"DB\",\"idmOrg\":\"sysbo\",\"active\":true}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-3-m1.otxlab.net/bo/rest/entities/configuration/common/onlineDocumentBaseurl",
+      "postData": null,
+      "timestamp": 1781151323818,
+      "status": 200,
+      "responseBody": "https://docs.microfocus.com/gethelparticle.html"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-3-m1.otxlab.net/bo/rest/info?timeStamp=1781151323812",
+      "postData": null,
+      "timestamp": 1781151323817,
+      "status": 200,
+      "responseBody": "{\"globalOpModeEnabled\":{\"version\":\"\"},\"releaseVersion\":{\"version\":\"26.3\"},\"patchVersion\":{\"version\":\"0\"},\"IsSaas\":{\"version\":\"false\"}}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-3-m1.otxlab.net/bo/rest/entities/configuration/common/suiteVersion",
+      "postData": null,
+      "timestamp": 1781151323818,
+      "status": 200,
+      "responseBody": "26.3.0"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-3-m1.otxlab.net/bo/rest/entities/configuration/audit/getAuditPageUrl",
+      "postData": null,
+      "timestamp": 1781151323818,
+      "status": 200,
+      "responseBody": "{\"auditUrl\":\"https://maple-aio-3-m1.otxlab.net:9889\"}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-3-m1.otxlab.net/bo/rest/entities/tenant?timeStamp=1781151323814&offset=0&limit=0&count=true",
+      "postData": null,
+      "timestamp": 1781151323818,
+      "status": 200,
+      "responseBody": "{\"entities\":[],\"totalCount\":38}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-3-m1.otxlab.net/bo/rest/entities/account?timeStamp=1781151323815&offset=0&limit=0&count=true",
+      "postData": null,
+      "timestamp": 1781151323818,
+      "status": 200,
+      "responseBody": "{\"entities\":[],\"totalCount\":44}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-3-m1.otxlab.net/bo/rest/entities/user?timeStamp=1781151323815&offset=0&limit=0&count=true&filter=((name%2Bnin%2B%22bo-integration%40dummy.com%2Csaw-integration-internal%40dummy.com%2Csaw-integration-external%40dummy.com%22)%2Bor%2B(idmOrganization%2Bneq%2B%22sysbo%22))",
+      "postData": null,
+      "timestamp": 1781151323818,
+      "status": 200,
+      "responseBody": "{\"entities\":[],\"totalCount\":183}"
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//span[@class='icon-maker icon-maker-services']",
+        "css": "div.boHomeCatalog > div.boSquare.boSquareTenant > div.boSquareContent > div.boSquareTable > div.boSquareCell > span.icon-maker.icon-maker-services",
+        "id": null,
+        "tag": "span",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 160,
+        "y": 278
+      },
+      "timestamp": 1781151327281
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-3-m1.otxlab.net/bo/rest/entities/features?feature=GREY_OUT_DELETE_TENANT",
+      "postData": null,
+      "timestamp": 1781151327315,
+      "status": 200,
+      "responseBody": "{\"GREY_OUT_DELETE_TENANT\":\"false\"}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-3-m1.otxlab.net/bo/rest/entities/tenant?timeStamp=1781151327285&offset=0&limit=250",
+      "postData": null,
+      "timestamp": 1781151327315,
+      "status": 200,
+      "responseBody": "{\"entities\":[{\"entityType\":\"tenant\",\"tenantType\":\"DEV\",\"account\":{\"entityType\":\"account\",\"id\":146081686,\"name\":\"Account_esmTenant3\"},\"tenantState\":\"NEW\",\"mspTenant\":false,\"managedTenant\":false,\"contacts\":[],\"mspType\":\"NONE\",\"licenses\":[],\"accessControl\":true,\"accessControlMergeResult\":false,\"tenantAdmin\":{\"entityType\":\"user\",\"id\":1000015,\"fullName\":\"esmTenant3_admin , Microfocus\"},\"smIntegrated\":false,\"backendType\":\"SMAX\",\"samIntegrated\":false,\"nativeSacmEnabled\":false,\"attachmentWhiteList\":\"gif,jpeg,jpg,png,xls,xlsx,csv,txt,bmp,tif,tiff,log,pkb,eml,avif\",\"attachmentMaxSize\":10,\"emailAttachmentMaxSize\":5,\"dev2prodPkbMaxSize\":100,\"rbacEnabled\":true,\"version\":\"V1\",\"userSync\":true,\"name\":\"esmTenant3\",\"id\":146081686,\"createdBy\":{\"entityType\":\"user\",\"id\":1000006},\"createdAt\":1780954713023,\"lastUpdatedBy\":{\"entityType\":\"user\",\"id\":1000006},\"lastUpdatedAt\":1780954729958,\"owner\":{\"entityType\":\"user\",\"id\":1000015},\"deleted\":false,\"sysData\":false},{\"entityType\":\"tenant\",\"tenantType\":\"DEV\",\"accou"
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"nav-link-customer\"]",
+        "css": "#nav-link-customer",
+        "id": "nav-link-customer",
+        "tag": "a",
+        "text": "CUSTOMERS",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 140,
+        "y": 95
+      },
+      "timestamp": 1781151330854
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-3-m1.otxlab.net/bo/rest/entities/customer?timeStamp=1781151330858&offset=0&limit=250",
+      "postData": null,
+      "timestamp": 1781151330867,
+      "status": 200,
+      "responseBody": "{\"entities\":[{\"entityType\":\"customer\",\"fullName\":\"Customer_esmTenant1\",\"shortName\":\"esmTenant1\",\"status\":\"ACTIVE\",\"id\":10001,\"createdBy\":\"1000006\",\"createdAt\":1780954614040,\"lastUpdatedBy\":\"1000006\",\"lastUpdatedAt\":1780954614040,\"deleted\":false,\"sysData\":false},{\"entityType\":\"customer\",\"fullName\":\"Customer_esmTenant2\",\"shortName\":\"esmTenant2\",\"status\":\"ACTIVE\",\"id\":10002,\"createdBy\":\"1000006\",\"createdAt\":1780954626802,\"lastUpdatedBy\":\"1000006\",\"lastUpdatedAt\":1780954626802,\"deleted\":false,\"sysData\":false},{\"entityType\":\"customer\",\"fullName\":\"Customer_esmTenant3\",\"shortName\":\"esmTenant3\",\"status\":\"ACTIVE\",\"id\":10003,\"createdBy\":\"1000006\",\"createdAt\":1780954644737,\"lastUpdatedBy\":\"1000006\",\"lastUpdatedAt\":1780954644737,\"deleted\":false,\"sysData\":false},{\"entityType\":\"customer\",\"fullName\":\"Customer_auditTenant1\",\"shortName\":\"auditTenant1\",\"status\":\"ACTIVE\",\"id\":10014,\"createdBy\":\"1000006\",\"createdAt\":1780959675936,\"lastUpdatedBy\":\"1000006\",\"lastUpdatedAt\":1780959675936,\"deleted\":false,\"sys"
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"nav-link-account\"]",
+        "css": "#nav-link-account",
+        "id": "nav-link-account",
+        "tag": "a",
+        "text": "ACCOUNTS",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 232,
+        "y": 95
+      },
+      "timestamp": 1781151332676
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-3-m1.otxlab.net/bo/rest/entities/account?timeStamp=1781151332680&offset=0&limit=250",
+      "postData": null,
+      "timestamp": 1781151332691,
+      "status": 200,
+      "responseBody": "{\"entities\":[{\"onBoardingTime\":1780985102804,\"accountTier\":\"PLATINUM\",\"accountStatus\":\"ACTIVE\",\"mspType\":\"NONE\",\"accountRegion\":\"APJ\",\"customer\":{\"entityType\":\"customer\",\"id\":10063,\"fullName\":\"esmAutoCus_B8Nq\"},\"enableSuiteSSO\":false,\"loginBy\":\"LOGIN_NAME\",\"userSync\":true,\"orgMerged\":true,\"dndEnabled\":false,\"version\":\"V1\",\"entityType\":\"account\",\"name\":\"esmAutoAcc_yozl\",\"id\":106766922,\"createdBy\":\"1000006\",\"createdAt\":1780985102921,\"lastUpdatedBy\":\"1000006\",\"lastUpdatedAt\":1780985102921,\"deleted\":false,\"sysData\":false},{\"accountStatus\":\"ACTIVE\",\"mspType\":\"NONE\",\"customer\":{\"entityType\":\"customer\",\"id\":10003,\"fullName\":\"Customer_esmTenant3\"},\"enableSuiteSSO\":false,\"loginBy\":\"LOGIN_NAME\",\"userSync\":true,\"orgMerged\":true,\"dndEnabled\":false,\"version\":\"V1\",\"entityType\":\"account\",\"name\":\"Account_esmTenant3\",\"id\":146081686,\"createdBy\":\"1000006\",\"createdAt\":1780954656094,\"lastUpdatedBy\":\"1000006\",\"lastUpdatedAt\":1780954656094,\"deleted\":false,\"sysData\":false},{\"accountStatus\":\"ACTIVE\",\"mspType\":"
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"nav-link-user\"]",
+        "css": "#nav-link-user",
+        "id": "nav-link-user",
+        "tag": "a",
+        "text": "USERS",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 318,
+        "y": 95
+      },
+      "timestamp": 1781151334066
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-3-m1.otxlab.net/bo/rest/entities/user?timeStamp=1781151334069&filter=((name%2Bnin%2B%22bo-integration%40dummy.com%2Csaw-integration-internal%40dummy.com%2Csaw-integration-external%40dummy.com%22)%2Bor%2B(idmOrganization%2Bneq%2B%22sysbo%22))&offset=0&limit=250",
+      "postData": null,
+      "timestamp": 1781151334078,
+      "status": 200,
+      "responseBody": "{\"entities\":[{\"name\":\"bo-admin@dummy.com\",\"id\":1000001,\"createdBy\":\"bo-integration@dummy.com\",\"createdAt\":1780939344623,\"lastUpdatedBy\":\"bo-integration@dummy.com\",\"lastUpdatedAt\":1780939344623,\"deleted\":false,\"sysData\":false,\"entityType\":\"user\",\"externalID\":\"2c90848e9ea83e31019ea83e6d3d021f\",\"userType\":\"BACKOFFICEUSER\",\"fullName\":\"Administrator, Suite Administration\",\"firstName\":\"Suite Administration\",\"lastName\":\"Administrator\",\"state\":\"ACTIVE\",\"email\":\"bo-admin@dummy.com\",\"isDeleted\":false,\"idmOrganization\":\"sysbo\",\"accountId\":{\"entityType\":\"account\",\"id\":10000,\"name\":\"\"},\"roles\":[\"ROLE_TENANT_USER\",\"ROLE_FARM_ADMIN\"],\"role\":\"BACKOFFICEUSER\",\"authenticationType\":\"DB\",\"locked\":false},{\"name\":\"cmptransportuser\",\"id\":1000003,\"createdAt\":1780939344637,\"lastUpdatedBy\":\"bo-integration@dummy.com\",\"lastUpdatedAt\":1780945201589,\"deleted\":false,\"sysData\":false,\"entityType\":\"user\",\"externalID\":\"2c90848e9ea83e31019ea841979c026e\",\"userType\":\"INTEGRATIONUSER\",\"fullName\":\"cmptransportuser, cmptransp"
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"boUtilsUserMenu\"]",
+        "css": "#boUtilsUserMenu",
+        "id": "boUtilsUserMenu",
+        "tag": "span",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 1486,
+        "y": 33
+      },
+      "timestamp": 1781151337708
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//a[normalize-space(text())='Logout']",
+        "css": "li > a.dropdown-item",
+        "id": null,
+        "tag": "a",
+        "text": "Logout",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 1406,
+        "y": 141
+      },
+      "timestamp": 1781151339428
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-3-m1.otxlab.net/idm-service/idm/v0/assets/i18n/en.json",
+      "postData": null,
+      "timestamp": 1781151340144,
+      "status": 200,
+      "responseBody": "{\n    \"rtl\": \"false\",\n    \"login\": {\n      \"title\": \"Sign In\",\n      \"username\": \"Username\",\n      \"password\": \"Password\",\n      \"passcode\": \"Passcode\",\n      \"re-login\": \"Re-sign in\",\n      \"login\": \"Sign in\",\n      \"next\": \"Next\",\n      \"forgetPassword\": \"Forgot password?\",\n      \"error\": {\n        \"invalid_credentials\": \"Invalid user name/password or user account is locked or expired\",\n        \"invalid_passcode\": \"Invalid user name/Password/passcode or user account is locked or expired\",\n        \"invalid_token\": \"The request code is invalid. It may have already been used or has expired. Return to the site or application that sent you here and try again.\"\n      },\n      \"passwordExpireTitle\":\"Password Expiration Warning\",\n      \"passwordExpireContent\":\"Your password will expire in {{expiredDay}} days. Please change your password at your earliest opportunity to prevent any interruption.\",\n      \"policyWarningTitle\":\"Password Policy Warning\",\n      \"policyWarningContent\":\"Your password"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-3-m1.otxlab.net/idm-service/idm/v0/api/public/return_url",
+      "postData": null,
+      "timestamp": 1781151340158,
+      "status": 200,
+      "responseBody": null
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-3-m1.otxlab.net/idm-service/idm/v0/api/public/tenant?id=sysbo",
+      "postData": null,
+      "timestamp": 1781151340158,
+      "status": 200,
+      "responseBody": "{\"name\":\"sysbo\",\"displayName\":\"sysbo\",\"iconUrl\":\"assets/images/suite_icon_white.png\",\"portalTitle\":\"Service Portal\",\"portalWelcomeMsg\":\"Welcome to Service Management\",\"portalFooterMsg\":\"\",\"portalShowLegalNotice\":false,\"portalLegalNoticeUrl\":\"\",\"disclaimerText\":\"\",\"themeName\":\"\",\"enableSecureId\":false,\"enableDbUserSignup\":false,\"modifiable\":false,\"public\":false,\"deletable\":false,\"enableForgetPassword\":false,\"backgroundImageUrl\":\"\",\"loginTheme\":[],\"signUpWelcomeMsg\":\"Welcome To OpenText Identity Management Service\",\"signUpInstructions\":\"\",\"signUpTermsUrl\":\"https://www.opentext.com/about/privacy\",\"signUpTermsAgreeMsg\":\"I have read the\",\"familyName\":\"IT OPERATIONS MANAGEMENT\",\"familyIconText\":\"I\",\"footerLogoUrl\":\"\",\"tryLocal\":false,\"appVersionLabel\":\"26.2\",\"loginFormOpacity\":\"\",\"loginFormBackgroundColor\":\"\",\"tokenExpirationMaxLimit\":\"365\",\"tokenExpirationUnit\":\"day\",\"noTokenExpiration\":false}"
+    }
+  ]
+}

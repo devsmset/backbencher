@@ -1,0 +1,2094 @@
+{
+  "meta": {
+    "url": "https://maple-aio-2-m1.otxlab.net:443/saw/ess?TENANTID=223791286",
+    "timestamp": 1768469441463,
+    "userAgent": "Playwright Automation",
+    "recordedAt": "2026-01-15T09:30:41.463Z"
+  },
+  "events": [
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/idm-service/idm/v0/assets/i18n/en.json",
+      "postData": null,
+      "timestamp": 1768469266559,
+      "status": 200,
+      "responseBody": "{\n    \"rtl\": \"false\",\n    \"login\": {\n      \"title\": \"Sign In\",\n      \"username\": \"Username\",\n      \"password\": \"Password\",\n      \"passcode\": \"Passcode\",\n      \"re-login\": \"Re-sign in\",\n      \"login\": \"Sign in\",\n      \"next\": \"Next\",\n      \"forgetPassword\": \"Forgot password?\",\n      \"error\": {\n        \"invalid_credentials\": \"Invalid user name/password or user account is locked or expired\",\n        \"invalid_passcode\": \"Invalid user name/Password/passcode or user account is locked or expired\",\n        \"invalid_token\": \"The request code is invalid. It may have already been used or has expired. Return to the site or application that sent you here and try again.\"\n      },\n      \"passwordExpireTitle\":\"Password Expiration Warning\",\n      \"passwordExpireContent\":\"Your password will expire in {{expiredDay}} days. Please change your password at your earliest opportunity to prevent any interruption.\",\n      \"policyWarningTitle\":\"Password Policy Warning\",\n      \"policyWarningContent\":\"Your password"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/idm-service/idm/v0/api/public/token?code=99b4dc3a-61a1-4964-b500-72a9e16fa3cd",
+      "postData": null,
+      "timestamp": 1768469266588,
+      "status": 200,
+      "responseBody": "{\"expired\":false,\"supportErrorCallback\":false,\"return_uri\":\"https://maple-aio-2-m1.otxlab.net:443/bo/postBoLogin?LWREQ=https%3A%2F%2Fmaple-aio-2-m1.otxlab.net%2Fsaw%2Fess%3FTENANTID%3D223791286\"}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/idm-service/idm/v0/api/public/tenant?id=223791286",
+      "postData": null,
+      "timestamp": 1768469266588,
+      "status": 200,
+      "responseBody": "{\"name\":\"223791286\",\"displayName\":\"223791286\",\"iconUrl\":\"assets/images/suite_icon_white.png\",\"portalTitle\":\"Service Portal\",\"portalWelcomeMsg\":\"Welcome to Service Management\",\"portalFooterMsg\":\"\",\"portalShowLegalNotice\":false,\"portalLegalNoticeUrl\":\"\",\"disclaimerText\":\"\",\"themeName\":\"\",\"enableSecureId\":false,\"enableDbUserSignup\":false,\"modifiable\":false,\"public\":false,\"deletable\":false,\"enableForgetPassword\":false,\"backgroundImageUrl\":\"\",\"loginTheme\":[],\"signUpWelcomeMsg\":\"Welcome To OpenText Identity Management Service\",\"signUpInstructions\":\"\",\"signUpTermsUrl\":\"https://www.opentext.com/about/privacy\",\"signUpTermsAgreeMsg\":\"I have read the\",\"footerLogoUrl\":\"\",\"tryLocal\":true,\"appVersionLabel\":\"CE 25.4\",\"loginFormOpacity\":\"\",\"loginFormBackgroundColor\":\"\",\"tokenExpirationMaxLimit\":\"365\",\"tokenExpirationUnit\":\"day\",\"noTokenExpiration\":false}"
+    },
+    {
+      "type": "ui_event",
+      "action": "input",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"username\"]",
+        "css": "#username",
+        "id": "username",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "esmTenant1_admin",
+      "position": {
+        "x": 768,
+        "y": 387
+      },
+      "timestamp": 1768469274317
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"username\"]",
+        "css": "#username",
+        "id": "username",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "esmTenant1_admin",
+      "position": {
+        "x": 768,
+        "y": 387
+      },
+      "timestamp": 1768469275287
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id='next']/span",
+        "css": "button.uxa-large.uxa-primary.cdk-focused.cdk-mouse-focused > span",
+        "id": null,
+        "tag": "span",
+        "text": "Next",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 768,
+        "y": 503
+      },
+      "timestamp": 1768469275498
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/idm-service/idm/v0/api/public/authenticate/localUser",
+      "postData": "{\"tenantName\":\"223791286\",\"token\":\"https://maple-aio-2-m1.otxlab.net/idm-service/idm/v0/login?tenant=223791286&code=99b4dc3a-61a1-4964-b500-72a9e16fa3cd&tryLocal=true\",\"passwordCredentials\":{\"username\":\"esmTenant1_admin\"}}",
+      "timestamp": 1768469275513,
+      "status": 200,
+      "responseBody": null
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/idm-service/idm/v0/assets/i18n/en.json",
+      "postData": null,
+      "timestamp": 1768469276878,
+      "status": 200,
+      "responseBody": "{\n    \"rtl\": \"false\",\n    \"login\": {\n      \"title\": \"Sign In\",\n      \"username\": \"Username\",\n      \"password\": \"Password\",\n      \"passcode\": \"Passcode\",\n      \"re-login\": \"Re-sign in\",\n      \"login\": \"Sign in\",\n      \"next\": \"Next\",\n      \"forgetPassword\": \"Forgot password?\",\n      \"error\": {\n        \"invalid_credentials\": \"Invalid user name/password or user account is locked or expired\",\n        \"invalid_passcode\": \"Invalid user name/Password/passcode or user account is locked or expired\",\n        \"invalid_token\": \"The request code is invalid. It may have already been used or has expired. Return to the site or application that sent you here and try again.\"\n      },\n      \"passwordExpireTitle\":\"Password Expiration Warning\",\n      \"passwordExpireContent\":\"Your password will expire in {{expiredDay}} days. Please change your password at your earliest opportunity to prevent any interruption.\",\n      \"policyWarningTitle\":\"Password Policy Warning\",\n      \"policyWarningContent\":\"Your password"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/idm-service/idm/v0/api/public/token?code=99b4dc3a-61a1-4964-b500-72a9e16fa3cd",
+      "postData": null,
+      "timestamp": 1768469276908,
+      "status": 200,
+      "responseBody": "{\"expired\":false,\"supportErrorCallback\":false,\"return_uri\":\"https://maple-aio-2-m1.otxlab.net:443/bo/postBoLogin?LWREQ=https%3A%2F%2Fmaple-aio-2-m1.otxlab.net%2Fsaw%2Fess%3FTENANTID%3D223791286\"}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/idm-service/idm/v0/api/public/tenant?id=223791286",
+      "postData": null,
+      "timestamp": 1768469276908,
+      "status": 200,
+      "responseBody": "{\"name\":\"223791286\",\"displayName\":\"223791286\",\"iconUrl\":\"assets/images/suite_icon_white.png\",\"portalTitle\":\"Service Portal\",\"portalWelcomeMsg\":\"Welcome to Service Management\",\"portalFooterMsg\":\"\",\"portalShowLegalNotice\":false,\"portalLegalNoticeUrl\":\"\",\"disclaimerText\":\"\",\"themeName\":\"\",\"enableSecureId\":false,\"enableDbUserSignup\":false,\"modifiable\":false,\"public\":false,\"deletable\":false,\"enableForgetPassword\":false,\"backgroundImageUrl\":\"\",\"loginTheme\":[],\"signUpWelcomeMsg\":\"Welcome To OpenText Identity Management Service\",\"signUpInstructions\":\"\",\"signUpTermsUrl\":\"https://www.opentext.com/about/privacy\",\"signUpTermsAgreeMsg\":\"I have read the\",\"footerLogoUrl\":\"\",\"tryLocal\":false,\"appVersionLabel\":\"CE 25.4\",\"loginFormOpacity\":\"\",\"loginFormBackgroundColor\":\"\",\"tokenExpirationMaxLimit\":\"365\",\"tokenExpirationUnit\":\"day\",\"noTokenExpiration\":false}"
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"password\"]",
+        "css": "#password",
+        "id": "password",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 768,
+        "y": 415
+      },
+      "timestamp": 1768469278729
+    },
+    {
+      "type": "ui_event",
+      "action": "input",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"password\"]",
+        "css": "#password",
+        "id": "password",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "Admin_1234",
+      "position": {
+        "x": 768,
+        "y": 415
+      },
+      "timestamp": 1768469283306
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"password\"]",
+        "css": "#password",
+        "id": "password",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "Admin_1234",
+      "position": {
+        "x": 768,
+        "y": 415
+      },
+      "timestamp": 1768469284162
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id='submit']/span",
+        "css": "button.uxa-large.uxa-primary.cdk-focused.cdk-mouse-focused > span",
+        "id": null,
+        "tag": "span",
+        "text": "Sign in",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 865,
+        "y": 531
+      },
+      "timestamp": 1768469284377
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/idm-service/idm/v0/api/public/authenticate?code=99b4dc3a-61a1-4964-b500-72a9e16fa3cd",
+      "postData": "{\"tenantName\":\"223791286\",\"passwordCredentials\":{\"username\":\"esmTenant1_admin\",\"password\":\"Admin_1234\",\"passcode\":\"\"}}",
+      "timestamp": 1768469284381,
+      "status": 200,
+      "responseBody": null
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/backend/tenant",
+      "postData": null,
+      "timestamp": 1768469293985,
+      "status": 200,
+      "responseBody": "{\"surveyEnabled\":\"false\",\"backendAgent\":\"SAW\",\"chatEnabled\":\"false\"}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/TenantSettings/domain/ui",
+      "postData": null,
+      "timestamp": 1768469293986,
+      "status": 200,
+      "responseBody": "{\"tenantSettings\":{\"ESS_BACKUP_INTEGER10\":0,\"ENABLE_ESS_LOADING_PAGE\":true,\"EXPORT_WITH_URL\":false,\"satelliteMaxIdAllocations\":10000000,\"REGEX_SECURITY_CONTROL_ENABLED\":false,\"REAUTHENTICATION_VERIFICATION_CODE_TTL_IN_MINUTES\":1440,\"TURN_OFF_AUDIT\":true,\"NETWORK_INDICATION_SHOW\":true,\"ENABLE_USER_NOTIFICATION_PREFERENCES\":true,\"AUTO_REFRESH_INTERVAL_IN_HOUR_OF_EXTERNAL_LIST\":24,\"ESS_SMTP_NTLM\":false,\"NOTIFICATION_DISABLED_FOR_PERSON_STATUS\":\"Inactive,LeaveOfAbsence,Retired,Terminated\",\"NavigationTrustedDomains\":\"*\",\"ENABLE_ESS_QUICK_APPROVE\":false,\"SINGLE_USER_SYNC_INTERVAL_MINUTES_H\":720,\"MAX_SYNC_CLOUD_DATA_BULK_SIZE\":50,\"ENABLE_FROALA\":false,\"ESS_SMTP_HOST\":\"\",\"ESS_SMTP_AUTH\":false,\"ESS_SHOW_SIDEBAR_IN_CATEGORY_ENABLED\":false,\"ENABLE_MY_AVIATOR\":false,\"topicsExtractionState\":\"Default\",\"ESS_REQUEST_APPROVAL_CHAINS_ENABLED\":true,\"IS_ENABLE_SHOPPING_CART\":true,\"sampleLongSettingWithUiDomain\":11,\"ENABLE_USER_MANAGEMENT_REPORTS\":false,\"MAX_PRODUCT_MODELS_IN_TREE_VIEW\":1000,\"ENABLE_PROPOS"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/personalization/person/me",
+      "postData": null,
+      "timestamp": 1768469293985,
+      "status": 200,
+      "responseBody": "{\"entities\":[{\"entity_type\":\"Person\",\"properties\":{\"Locale\":\"en\",\"Email\":\"esmTenant1_admin@microfocus.com\",\"Name\":\"esmTenant1_admin, Microfocus\",\"Upn\":\"esmTenant1_admin\",\"LastUpdateTime\":1768399202395,\"AuthenticationType\":\"DB\",\"PhaseId\":\"new\",\"DataDomains\":[\"Public\"],\"IsDeleted\":false,\"IsSystemIntegration\":false,\"OfficePhoneNumber\":\"\",\"HasAuthorizationRecord\":false,\"IsMaasUser\":true,\"EmployeeStatus\":\"Active\",\"IsExternal\":true,\"IsSystem\":false,\"Id\":\"10018\",\"LastName\":\"esmTenant1_admin\",\"IsDBUser\":true,\"IsVIP\":false,\"Attachments\":\"{\\\"complexTypeProperties\\\":[]}\",\"MobilePhoneNumber\":\"\",\"EmsCreationTime\":1768392607307,\"HomePhoneNumber\":\"\",\"Groups\":[\"10205\",\"10209\",\"10121\",\"10211\",\"10122\",\"10212\"],\"FirstName\":\"Microfocus\",\"ExternalId\":\"1000013\",\"Avatar\":\"72a02342-4c54-4d90-8127-3eb267d3d509\",\"HomePage\":\"platform_dashboard\",\"ProcessId\":\"normal\"},\"related_properties\":{}}],\"meta\":{\"completion_status\":\"OK\",\"total_count\":1,\"errorDetailsList\":[],\"errorDetailsMetaList\":[],\"query_time\":176846929289"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/authorization/permissions/10018",
+      "postData": null,
+      "timestamp": 1768469294415,
+      "status": 200,
+      "responseBody": "{\"is_admin\":true}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/resources/locales/en/i18n-resource-propel.json?2026-Jan-15-14:58:13",
+      "postData": null,
+      "timestamp": 1768469294762,
+      "status": 200,
+      "responseBody": "{\n  \"comments\": \"Comments\",\n  \"comments.addNewComment\": \"Add\",\n  \"comments.AddSaveRecord\": \"Add & save record\",\n  \"comments.saveRecord\": \"Save record\",\n  \"comments.saveRecordTips\": \"Notice: Save will also update previous changes made to the record.\",\n  \"comments.deleteComment\": \"Delete\",\n  \"comments.updateComment\": \"Edit\",\n  \"comments.dialogTitle\": \"Edit Comment\",\n  \"comments.closeDialogTitle\": \"Close request\",\n  \"comments.acceptOrRejectDialogTitle\": \"Comment for action\",\n  \"comments.confirmDeleteTitle\": \"Confirm Comment Deletion\",\n  \"comments.confirmDeleteContent\": \"Are you sure you want to delete the comment?\",\n  \"comments.ShowPrevComments\": \"Show previous comments\",\n  \"comments.editedLabel\": \"Edited\",\n  \"comments.createdLabel\": \"Created\",\n  \"comments.systemComment\": \"System message\",\n  \"comments.privacyToggleButtonComment\": \"The comment will be visible to the requester\",\n  \"comments.internalCommentLabel\": \"INTERNAL COMMENT\",\n  \"comments.comment.deleted\": \"Comment had been deleted\",\n"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/js/modules/admin/resources/locales/en/i18n-resource-propel.json?2026-Jan-15-14:58:13",
+      "postData": null,
+      "timestamp": 1768469294766,
+      "status": 200,
+      "responseBody": "{\n  \"entityEditor.localizedLabel.required\": \"Required\",\n\n  \"listManagement.user.options.list.tooltip\": \"User options list\",\n\n  \"listManagement.external.list.tooltip\": \"External list\",\n\n  \"notification.duplicatedListNameFound\": \"Duplicate name found.\",\n  \"notification.requiredNotFound\": \"Enter required fields\",\n  \"notification.details\": \"Details\",\n  \"notification.correlationId\": \"Correlation ID\",\n  \"notification.preview.dialog.close\": \"Close\",\n\n  \"people.encryptionDomains.newVerificationDialog.dialog.header\": \"Generate verification code\",\n\n  \"people.encryptionDomains.grid.PasscodeStatus.displaylabel.OK\": \"OK\",\n  \"people.encryptionDomains.grid.PasscodeStatus.displaylabel.Expired\": \"Expired\",\n  \"people.encryptionDomains.grid.PasscodeStatus.displaylabel.AboutToExpire\": \"Will Expire\",\n  \"people.encryptionDomains.grid.PasscodeStatus.displaylabel.NotActive\": \"Not active\",\n\n  \"people.encryptionDomains.grid.VerificationStatus.displaylabel.Verified\": \"Verified\",\n  \"people.encryptionDomains.grid."
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/js/modules/ess/resources/locales/en/i18n-resource.json?2026-Jan-15-14:58:13",
+      "postData": null,
+      "timestamp": 1768469294766,
+      "status": 200,
+      "responseBody": "{\n  \"company-logo\" : \"Company Logo\",\n  \"style-no-permissions.description-ess\" : \"You do not have permission to access the Self-Service Portal\",\n  \"style-no-permissions.description-saw\" : \"You do not have permission to access the Service Management\",\n  \"style-no-permissions.title\" : \"Unauthorized Access\",\n  \"tags-error-max-word-in-tag\" : \"Maximum number of words in each tag: {{0}}.\",\n  \"tags-error-space-input\" : \"shouldn't be space\",\n  \"tags-error-allow-input\" : \"Use only letters, numbers (0-9), hyphens (-), periods (.), pluses (+), hashes (#) and spaces in tags.\",\n  \"tags-error-too-few-tags\" : \"Minimum number of required tags: {{0}}.\",\n  \"tags-error-max-length\" : \"Each tag can contain up to a total of {{0}} characters.\",\n  \"tags-error-too-many-tags\" : \"Maximum number of tags: {{0}}.\",\n  \"tags-info-no-match\" : \"\",\n  \"error-page.messages.default-error-message\" : \"An error occurred\",\n  \"question-thread-unknown-user\" : \"Unknown\",\n  \"ess-guest-user\" : \"Guest\",\n  \"update-your-delegations\" : "
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/resources/locales/en/i18n-resource.json?2026-Jan-15-14:58:13",
+      "postData": null,
+      "timestamp": 1768469295210,
+      "status": 200,
+      "responseBody": "{\n    \"aviator-widget-title\": \"Aviator\",\n    \"aviator-action-ticket-sum\": \"Summarize this incident\",\n    \"aviator-action-request-sum\": \"Summarize this request\",\n    \"aviator-action-ticket-find-sl\": \"Suggest a solution\",\n    \"aviator-msg-ticket-sum\": \"Please summarize the current incident.\",\n    \"aviator-msg-request-sum\": \"Please summarize the current request.\",\n    \"aviator-msg-find-sl\": \"Please suggest possible solutions for this incident.\",\n    \"aviator-msg-find-sl-request\": \"Please suggest possible solutions for this request.\",\n    \"aviator-action-summarize-record\": \"Summarize this record\",\n    \"aviator-msg-summarize-record\": \"Please summarize the current record.\",\n    \"aviator-init-failed\": \"Failed to initialize Aviator. Please contact your IT administrator.\",\n    \"my-aviator-button-label\": \"MyAviator\",\n    \"my-aviator-coachmark-new-tag\": \"New\",\n    \"my-aviator-coachmark-title\": \"Introducing OpenText MyAviator\",\n    \"my-aviator-coachmark-subtitle\": \"A secure AI personal assistant b"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/l10n/bundles/ess/en",
+      "postData": null,
+      "timestamp": 1768469294763,
+      "status": 200,
+      "responseBody": "{\"Bundles\":[{\"Name\":\"workflow_resource_bundle_messages\",\"Locale\":\"en\",\"Resources\":{\"ComplexTypeArraySizeLimitValidationTemplate.description\":\"Validate that the number of ${elementsResourceKey} of ${complexTypeField} field does not exceed the limit ${limitNum}\",\"RequestWorkflow.process.normal.phase.classify.displayLabel\":\"Classify\",\"CallAviatorWithSearchingDataTemplate.field.displayLabel\":\"field\",\"CompanyRelationWorkflow.process.Normal.phase.Inactive.instruction\":\"Company relation is in inactive phase\",\"ThresholdEventWorkflow.process.Close.displayLabel\":\"Close\",\"ContractWorkflow.process.Contract.displayLabel\":\"Contract\",\"RequestWorkflow.process.humanResource.phase.abandon.displayLabel\":\"Abandon\",\"CVEWorkflow.process.normal.phase.retire.instruction.displayLabel\":\"Retire\",\"TaskWorkflow.process.ManualTask.transition.ManualTransitionToCancel\":\"Canceled\",\"ExecuteAgentlessRestActionTemplate.paramBody.displayLabel\":\"Body\",\"ChargeBackWorkflow.process.Normal.phase.Inactive.instruction\":\"The char"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/js/modules/admin/resources/locales/en/i18n-resource.json?2026-Jan-15-14:58:13",
+      "postData": null,
+      "timestamp": 1768469295761,
+      "status": 200,
+      "responseBody": "{\n  \"message\": \"Application \\\"Administration\\\" - taken from i18n\",\n  \"css_qa_app_test\": \"This is CSS example for selected-employees class with diff theme\",\n  \"cssTitlea\": \"CSS & I18N\",\n  \"notTitle\": \"Notifications\",\n  \"notMsgHdr\": \"Enter message header\",\n  \"notMsgDtls\": \"Enter message details\",\n  \"alertNotTitle\": \"Alert box notification generator\",\n  \"notifyButtons.infoMessage\": \"Show information\",\n  \"notifyButtons.warnMessage\": \"Show warning\",\n  \"notifyButtons.errMessage\": \"Show error\",\n  \"header\": \"Administration\",\n  \"adminTitle\": \"Administration Center\",\n  \"shell.title\": \"Record Management\",\n  \"shell.entityGeneric\": \"Generic\",\n  \"shell.propertyGridTab\": \"Fields\",\n  \"shell.formDesignerTab\": \"Forms\",\n  \"shell.entityRulesTab\": \"Rules\",\n  \"shell.workflowDesignerTab\": \"Processes\",\n  \"shell.processesAndRulesTab\": \"Processes and Rules\",\n  \"shell.notificationEditorTab\": \"Notifications\",\n  \"shell.approvalDefinitionTab\": \"Approval definitions\",\n  \"shell.dataImportTab\": \"Import data\",\n  \"shell"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/loader.svg",
+      "postData": null,
+      "timestamp": 1768469296735,
+      "status": 200,
+      "responseBody": "<svg width=\"32\" height=\"32\" viewBox=\"0 0 32 32\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<g clip-path=\"url(#clip0_339_181998)\">\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M16 5.33333C10.109 5.33333 5.33333 10.109 5.33333 16C5.33333 21.891 10.109 26.6667 16 26.6667C21.891 26.6667 26.6667 21.891 26.6667 16C26.6667 10.109 21.891 5.33333 16 5.33333ZM0 16C0 7.16344 7.16344 0 16 0C24.8366 0 32 7.16344 32 16C32 24.8366 24.8366 32 16 32C7.16344 32 0 24.8366 0 16Z\" fill=\"#0073E7\" fill-opacity=\"0.3\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M23.4631 8.429C19.3115 4.27746 12.5805 4.27746 8.429 8.429C4.27746 12.5805 4.27746 19.3115 8.429 23.4631C9.46689 24.501 9.46689 26.1837 8.429 27.2216C7.39112 28.2595 5.70837 28.2595 4.67049 27.2216C-1.55683 20.9943 -1.55683 10.8978 4.67049 4.67049C10.8978 -1.55683 20.9943 -1.55683 27.2216 4.67049C28.2595 5.70837 28.2595 7.39112 27.2216 8.429C26.1837 9.46689 24.501 9.46689 23.4631 8.429Z\" fill=\"url(#paint0_linear_339_181998)\"/>\n</g>\n<defs"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/users/getLoggedInUser",
+      "postData": null,
+      "timestamp": 1768469296735,
+      "status": 200,
+      "responseBody": "{\"success\":true,\"user\":{\"id\":\"10018\",\"displayName\":null,\"firstName\":null,\"lastName\":null,\"answeredQuestionsCount\":0,\"firstLogin\":false,\"offeringRequiredOnEssRequest\":\"OPTIONAL\",\"relatedProperties\":{}}}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/customized-tab-config/getDateFormatConfigs",
+      "postData": null,
+      "timestamp": 1768469297224,
+      "status": 200,
+      "responseBody": "[]"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/personalization/10018/profile/recalculateEntitlementRules",
+      "postData": null,
+      "timestamp": 1768469297612,
+      "status": 200,
+      "responseBody": "{\"userId\":\"10018\",\"entitlementRulesIds\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/loadingPage/loadingPageData",
+      "postData": null,
+      "timestamp": 1768469297612,
+      "status": 200,
+      "responseBody": "{\"news\":[],\"localization\":{\"time-service-less-than-a-minute-left\":\"less than a minute left\",\"time-am\":\"AM\",\"content.navigation.prev\":\"prev\",\"property.requestedFor\":\"Requested for\",\"request.action.accept.success\":\"Request accepted successfully\",\"request.action.failure.message.1\":\"Something went wrong\",\"time-service-x-years\":\"{0} years\",\"time-service-x-years-ago\":\"{0} years overdue\",\"request.action.failure.message.2\":\"Try again when the portal is fully loaded\",\"time-service-x-years-left\":\"{0} years left\",\"time-service-x-months\":\"{0} months\",\"time-service-x-days\":\"{0} days\",\"news.duration\":\"Duration\",\"close.text\":\"Done loading\",\"request.textarea.placeholder\":\"Describe your problem...\",\"request.action.accept\":\"accept\",\"time-service-x-hours-left\":\"{0} hours left\",\"time-service-a-day-left\":\"one day left\",\"requests.button.text\":\"Track requests\",\"property.lastUpdateTime\":\"Last update time\",\"request.action.requestPosted.success\":\"Request posted successfully\",\"time-service-x-months-left\":\"{0} mo"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/TenantManagement/tenant/223791286",
+      "postData": null,
+      "timestamp": 1768469298102,
+      "status": 200,
+      "responseBody": "{\"tenantId\":\"223791286\",\"tenantName\":\"esmTenant1\",\"customerId\":\"223791286\",\"type\":\"Dev\",\"version\":\"v31\",\"releaseVersion\":\"26.2\",\"patchReleaseVersion\":\"26.2.0\",\"buildNumber\":\"7103\",\"productName\":\"Service Management\",\"state\":\"Active\",\"TenantCreationDetailsJSON\":{\"tenantCreationTime\":1768392518439,\"tenantCreationVersion\":\"v31\"},\"tenantAdminUser\":\"esmTenant1_admin\",\"dev2ProdState\":\"NONE\"}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/theme/user-style-with-widget",
+      "postData": null,
+      "timestamp": 1768469298102,
+      "status": 200,
+      "responseBody": "{\"itInterfaceHeaderLabel\":\"Service Management\",\"companyLogo\":null,\"companyName\":\"Service Portal\",\"active\":true,\"itInterfaceHeaderLogo\":null,\"itInterfaceHeaderColor\":null,\"themeType\":\"ootb\",\"themeName\":\"Standard\",\"entitlementRules\":[],\"itInterfaceMenuLogo\":null,\"showCeVersion\":\"false\",\"id\":\"-1\",\"themeStyle\":{\"requestUserBoxBackgroundColor\":\"#ffffff\",\"companyLabelFontSize\":\"20px\",\"notificationBarBackgroundColor\":\"#333333\",\"notificationBarTextColor\":\"#f8f6f6\",\"requestUserBoxFontColor\":\"#6D6D6D\",\"subcategoryFilterBackgroundColor\":\"#0073e7\",\"ribbonTextHoverColor\":\"#ffffff\",\"notificationBoxTextColor\":\"rgba(49,49,64,0.7)\",\"fontFamily\":\"Metric\",\"fontColorOnCategoryTitle\":\"#FFFFFF\",\"ribbonTextColor\":\"#ffffff\",\"buttonsDisabledColor\":\"#dfdfdf\",\"categoryFontSize\":\"20px\",\"pageLink\":\"#066f9c\",\"requestAgentBoxFontColor\":\"#6D6D6D\",\"submitButtonBackgroundColor\":\"#0073E7\",\"requestGridHeaderFontSize\":\"16px\",\"actionButtonBg2Color\":\"#c70042\",\"myStuffForegroundColor\":\"#ffffff\",\"requestAgentBoxBackgroundColo"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/forms/sharedResource",
+      "postData": null,
+      "timestamp": 1768469298100,
+      "status": 200,
+      "responseBody": "[{\"entityType\":\"ActualService\",\"modes\":{\"ITEM\":{\"requiredFields\":[\"DisplayLabel\",\"SubType\"]},\"MINIMAL\":{\"requiredFields\":[\"DisplayLabel\"]},\"PREVIEW\":{\"requiredFields\":[\"DisplayLabel\",\"Id\",\"SubType\",\"BusinessCriticality\"]}}},{\"entityType\":\"Agreement\",\"modes\":{\"ITEM\":{\"requiredFields\":[\"Id\",\"DisplayLabel\",\"Flavor\",\"Type\"]},\"MINIMAL\":{\"requiredFields\":[\"Id\",\"DisplayLabel\",\"Flavor\"]},\"PREVIEW\":{\"requiredFields\":[\"Id\",\"DisplayLabel\",\"Flavor\",\"Type\"]}}},{\"entityType\":\"RecordSltStatus\",\"modes\":{\"ITEM\":{\"requiredFields\":[\"Id\",\"DisplayLabel\",\"TargetDate\",\"SLATargetDate\",\"OLATargetDate\"]},\"MINIMAL\":{\"requiredFields\":[\"Id\",\"DisplayLabel\"]},\"PREVIEW\":{\"requiredFields\":[\"Id\",\"DisplayLabel\",\"TargetDate\"]}}},{\"entityType\":\"Default\",\"modes\":{\"ITEM\":{\"requiredFields\":[\"Name\",\"Id\",\"DisplayLabel\"]},\"MINIMAL\":{\"requiredFields\":[\"Name\",\"Id\",\"DisplayLabel\"]},\"PREVIEW\":{\"requiredFields\":[\"Name\",\"Id\"]}}},{\"entityType\":\"Contract\",\"modes\":{\"ITEM\":{\"requiredFields\":[\"Id\",\"ContractNumber\",\"Name\",\"ContractType\",\"D"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/frs/management/TenantAttachmentConfig",
+      "postData": null,
+      "timestamp": 1768469298288,
+      "status": 200,
+      "responseBody": "{\"id\":223791286,\"name\":\"esmTenant1\",\"url\":\"https://maple-aio-2-m1.otxlab.net:443/saw/ess?TENANTID\\u003d223791286\",\"tenantState\":\"ACTIVE\",\"attachmentWhiteList\":\"gif,jpeg,jpg,png,xls,xlsx,csv,txt,bmp,tif,tiff,log,pkb,eml,avif\",\"attachmentMaxSize\":10,\"emailAttachmentMaxSize\":5,\"backendType\":\"SMAX\"}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/encryption/key_chain/10018/status",
+      "postData": null,
+      "timestamp": 1768469298289,
+      "status": 200,
+      "responseBody": "{\"Status\":\"NotActive\",\"Domains\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/encryption/domains-thin",
+      "postData": null,
+      "timestamp": 1768469298289,
+      "status": 200,
+      "responseBody": "[]"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/metadata/ui/enumeration-descriptors/",
+      "postData": null,
+      "timestamp": 1768469298288,
+      "status": 200,
+      "responseBody": "{\"enumeration_descriptors\":[{\"name\":\"ContractTypeEnum\",\"domain\":\"saw\",\"system\":false,\"localized_label_key\":\"contractType\",\"values\":[{\"name\":\"ServiceContract\",\"domain\":\"saw\",\"system\":true,\"localized_label_key\":\"contractTypeService\",\"ordinal_number\":1,\"icon\":null,\"is_disabled\":false,\"external_name\":null,\"hash_code\":null,\"last_sync_time\":0},{\"name\":\"MaintenanceContract\",\"domain\":\"saw\",\"system\":true,\"localized_label_key\":\"contractTypeMaintenance\",\"ordinal_number\":2,\"icon\":null,\"is_disabled\":false,\"external_name\":null,\"hash_code\":null,\"last_sync_time\":0},{\"name\":\"LeaseContract\",\"domain\":\"saw\",\"system\":true,\"localized_label_key\":\"contractTypeLease\",\"ordinal_number\":3,\"icon\":null,\"is_disabled\":false,\"external_name\":null,\"hash_code\":null,\"last_sync_time\":0},{\"name\":\"MasterLeaseContract\",\"domain\":\"saw\",\"system\":true,\"localized_label_key\":\"contractTypeMasterLease\",\"ordinal_number\":4,\"icon\":null,\"is_disabled\":false,\"external_name\":null,\"hash_code\":null,\"last_sync_time\":0},{\"name\":\"LicenseContract"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/saw-authentication/person/privateKey",
+      "postData": null,
+      "timestamp": 1768469298290,
+      "status": 200,
+      "responseBody": "null"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/encryption/config",
+      "postData": null,
+      "timestamp": 1768469298290,
+      "status": 200,
+      "responseBody": "{\"IV\":\"4FiH4M3G11xSNwa0wVQ3cVWl6i8EbPV4GftqzSKTRIE\\u003d\"}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/push/xmppSubdomain",
+      "postData": null,
+      "timestamp": 1768469298290,
+      "status": 200,
+      "responseBody": "\"\""
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/request/pendingChatRequests2",
+      "postData": null,
+      "timestamp": 1768469298290,
+      "status": 200,
+      "responseBody": "{\"success\":\"true\",\"requests\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/bo-integration/originalTenantUrl?domain=maple-aio-2-m1.otxlab.net",
+      "postData": null,
+      "timestamp": 1768469298520,
+      "status": 200,
+      "responseBody": "null"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/push/register/209cd506-4ee1-48ab-a7d0-cbf085652a8c",
+      "postData": "{\"headers\":{\"Content-Type\":\"application/x-www-form-urlencoded\"}}",
+      "timestamp": 1768469300290,
+      "status": 200,
+      "responseBody": "{\"PushUserId\":\"223791286-dev_docker-20aec1d142de8c21feb4ce356f2a608c9cb26abf\",\"PushResourceId\":\"afc3b362-eb4e-47ce-8368-42214db8354b\",\"PushService\":\"pubsub.itom-xruntime-xmpp-svc\",\"PushTopics\":[\"223791286-dev_docker-20aec1d142de8c21feb4ce356f2a608c9cb26abf\"]}"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/http-bind/",
+      "postData": "<body content=\"text/xml; charset=utf-8\" hold=\"1\" rid=\"1556360261\" to=\"itom-xruntime-xmpp-svc\" ver=\"1.6\" wait=\"60\" xml:lang=\"en\" xmlns=\"http://jabber.org/protocol/httpbind\" xmlns:xmpp=\"urn:xmpp:xbosh\" xmpp:version=\"1.0\"/>",
+      "timestamp": 1768469301172,
+      "status": 200,
+      "responseBody": "<body xmlns=\"http://jabber.org/protocol/httpbind\" xmlns:stream=\"http://etherx.jabber.org/streams\" from=\"itom-xruntime-xmpp-svc\" authid=\"7muuvdb4i5\" sid=\"7muuvdb4i5\" secure=\"true\" requests=\"2\" inactivity=\"30\" polling=\"5\" wait=\"60\" hold=\"1\" ack=\"1556360261\" maxpause=\"300\" ver=\"1.6\"><stream:features><mechanisms xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\"><mechanism>PLAIN</mechanism><mechanism>ANONYMOUS</mechanism><mechanism>SCRAM-SHA-1</mechanism><mechanism>CRAM-MD5</mechanism><mechanism>DIGEST-MD5</mechanism></mechanisms><register xmlns=\"http://jabber.org/features/iq-register\"/><bind xmlns=\"urn:ietf:params:xml:ns:xmpp-bind\"/><session xmlns=\"urn:ietf:params:xml:ns:xmpp-session\"><optional/></session></stream:features></body>"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/http-bind/",
+      "postData": "<body rid=\"1556360262\" sid=\"7muuvdb4i5\" xmlns=\"http://jabber.org/protocol/httpbind\"><auth mechanism=\"SCRAM-SHA-1\" xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\">biwsbj0yMjM3OTEyODYtZGV2X2RvY2tlci0yMGFlYzFkMTQyZGU4YzIxZmViNGNlMzU2ZjJhNjA4YzljYjI2YWJmLHI9eXBRTnRyWlc2V0YveWYvcnVtZzNjZz09</auth></body>",
+      "timestamp": 1768469301967,
+      "status": 200,
+      "responseBody": "<body xmlns='http://jabber.org/protocol/httpbind' ack='1556360262'><challenge xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\">cj15cFFOdHJaVzZXRi95Zi9ydW1nM2NnPT0yNjE5ZWI5ZC04MTFmLTQzZmUtYmU5Ny03YmY3NTNkNTRiYzUscz1WZlBiZXdNSlA0Wm5hbGtjc3gxTzQwMHBCSFc3K09pVixpPTQwOTY=</challenge></body>"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/metadata/ui/entity-descriptors/",
+      "postData": null,
+      "timestamp": 1768469298288,
+      "status": 200,
+      "responseBody": "{\"entity_descriptors\":[{\"name\":\"SampleEmsLoTyLecturer\",\"domain\":\"sample\",\"system\":true,\"localized_label_key\":\"sampleEmsLoTyLecturer\",\"property_descriptors\":[{\"name\":\"DateOfBirth\",\"domain\":\"sample\",\"system\":true,\"localized_label_key\":\"dateOfBirth\",\"logical_type\":\"DATE\",\"searchable\":true,\"sortable\":true,\"text_searchable\":false,\"required\":false,\"readOnly\":true,\"hidden\":false,\"unique\":false,\"regexFilter\":false,\"external\":false,\"tags\":[],\"flavors\":[\"EMS\"],\"discoverable_attribute\":false,\"discovered_editable\":false,\"presentation_id\":\"DatePicker\"},{\"name\":\"PhaseId\",\"domain\":\"platform\",\"system\":true,\"localized_label_key\":\"phaseId\",\"logical_type\":\"SMALL_TEXT\",\"searchable\":true,\"sortable\":false,\"text_searchable\":false,\"required\":false,\"readOnly\":false,\"hidden\":false,\"unique\":false,\"regexFilter\":false,\"external\":false,\"length\":140,\"tags\":[],\"flavors\":[\"EMS\"],\"discoverable_attribute\":false,\"discovered_editable\":false,\"presentation_id\":\"TextBox\"},{\"name\":\"IsDeleted\",\"domain\":\"platform\",\"system\":true"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/ess-action-collapse-search.svg",
+      "postData": null,
+      "timestamp": 1768469302975,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n\t width=\"16px\" height=\"16px\" viewBox=\"0 0 16 16\" style=\"enable-background:new 0 0 16 16;\" xml:space=\"preserve\">\n<style type=\"text/css\">\n\t.st00{fill:#0073e7;}\n</style>\n<g>\n\t<path class=\"st00\" d=\"M15.3,16l-4.8-4.8c-1.1,0.9-2.5,1.5-4.1,1.5C2.9,12.7,0,9.9,0,6.4S2.9,0,6.4,0s6.4,2.9,6.4,6.4\n\t\tc0,1.6-0.6,3-1.5,4.1l4.8,4.8L15.3,16z M6.4,1C3.4,1,1,3.4,1,6.4c0,2.9,2.4,5.3,5.3,5.3s5.3-2.4,5.3-5.3C11.7,3.4,9.3,1,6.4,1z\"/>\n</g>\n</svg>\n"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/ess-action-expand-menu.svg",
+      "postData": null,
+      "timestamp": 1768469302975,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n\t width=\"24px\" height=\"24px\" viewBox=\"0 0 24 24\" style=\"enable-background:new 0 0 24 24;\" xml:space=\"preserve\">\n<path d=\"M12,14.1c-1.1,0-2.1-0.9-2.1-2.1c0-1.1,0.9-2.1,2.1-2.1s2.1,0.9,2.1,2.1S13.1,14.1,12,14.1z M12,7.1c-1.1,0-2.1-0.9-2.1-2.1\n\tc0-1.1,0.9-2.1,2.1-2.1s2.1,0.9,2.1,2.1S13.1,7.1,12,7.1z M12,16.9c1.1,0,2.1,0.9,2.1,2.1c0,1.1-0.9,2.1-2.1,2.1S9.9,20.2,9.9,19\n\tC9.9,17.9,10.9,16.9,12,16.9z\"/>\n</svg>\n"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/catalog/category-list?requestOnBehalf=",
+      "postData": null,
+      "timestamp": 1768469302967,
+      "status": 200,
+      "responseBody": "{\"categories\":[{\"properties\":{\"Description\":\"TA-catalog-description\",\"BackgroundImage\":null,\"BackgroundColorRGB\":null,\"Id\":\"10129\",\"Image\":null,\"URL\":null,\"DisplayLabel\":\"TA-Catalog\",\"BackgroundColor\":null},\"relatedPropertiesMap\":{},\"translations\":null,\"entityType\":\"Category\",\"id\":\"10129\",\"entityDescriptorName\":\"Category\",\"propertyNamesIterator\":[\"Description\",\"BackgroundImage\",\"BackgroundColorRGB\",\"Id\",\"Image\",\"URL\",\"DisplayLabel\",\"BackgroundColor\"],\"relatedPropertyNamesIterator\":[]},{\"properties\":{\"Description\":\"TA Description\",\"BackgroundImage\":null,\"BackgroundColorRGB\":\"#175cd4\",\"Id\":\"10228\",\"Image\":null,\"URL\":null,\"DisplayLabel\":\"TA Category_Odhn\",\"BackgroundColor\":null},\"relatedPropertiesMap\":{},\"translations\":null,\"entityType\":\"Category\",\"id\":\"10228\",\"entityDescriptorName\":\"Category\",\"propertyNamesIterator\":[\"Description\",\"BackgroundImage\",\"BackgroundColorRGB\",\"Id\",\"Image\",\"URL\",\"DisplayLabel\",\"BackgroundColor\"],\"relatedPropertyNamesIterator\":[]}]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/search/userSearches",
+      "postData": null,
+      "timestamp": 1768469302975,
+      "status": 200,
+      "responseBody": "{\"numOfUserHistoryResults\":\"-1\",\"results\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/ribbon/essRibbonConfig",
+      "postData": null,
+      "timestamp": 1768469302975,
+      "status": 200,
+      "responseBody": "{\"id\":\"-1\",\"items\":[{\"name\":\"ESS_RIBBON_REQUEST_SUPPORT\"},{\"name\":\"ESS_RIBBON_YOUR_REQUESTS\"},{\"name\":\"ESS_RIBBON_ASK_FRIENDS\"},{\"name\":\"ESS_RIBBON_SUGGEST_IDEA\"}]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/ess-to-do.svg",
+      "postData": null,
+      "timestamp": 1768469302985,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n\t width=\"30px\" height=\"30px\" viewBox=\"0 0 16 16\" style=\"enable-background:new 0 0 16 16;\" xml:space=\"preserve\">\n<style type=\"text/css\">\n\t.st0{fill:white;}\n</style>\n<g>\n\t<path d=\"M15,16H1V2h4V0h6v2h4V16z M2,15h12V3h-3v2H5V3H2V15z M6,4h4V1H6V4z M7.3,12L5,9.7L5.7,9l1.6,1.6L11,7l0.7,0.7\n\t\tL7.3,12z\"/>\n</g>\n</svg>\n"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/ess-hamburger.svg",
+      "postData": null,
+      "timestamp": 1768469302985,
+      "status": 200,
+      "responseBody": "<svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" xmlns=\"http://www.w3.org/2000/svg\">\n    <path d=\"M0 2C0 1.44772 0.358172 1 0.8 1H15.2C15.6418 1 16 1.44772 16 2C16 2.55228 15.6418 3 15.2 3H0.8C0.358172 3 0 2.55228 0 2Z\"/>\n    <path d=\"M0 8C0 7.44771 0.358172 7 0.8 7H15.2C15.6418 7 16 7.44771 16 8C16 8.55228 15.6418 9 15.2 9H0.8C0.358172 9 0 8.55228 0 8Z\"/>\n    <path d=\"M0.8 13C0.358172 13 0 13.4477 0 14C0 14.5523 0.358172 15 0.8 15H15.2C15.6418 15 16 14.5523 16 14C16 13.4477 15.6418 13 15.2 13H0.8Z\"/>\n</svg>\n"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/theme/layout",
+      "postData": null,
+      "timestamp": 1768469302985,
+      "status": 200,
+      "responseBody": "{\"layout\":{\"sections\":[{\"sectionResourceKey\":\"applicationHeaderLabel\",\"previewTab\":\"home\",\"parameters\":[{\"parameterResourceKey\":\"companyName\",\"lessParameterName\":\"\",\"type\":\"custom\",\"trueValue\":null,\"falseValue\":null},{\"parameterResourceKey\":\"fontFamily\",\"lessParameterName\":\"@ess-company-label-font-family\",\"type\":\"custom\",\"trueValue\":null,\"falseValue\":null},{\"parameterResourceKey\":\"companyLabelFontSize\",\"lessParameterName\":\"@headerLabelFontSize\",\"type\":\"number\",\"trueValue\":null,\"falseValue\":null},{\"parameterResourceKey\":\"companyLabelFontColor\",\"lessParameterName\":\"@headerLabelColor\",\"type\":\"colorPicker\",\"trueValue\":null,\"falseValue\":null},{\"parameterResourceKey\":\"companyLabelFontWeight\",\"lessParameterName\":\"@headerLabelFontWeight\",\"type\":\"checkbox\",\"trueValue\":\"bold\",\"falseValue\":\"normal\"},{\"parameterResourceKey\":\"companyLogo\",\"lessParameterName\":\"\",\"type\":\"custom\",\"trueValue\":null,\"falseValue\":null},{\"parameterResourceKey\":\"headerThemeColor\",\"lessParameterName\":\"@headerThemeColor\",\"typ"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/ess-arrow-med-down.svg",
+      "postData": null,
+      "timestamp": 1768469302985,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n\t width=\"16px\" height=\"16px\" viewBox=\"0 0 16 16\" style=\"enable-background:new 0 0 16 16;\" xml:space=\"preserve\">\n<g>\n\t<polygon points=\"8,10.9 2.9,6.3 3.5,5.5 8,9.5 12.5,5.4 13.1,6.2 \t\"/>\n</g>\n</svg>\n"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/users/userRelatedData/APPROVAL",
+      "postData": null,
+      "timestamp": 1768469302985,
+      "status": 200,
+      "responseBody": "{\"feedbackRequests\":null,\"approvals\":{\"results\":[],\"totalCount\":0,\"completionStatus\":\"OK\",\"parentRequests\":{}},\"surveys\":null,\"requests\":null,\"relatedOfferings\":null}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/questions/your-questions",
+      "postData": null,
+      "timestamp": 1768469302985,
+      "status": 200,
+      "responseBody": "{\"questions\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/request/allRequestsWithBundles",
+      "postData": null,
+      "timestamp": 1768469302985,
+      "status": 200,
+      "responseBody": "{\"requests\":[{\"properties\":{\"PhaseId\":\"Close\",\"Description\":\"<p>TA description</p>\",\"LastUpdateTime\":1768399428313,\"CreateTime\":1768399422068,\"RequestedForPerson\":\"10018\",\"ProcessId\":\"Service\",\"Id\":\"10230\",\"DisplayLabel\":\"Table tennis net is broken_9b\",\"RequestType\":\"ServiceRequest\",\"RequestsOffering\":\"10227\"},\"relatedPropertiesMap\":{\"RequestsOffering\":{\"Id\":\"10227\"}},\"translations\":null,\"entityType\":\"Request\",\"id\":\"10230\",\"entityDescriptorName\":\"Request\",\"propertyNamesIterator\":[\"PhaseId\",\"Description\",\"LastUpdateTime\",\"CreateTime\",\"RequestedForPerson\",\"ProcessId\",\"Id\",\"DisplayLabel\",\"RequestType\",\"RequestsOffering\"],\"relatedPropertyNamesIterator\":[\"RequestsOffering\"]}],\"bundledRequests\":{},\"bundledOfferings\":{\"10230\":[]},\"totalCount\":1}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/request.svg",
+      "postData": null,
+      "timestamp": 1768469302985,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg width=\"20px\" height=\"17px\" viewBox=\"0 0 20 17\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <title>Request</title>\n    <defs>\n        <filter id=\"request-1\">\n            <feColorMatrix in=\"SourceGraphic\" type=\"matrix\" values=\"0 0 0 0 0.137255 0 0 0 0 0.109804 0 0 0 0 0.647059 0 0 0 1.000000 0\"></feColorMatrix>\n        </filter>\n        <path d=\"M14.8125,0.0833333333 L19.1666667,4.55208333 L19.1666667,16.125 L6.5625,16.125 L6.5625,12.6875 L7.70833333,12.6875 L7.70833333,14.9791667 L18.0208333,14.9791667 L18.0208333,5.8125 L13.4375,5.8125 L13.4375,1.22916667 L7.70833333,1.22916667 L7.70833333,4.66666667 L6.5625,4.66666667 L6.5625,0.0833333333 L14.8125,0.0833333333 Z M8.85416667,10.3958333 L8.85416667,11.5416667 L0.833333333,11.5416667 L0.833333333,10.3958333 L8.85416667,10.3958333 Z M8.85416667,6.95833333 L8.85416667,8.10416667 L3.125,8.10416667 L3.125,6.95833333 L8.85416667,6.95833333 Z M14.5"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/idea/list",
+      "postData": null,
+      "timestamp": 1768469302985,
+      "status": 200,
+      "responseBody": "{\"ideas\":[],\"totalCount\":0}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/approvals.svg",
+      "postData": null,
+      "timestamp": 1768469302986,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg width=\"20px\" height=\"17px\" viewBox=\"0 0 20 17\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <title>Approvals</title>\n    <defs>\n        <filter id=\"approvals-1\">\n            <feColorMatrix in=\"SourceGraphic\" type=\"matrix\" values=\"0 0 0 0 0.776471 0 0 0 0 0.090196 0 0 0 0 0.615686 0 0 0 1.000000 0\"></feColorMatrix>\n        </filter>\n        <path d=\"M18.3544304,8.2742616 L19.1666667,8.97046414 L12.5527426,16.5126582 L8.49156118,12.2194093 L9.30379747,11.407173 L12.5527426,14.7721519 L18.3544304,8.2742616 Z M6.6350211,9.78270042 L6.6350211,10.943038 L0.833333333,10.943038 L0.833333333,9.78270042 L6.6350211,9.78270042 Z M14.757384,5.14135021 L14.757384,6.30168776 L0.833333333,6.30168776 L0.833333333,5.14135021 L14.757384,5.14135021 Z M14.757384,0.5 L14.757384,1.66033755 L0.833333333,1.66033755 L0.833333333,0.5 L14.757384,0.5 Z\" id=\"approvals-2\"></path>\n    </defs>\n    <g id=\"Approvals\" stroke=\""
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/service-and-assets.svg",
+      "postData": null,
+      "timestamp": 1768469302986,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg width=\"20px\" height=\"21px\" viewBox=\"0 0 20 21\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <title>Service and assets</title>\n    <defs>\n        <filter id=\"service-and-assets-1\">\n            <feColorMatrix in=\"SourceGraphic\" type=\"matrix\" values=\"0 0 0 0 0.462745 0 0 0 0 0.619608 0 0 0 0 0.019608 0 0 0 1.000000 0\"></feColorMatrix>\n        </filter>\n    </defs>\n    <g id=\"Service-and-assets\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n        <g filter=\"url(#service-and-assets-1)\">\n            <g>\n                <g id=\"XMLID_1072_\" transform=\"translate(0.000000, 11.428571)\" fill=\"#000000\" fill-rule=\"nonzero\">\n                    <g id=\"XMLID_990_\">\n                        <path d=\"M7.92079208,7.89141414 L0,7.89141414 L0,0 L7.92079208,0 L7.92079208,7.89141414 Z M1.13154173,6.76406926 L6.78925035,6.76406926 L6.78925035,1.12734488 L1.13154173,1.12734488 L1.13154173,6.764069"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/questions.svg",
+      "postData": null,
+      "timestamp": 1768469302986,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg width=\"20px\" height=\"20px\" viewBox=\"0 0 20 20\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <title>Questions</title>\n    <defs>\n        <filter id=\"questions-1\">\n            <feColorMatrix in=\"SourceGraphic\" type=\"matrix\" values=\"0 0 0 0 0.000000 0 0 0 0 0.450980 0 0 0 0 0.905882 0 0 0 1.000000 0\"></feColorMatrix>\n        </filter>\n        <path d=\"M15.7291667,0.833333333 C17.6770833,0.833333333 19.1666667,2.32291667 19.1666667,4.15625 L19.1666667,11.1458333 C19.1666667,12.8645833 17.6770833,13.8958333 17.3333333,14.125 L7.9375,19.1666667 L7.9375,14.5833333 L4.27083333,14.5833333 C2.32291667,14.5833333 0.833333333,13.09375 0.833333333,11.2604167 L0.833333333,4.15625 C0.833333333,2.32291667 2.32291667,0.833333333 4.27083333,0.833333333 L15.7291667,0.833333333 Z M15.84375,1.86458333 L4.27083333,1.86458333 L4.27083333,1.97916667 C3.01041667,1.97916667 1.97916667,3.01041667 1.97916667,4.27083333"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/ideas.svg",
+      "postData": null,
+      "timestamp": 1768469302986,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg width=\"13px\" height=\"20px\" viewBox=\"0 0 13 20\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <title>Ideas</title>\n    <defs>\n        <filter id=\"ideas-1\">\n            <feColorMatrix in=\"SourceGraphic\" type=\"matrix\" values=\"0 0 0 0 0.474510 0 0 0 0 0.352941 0 0 0 0 0.098039 0 0 0 1.000000 0\"></feColorMatrix>\n        </filter>\n        <path d=\"M10.3636219,2.54239602 C6.81187345,-0.665634839 3.03097993,1.51124324 1.88525463,2.54239602 C0.73952932,3.68812133 0.166666667,5.0629917 0.166666667,6.55243459 C0.166666667,8.27102255 1.08324691,9.98961051 1.88525463,10.9061908 C2.45811728,11.5936259 3.03097993,12.5102062 3.03097993,13.8850766 L3.03097993,16.2910997 C3.03097993,17.2076799 3.48927006,18.1242602 4.29127777,18.6971228 C5.66614814,19.6137031 7.15559104,19.0408404 7.61388116,18.6971228 C8.41588888,18.1242602 8.75960647,17.3222525 8.75960647,16.2910997 L8.75960647,13.8850766 C8.75960647,12.6247"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/delegations.svg",
+      "postData": null,
+      "timestamp": 1768469302986,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg width=\"20px\" height=\"17px\" viewBox=\"0 0 20 17\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <title>Delegations</title>\n    <defs>\n        <filter id=\"delegations-1\">\n            <feColorMatrix in=\"SourceGraphic\" type=\"matrix\" values=\"0 0 0 0 0.898039 0 0 0 0 0.470588 0 0 0 0 0.156863 0 0 0 1.000000 0\"></feColorMatrix>\n        </filter>\n        <path d=\"M8.39583333,8.33333333 C11.375,6.04166667 9.54166667,1.80208333 6.21875,1.80208333 C2.78125,1.80208333 1.29166667,6.27083333 4.04166667,8.33333333 C1.40625,9.47916667 0.833333333,12.1145833 0.833333333,14.75 C0.833333333,15.3229167 0.833333333,16.125 0.833333333,16.2395833 C1.0625,16.3541667 11.03125,16.2395833 11.03125,16.2395833 C11.6041667,9.82291667 8.28125,8.44791667 8.39583333,8.33333333 Z M5.64583333,3.17708333 C8.51041667,2.26041667 10,6.95833333 7.13541667,7.875 C4.04166667,8.79166667 2.4375,4.09375 5.64583333,3.17708333 C5.64583333,3"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/mega-request-on-behalf.svg",
+      "postData": null,
+      "timestamp": 1768469302986,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg width=\"20px\" height=\"17px\" viewBox=\"0 0 20 17\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <title>Request on Behalf</title>\n    <defs>\n        <filter id=\"mega-request-on-behalf-1\">\n            <feColorMatrix in=\"SourceGraphic\" type=\"matrix\" values=\"0 0 0 0 0.454902 0 0 0 0 0.145098 0 0 0 0 0.678431 0 0 0 1.000000 0\"></feColorMatrix>\n        </filter>\n        <path d=\"M8.16666667,8.79166667 C8.85416667,8.21875 9.19791667,7.30208333 9.19791667,6.38541667 C9.19791667,4.66666667 7.70833333,3.17708333 5.98958333,3.17708333 C5.98958333,3.17708333 5.98958333,3.17708333 5.875,3.17708333 C5.875,3.17708333 5.875,3.17708333 5.875,3.17708333 C4.27083333,3.17708333 2.78125,4.66666667 2.78125,6.27083333 C2.78125,7.30208333 3.23958333,8.10416667 3.92708333,8.67708333 C2.55208333,9.25 0.833333333,10.3958333 0.833333333,12.9166667 L0.833333333,16.125 L3.92708333,16.125 L8.05208333,16.125 L11.1458333,16.125"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/settings.svg",
+      "postData": null,
+      "timestamp": 1768469302986,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg width=\"16px\" height=\"16px\" viewBox=\"0 0 16 16\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <title>preferences</title>\n    <defs>\n        <path d=\"M8,15.3333333 L7.08333333,15.3333333 L7.08333333,13.225 C6.16666667,13.0416667 5.25,12.675 4.60833333,12.0333333 L3.14166667,13.5 L2.5,12.8583333 L3.96666667,11.3916667 C3.325,10.75 2.95833333,9.83333333 2.775,8.91666667 L0.666666667,8.91666667 L0.666666667,8 L2.68333333,8 C2.68333333,6.71666667 3.14166667,5.525 3.96666667,4.60833333 L2.40833333,3.14166667 L3.05,2.5 L4.51666667,3.96666667 C5.25,3.325 6.16666667,2.95833333 7.08333333,2.775 L7.08333333,0.666666667 L8,0.666666667 L8,2.68333333 C9.28333333,2.68333333 10.475,3.14166667 11.3916667,3.96666667 L12.8583333,2.5 L13.5,3.14166667 L12.0333333,4.60833333 C12.7666667,5.525 13.3166667,6.71666667 13.3166667,8 L15.3333333,8 L15.3333333,8.91666667 L13.225,8.91666667 C13.0416667,9.83333333 12.675,10."
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/agent.svg",
+      "postData": null,
+      "timestamp": 1768469302986,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg width=\"19px\" height=\"20px\" viewBox=\"0 0 19 20\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <title>agent</title>\n    <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n        <g transform=\"translate(1.000000, 0.000000)\" fill-rule=\"nonzero\">\n            <path d=\"M8.49538462,2.42307692 C9.62711538,2.42307692 10.6556431,2.88659602 11.4014466,3.63239954 C12.1472501,4.37820307 12.6107692,5.40673077 12.6107692,6.53846154 C12.6107692,7.67019231 12.1472501,8.69872001 11.4014466,9.44452353 C10.6556431,10.1903271 9.62711538,10.6538462 8.49538462,10.6538462 C7.36365385,10.6538462 6.33512614,10.1903271 5.58932262,9.44452353 C4.8435191,8.69872001 4.38,7.67019231 4.38,6.53846154 C4.38,5.40673077 4.8435191,4.37820307 5.58932262,3.63239954 C6.33512614,2.88659602 7.36365385,2.42307692 8.49538462,2.42307692 Z\" stroke=\"#29CEFF\" fill=\"#FFFFFF\"></path>\n            <path d=\"M7.38228923,11.0481404"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/logo_corp_brand_ess.svg",
+      "postData": null,
+      "timestamp": 1768469302986,
+      "status": 200,
+      "responseBody": "<svg width=\"95\" height=\"19\" viewBox=\"0 0 95 19\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<g clip-path=\"url(#clip0_39_400)\">\n<path d=\"M12.594 8.27726C12.594 11.241 10.8875 14.452 6.30764 14.452C3.00895 14.452 0 12.6099 0 8.27726C0 4.68619 2.26735 1.92443 6.75686 2.17164C11.5388 2.4401 12.594 6.14548 12.594 8.27726ZM4.06421 6.0232C3.63892 6.67975 3.47944 7.4692 3.47944 8.25865C3.47944 10.0768 4.37787 11.7221 6.30764 11.7221C8.23741 11.7221 9.09066 10.207 9.09066 8.41016C9.09066 7.1396 8.777 6.15345 8.12577 5.53943C7.40809 4.88288 6.60003 4.86162 6.10562 4.90415C5.11682 4.9706 4.5347 5.29755 4.06156 6.02055L4.06421 6.0232Z\" fill=\"white\"/>\n<path d=\"M43.247 3.49536C43.5846 3.13652 43.8079 2.86805 44.4139 2.57566C44.9535 2.35238 45.7164 2.17163 46.5457 2.17163C47.2421 2.17163 48.0263 2.28327 48.635 2.62085C49.871 3.27208 50.1846 4.32734 50.1846 6.14547V14.1596H46.7504V7.55957C46.7504 6.50431 46.7291 6.12155 46.5935 5.80789C46.3251 5.18058 45.719 4.90946 45.0439 4.90946C43.2258 4.90946"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/users/userRelatedData/SURVEY",
+      "postData": null,
+      "timestamp": 1768469302992,
+      "status": 200,
+      "responseBody": "{\"feedbackRequests\":null,\"approvals\":null,\"surveys\":[],\"requests\":null,\"relatedOfferings\":null}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/users/userRelatedData/FEEDBACK_REQUEST",
+      "postData": null,
+      "timestamp": 1768469302992,
+      "status": 200,
+      "responseBody": "{\"feedbackRequests\":{\"requests\":[],\"bundledRequests\":null,\"bundledOfferings\":null,\"totalCount\":0},\"approvals\":null,\"surveys\":null,\"requests\":null,\"relatedOfferings\":null}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/skills.svg",
+      "postData": null,
+      "timestamp": 1768469302992,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg width=\"16px\" height=\"16px\" viewBox=\"0 0 16 16\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <title>skills</title>\n    <defs>\n        <path d=\"M9.83598294,7.41666657 C9.95084523,7.63627671 10.0900059,7.84117002 10.2498962,8.02777768 L10.2498962,8.02777768 L7.69444434,8.02777768 L7.69366667,12.61 L11.3606667,12.61 L11.361111,8.86884488 C11.490541,8.92861035 11.6245554,8.98013812 11.7624821,9.02275579 L11.9722221,9.07991566 L11.9722221,15.0555555 L7.08333323,15.0555555 L7.08333323,7.41666657 Z M11.3606667,13.221 L7.69366667,13.221 L7.69444434,14.4444444 L11.361111,14.4444444 L11.3606667,13.221 Z M9.83333323,13.5267591 L9.83333323,14.1378703 L9.22222212,14.1378703 L9.22222212,13.5267591 L9.83333323,13.5267591 Z M6.16666667,6.5 L3.72222222,6.5 L3.72166667,5.276 L1.27766667,5.276 L1.27777778,8.33333333 L6.47222222,8.33333333 L6.47222222,8.94444444 L0.666666667,8.94444444 L0.666666667,2.22222222 L3"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/mobile.svg",
+      "postData": null,
+      "timestamp": 1768469302993,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg width=\"16px\" height=\"16px\" viewBox=\"0 0 16 16\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <title>mobile</title>\n    <defs>\n        <path d=\"M3,0.666666667 L3,10.75 L3,11.6666667 L3,15.3333333 L13.0833333,15.3333333 L13.0833333,0.666666667 L3,0.666666667 Z M12.1666667,14.4166667 L3.91666667,14.4166667 L3.91666667,11.6666667 L12.1666667,11.6666667 L12.1666667,14.4166667 Z M8.86666667,12.4916667 L8.86666667,13.4083333 L7.30833333,13.4083333 L7.30833333,12.4916667 L8.86666667,12.4916667 Z M12.1666667,1.58333333 L12.1666667,10.75 L3.91666667,10.75 L3.91666667,1.58333333 L12.1666667,1.58333333 Z\" id=\"mobile-1\"></path>\n    </defs>\n    <g id=\"mobile\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n        <g id=\"Icon/calendar备份-2\">\n            <rect id=\"Rectangle\" x=\"0\" y=\"0\" width=\"16\" height=\"16\"></rect>\n            <mask id=\"mobile-2\" fill=\"white\">\n                <use xlink:hre"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/access.svg",
+      "postData": null,
+      "timestamp": 1768469302993,
+      "status": 200,
+      "responseBody": "<svg width=\"16\" height=\"18\" viewBox=\"0 0 16 18\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n    <path d=\"M1 2.93939V1H15V2.93939H1Z\" stroke=\"black\"/>\n    <path d=\"M1 12.1515V4.39394H15V12.1515L8 17L1 12.1515Z\" stroke=\"black\"/>\n    <path\n        d=\"M10 8.75762H6V7.92423C6 7.51965 6.11218 7.1126 6.3852 6.81401C7.61239 5.47185 8.86129 6.07286 9.60405 6.82558C9.88822 7.11356 10 7.51967 10 7.92425V8.75762Z\"\n        stroke=\"black\" stroke-width=\"0.75\"/>\n    <path d=\"M8 10.2121V11.6667M5 8.75757V12.6364H11V8.75757H5Z\" stroke=\"black\" stroke-width=\"0.75\"/>\n</svg>\n"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/users/userRelatedData/REQUEST",
+      "postData": null,
+      "timestamp": 1768469302992,
+      "status": 200,
+      "responseBody": "{\"feedbackRequests\":null,\"approvals\":null,\"surveys\":null,\"requests\":{\"requests\":[],\"bundledRequests\":null,\"bundledOfferings\":null,\"totalCount\":0,\"relatedOfferings\":null,\"resolvedRequests\":[]},\"relatedOfferings\":[{\"properties\":{\"Status\":\"Active\",\"OfferingType\":\"ServiceOffering\",\"Description\":\"<p>TA Desc</p>\",\"PublicScope\":\"Private\",\"LastUpdateTime\":1768399418742,\"CreateTime\":1768399422068,\"Id\":\"10227\",\"DisplayLabel\":\"Ping pong paddles_GB\"},\"relatedPropertiesMap\":{},\"translations\":null,\"entityType\":\"Offering\",\"id\":\"10227\",\"entityDescriptorName\":\"Offering\",\"propertyNamesIterator\":[\"Status\",\"OfferingType\",\"Description\",\"PublicScope\",\"LastUpdateTime\",\"CreateTime\",\"Id\",\"DisplayLabel\"],\"relatedPropertyNamesIterator\":[]}]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/preferences.svg",
+      "postData": null,
+      "timestamp": 1768469302993,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg width=\"24px\" height=\"24px\" viewBox=\"0 0 24 24\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <title>preferences</title>\n    <defs>\n        <path d=\"M18.3553922,12.7068057 L18.3556547,13.9415524 C19.0633794,14.0480501 19.714788,14.3264797 20.2659775,14.7329607 L21.1399811,13.8600785 L22.0550605,14.7751579 L21.1821058,15.6490536 C21.5886116,16.2002336 21.8670708,16.8516517 21.9735808,17.5594273 L23.2083333,17.5597469 L23.2083333,18.8538645 L21.9735758,18.8540771 C21.8669909,19.562183 21.5882348,20.2139412 21.1813089,20.7653499 L22.0550605,21.6384535 L21.1399811,22.5535329 L20.2668775,21.6797813 C19.7154688,22.0867071 19.0637107,22.3654633 18.3556048,22.4720481 L18.3553922,23.7068057 L17.0612745,23.7068057 L17.0609549,22.4720532 C16.3531793,22.3655432 15.7017612,22.0870839 15.1505812,21.6805782 L14.2766855,22.5535329 L13.3616062,21.6384535 L14.2344883,20.7644499 C13.8280073,20.2132604 13.5495777"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/log-out.svg",
+      "postData": null,
+      "timestamp": 1768469302993,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg width=\"16px\" height=\"16px\" viewBox=\"0 0 16 16\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <title>log out</title>\n    <defs>\n        <path d=\"M1.98333333,8.28453511 L1.98333333,14.4506173 L13.9,14.4506173 L13.9,8.28453511 L14.8166667,8.28453511 L14.8166667,15.3333333 L1.06666667,15.3333333 L1.06666667,8.28453511 L1.98333333,8.28453511 Z M7.94166667,0.666666667 L11.5066634,4.23166337 L10.8584821,4.87984458 L8.39966667,2.42166667 L8.4,11.430754 L7.48333333,11.430754 L7.48266667,2.42066667 L5.02485121,4.87984458 L4.37666997,4.23166337 L7.94166667,0.666666667 Z\" id=\"log-out-2\"></path>\n    </defs>\n    <g id=\"log-out\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n        <g id=\"log-out\">\n            <mask id=\"log-out-1\" fill=\"white\">\n                <use xlink:href=\"#log-out-2\"></use>\n            </mask>\n            <use id=\"Combined-Shape\" fill=\"#000000\" fill-rule=\"nonzero\" tra"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/index/progress",
+      "postData": null,
+      "timestamp": 1768469302993,
+      "status": 200,
+      "responseBody": "{\"inProgress\":false,\"totalCount\":0,\"currentCount\":0,\"percentage\":0}"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/http-bind/",
+      "postData": "<body rid=\"1556360263\" sid=\"7muuvdb4i5\" xmlns=\"http://jabber.org/protocol/httpbind\"><response xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\">Yz1iaXdzLHI9eXBRTnRyWlc2V0YveWYvcnVtZzNjZz09MjYxOWViOWQtODExZi00M2ZlLWJlOTctN2JmNzUzZDU0YmM1LHA9ekZPNmwzdEtCRzl3VSthdW1zeG8vTUpzTERZPQ==</response></body>",
+      "timestamp": 1768469302993,
+      "status": 200,
+      "responseBody": "<body xmlns='http://jabber.org/protocol/httpbind' ack='1556360263'><success xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\">dj1qcVkyUUpWdGJod24yMWwyT3MyMlVTUFRwSVk9</success></body>"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/cartItem?additionalLayout=RequestsOffering.PriceVisibleToESS,RequestsOffering.OfferingType,RequestsOffering.IsBundle",
+      "postData": null,
+      "timestamp": 1768469302993,
+      "status": 200,
+      "responseBody": "{\"success\":\"true\",\"cartItems\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/ess-cart.svg",
+      "postData": null,
+      "timestamp": 1768469303126,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n\t width=\"30px\" height=\"30px\" viewBox=\"0 0 16 16\" style=\"enable-background:new 0 0 16 16;\" xml:space=\"preserve\">\n<style type=\"text/css\">\n\t.st0{fill:white;}\n</style>\n<g>\n\t<g>\n\t\t<ellipse cx=\"6.1\" cy=\"14.6\" rx=\"1.4\" ry=\"1.4\"/>\n\t</g>\n\t<g>\n\t\t<ellipse cx=\"12.9\" cy=\"14.6\" rx=\"1.4\" ry=\"1.4\"/>\n\t</g>\n\t<g>\n\t\t<path d=\"M14,12H5L2.3,1H0V0h3.1l0.5,2H16l-2.1,7H5.4l0.4,2H14V12L14,12z M5.1,8h8l1.5-5H3.8L5.1,8z\"/>\n\t</g>\n</g>\n</svg>\n"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/user-entitlement/Entitlement?withPermission=VIEW&includeInactive=false",
+      "postData": null,
+      "timestamp": 1768469303432,
+      "status": 200,
+      "responseBody": "[]"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/search/userSearches",
+      "postData": null,
+      "timestamp": 1768469302975,
+      "status": 200,
+      "responseBody": "{\"numOfUserHistoryResults\":\"-1\",\"results\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/your-requests.svg",
+      "postData": null,
+      "timestamp": 1768469303453,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n\t width=\"16px\" height=\"16px\" viewBox=\"0 0 16 16\" style=\"enable-background:new 0 0 16 16;\" xml:space=\"preserve\">\n<g>\n\t<g>\n\t\t<path d=\"M16,15H5v-3h1v2h9V5.3V6h-4V2H6v3H5V1h7.2L16,4.9V15z M12,5h2.7L12,2.2V5z\"/>\n\t</g>\n\t<g>\n\t\t<g>\n\t\t\t<rect x=\"2\" y=\"7\" width=\"5\" height=\"1\"/>\n\t\t</g>\n\t\t<g>\n\t\t\t<rect y=\"10\" width=\"7\" height=\"1\"/>\n\t\t</g>\n\t</g>\n</g>\n</svg>\n"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/live-support.svg",
+      "postData": null,
+      "timestamp": 1768469303453,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n\t width=\"16px\" height=\"16px\" viewBox=\"0 0 16 16\" style=\"enable-background:new 0 0 16 16;\" xml:space=\"preserve\">\n<style type=\"text/css\">\n\t.st0{fill:#010101;}\n</style>\n<g>\n\t<path d=\"M13,5.8c-0.4-1.5-0.7-2.1-1.2-2.3c-0.5-0.2-1,0.1-1.6,0.6C9.3,4.8,8,5.7,5.8,5.2L5.5,5.1\n\t\tC4.7,5,4.5,4.9,4.2,5.1C4,5.3,4,5.6,4,5.8l0,5.4C4,13.9,6,16,8.6,16c2.5,0,4.5-2,4.6-4.7c0-0.9,0-1.6,0-2.3\n\t\tC13.1,7.8,13.1,6.9,13,5.8z M8.6,15.1c-2.1,0-3.6-1.7-3.6-3.9V6c0,0,0.2,0,0.4,0l0.2,0h0c2.6,1,4.1-0.5,5.1-1.2\n\t\tc0.3-0.2,0.7-0.4,0.8-0.4c0,0,0.3,0.2,0.7,1.6c0.1,0.9,0.1,1.8,0.1,3c0,0.4,0,0.9,0,1.5c-0.6,0.4-1.5,0.8-2.3,0.9\n\t\tc-0.1-0.6-0.6-1-1.2-1c-0.9,0-1.4,0.6-1.4,1.4c0,0.8,0.5,1.4,1.4,1.4c0.5,0,1-0.4,1.1-0.9c0.9-0.1,1.7-0.4,2.4-0.8\n\t\tC12.1,13.5,10.6,15.1,8.6,15.1z\"/>\n\t<path d=\""
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/ask-friends.svg",
+      "postData": null,
+      "timestamp": 1768469303453,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n\t width=\"24px\" height=\"24px\" viewBox=\"0 0 24 24\" enable-background=\"new 0 0 24 24\" xml:space=\"preserve\">\n<g>\n\t<g>\n\t\t<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M5.635,17.728H5.358v-0.467c0.613-0.306,0.991-0.966,0.991-1.737v-2.324\n\t\t\tc0-1.061-0.783-2.222-1.843-2.222c-1.061,0-1.92,1.161-1.92,2.222v2.324c0,0.727,0.445,1.352,1.063,1.678v0.526H3.205L0,19.611\n\t\t\tl0.01,1.352h2.923v-0.97l3.35-1.896L5.635,17.728z M13.021,17.994v-1.582c0.573-0.455,0.947-1.15,0.947-1.939V11.46\n\t\t\tc0-1.374-1.113-2.487-2.487-2.487c-1.373,0-2.487,1.114-2.487,2.487v3.012c0,0.817,0.4,1.537,1.009,1.99v1.531H9.785l-4.791,2.455\n\t\t\tV22h13.027v-1.551l-4.844-2.455H13.021z M17.237"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/ess-action-propose-idea.svg",
+      "postData": null,
+      "timestamp": 1768469303453,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n\t width=\"16px\" height=\"16px\" viewBox=\"0 0 16 16\" style=\"enable-background:new 0 0 16 16;\" xml:space=\"preserve\">\n<path d=\"M11.4,1.5C8.3-1.3,5,0.6,4,1.5C3,2.5,2.5,3.7,2.5,5c0,1.5,0.8,3,1.5,3.8c0.5,0.6,1,1.4,1,2.6v2.1c0,0.8,0.4,1.6,1.1,2.1\n\tc1.2,0.8,2.5,0.3,2.9,0c0.7-0.5,1-1.2,1-2.1v-2.1c0-1.1,0.7-2,1.2-2.6C12,8,12.9,6.5,12.9,5C12.9,3.8,12.4,2.5,11.4,1.5z M9,13.5\n\tc0,0.5-0.2,1-0.6,1.3c-0.3,0.2-1.1,0.5-1.7,0C6.3,14.5,6,14,6,13.5V12h1.6H9V13.5z M10.5,8.1C9.6,9,9.1,10,9.1,11H7.6H6\n\tc-0.1-1-0.3-2-1.1-2.9s-1.3-2-1.3-3S4,3,4.8,2.3c2.7-2.2,5-0.7,5.9,0C11.4,3,11.9,4,11.9,5.1C11.9,6.1,11.4,7.2,10.5,8.1z\"/>\n<g>\n\t<polygon points=\"8.4,8 7.6,7.7 8.4,4.3 9.3,4.4 \t\"/>\n</g>\n<g>\n\t<polygon points=\"6.7,8 7.4,7.7 6.5,4.3 5.6,4.4 \t\"/>\n</g>\n<g>\n\t<rect x=\"5\" y=\"4\" widt"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/theme/getAllThemeSettings",
+      "postData": null,
+      "timestamp": 1768469304076,
+      "status": 200,
+      "responseBody": "{\"ThemeSettings\":[{\"id\":\"-1\",\"name\":\"Standard\",\"active\":true,\"themeType\":\"ootb\",\"categoryTilesSize\":\"medium\"},{\"id\":\"696787afe4b02e59e445bcff\",\"name\":\"ITSM\",\"active\":true,\"themeType\":\"ootb\",\"categoryTilesSize\":null},{\"id\":\"696787afe4b02e59e445bd00\",\"name\":\"OpenText\",\"active\":true,\"themeType\":\"ootb\",\"categoryTilesSize\":null},{\"id\":\"696787afe4b02e59e445bd01\",\"name\":\"CMP\",\"active\":true,\"themeType\":\"ootb\",\"categoryTilesSize\":null},{\"id\":\"696787afe4b02e59e445bd02\",\"name\":\"OpenText Core\",\"active\":true,\"themeType\":\"ootb\",\"categoryTilesSize\":null},{\"id\":\"696787afe4b02e59e445bd03\",\"name\":\"AMX\",\"active\":true,\"themeType\":\"ootb\",\"categoryTilesSize\":null}]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/users/userRelatedData/APPROVAL",
+      "postData": null,
+      "timestamp": 1768469302986,
+      "status": 200,
+      "responseBody": "{\"feedbackRequests\":null,\"approvals\":{\"results\":[],\"totalCount\":0,\"completionStatus\":\"OK\",\"parentRequests\":{}},\"surveys\":null,\"requests\":null,\"relatedOfferings\":null}"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/http-bind/",
+      "postData": "<body rid=\"1556360264\" sid=\"7muuvdb4i5\" to=\"itom-xruntime-xmpp-svc\" xml:lang=\"en\" xmlns=\"http://jabber.org/protocol/httpbind\" xmlns:xmpp=\"urn:xmpp:xbosh\" xmpp:restart=\"true\"/>",
+      "timestamp": 1768469307863,
+      "status": 200,
+      "responseBody": "<body xmlns=\"http://jabber.org/protocol/httpbind\" xmlns:stream=\"http://etherx.jabber.org/streams\"><stream:features><register xmlns=\"http://jabber.org/features/iq-register\"/><bind xmlns=\"urn:ietf:params:xml:ns:xmpp-bind\"/><session xmlns=\"urn:ietf:params:xml:ns:xmpp-session\"><optional/></session></stream:features></body>"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/idea/hotOnesInCache?topN=3",
+      "postData": null,
+      "timestamp": 1768469308029,
+      "status": 200,
+      "responseBody": "{\"hotIdeas\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/theme/defaultTheme",
+      "postData": null,
+      "timestamp": 1768469308439,
+      "status": 200,
+      "responseBody": "{\"defaultTheme\":\"-1\"}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/workflow/Request",
+      "postData": null,
+      "timestamp": 1768469308572,
+      "status": 200,
+      "responseBody": "{\"DefaultProcessId\":\"Support\",\"Processes\":[{\"id\":\"Support\",\"DisplayLabelBundleKey\":\"RequestWorkflow.process.support.displayLabel\",\"FirstPhaseId\":\"Log\",\"ProcessSelectionFieldValues\":[\"SupportRequest\"],\"Metaphases\":[{\"id\":\"Classification\",\"DisplayLabelBundleKey\":\"RequestWorkflow.process.support.metaphase.classification.displayLabel\",\"Phases\":[{\"id\":\"Log\",\"DisplayLabelBundleKey\":\"RequestWorkflow.process.normal.phase.log.displayLabel\",\"InstructionsBundleKey\":\"RequestWorkflow.process.support.phase.Log.instruction.displayLabel\",\"IsReadOnly\":false},{\"id\":\"Classify\",\"DisplayLabelBundleKey\":\"RequestWorkflow.process.normal.phase.classify.displayLabel\",\"InstructionsBundleKey\":\"RequestWorkflow.process.support.phase.Classify.instruction.displayLabel\",\"IsReadOnly\":false}],\"IsReadOnly\":false},{\"id\":\"Approval\",\"DisplayLabelBundleKey\":\"RequestWorkflow.process.support.metaphase.approval.displayLabel\",\"Phases\":[],\"IsReadOnly\":false},{\"id\":\"Fulfillment\",\"DisplayLabelBundleKey\":\"RequestWorkflow.process.sup"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/http-bind/",
+      "postData": "<body rid=\"1556360265\" sid=\"7muuvdb4i5\" xmlns=\"http://jabber.org/protocol/httpbind\"><iq id=\"_bind_auth_2\" type=\"set\" xmlns=\"jabber:client\"><bind xmlns=\"urn:ietf:params:xml:ns:xmpp-bind\"><resource>afc3b362-eb4e-47ce-8368-42214db8354b542b3bd6-8518-47a0-a6fb-89048a25b078</resource></bind></iq></body>",
+      "timestamp": 1768469308678,
+      "status": 200,
+      "responseBody": "<body xmlns='http://jabber.org/protocol/httpbind' ack='1556360265'><iq type=\"result\" id=\"_bind_auth_2\" to=\"itom-xruntime-xmpp-svc/34ad1dd9-7cc8-4fbc-92ee-1e3cf9a93b78\" xmlns=\"jabber:client\"><bind xmlns=\"urn:ietf:params:xml:ns:xmpp-bind\"><jid>223791286-dev_docker-20aec1d142de8c21feb4ce356f2a608c9cb26abf@itom-xruntime-xmpp-svc/afc3b362-eb4e-47ce-8368-42214db8354b542b3bd6-8518-47a0-a6fb-89048a25b078</jid></bind></iq></body>"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/news/topNews?maxRelatedNews=3&requestOnBehalf=",
+      "postData": null,
+      "timestamp": 1768469308135,
+      "status": 200,
+      "responseBody": "[]"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/customizedSettings/sawCustomizedAction/list",
+      "postData": null,
+      "timestamp": 1768469309014,
+      "status": 200,
+      "responseBody": "[]"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/http-bind/",
+      "postData": "<body rid=\"1556360266\" sid=\"7muuvdb4i5\" xmlns=\"http://jabber.org/protocol/httpbind\"><iq id=\"_session_auth_2\" type=\"set\" xmlns=\"jabber:client\"><session xmlns=\"urn:ietf:params:xml:ns:xmpp-session\"/></iq></body>",
+      "timestamp": 1768469309228,
+      "status": 200,
+      "responseBody": "<body xmlns='http://jabber.org/protocol/httpbind' ack='1556360266'><iq type=\"result\" id=\"_session_auth_2\" to=\"223791286-dev_docker-20aec1d142de8c21feb4ce356f2a608c9cb26abf@itom-xruntime-xmpp-svc/afc3b362-eb4e-47ce-8368-42214db8354b542b3bd6-8518-47a0-a6fb-89048a25b078\" xmlns=\"jabber:client\"/></body>"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/http-bind/",
+      "postData": "<body rid=\"1556360267\" sid=\"7muuvdb4i5\" xmlns=\"http://jabber.org/protocol/httpbind\"><presence xmlns=\"jabber:client\"/><presence xmlns=\"jabber:client\"/></body>",
+      "timestamp": 1768469309759,
+      "status": 200,
+      "responseBody": "<body xmlns='http://jabber.org/protocol/httpbind' ack='1556360267'><presence from=\"223791286-dev_docker-20aec1d142de8c21feb4ce356f2a608c9cb26abf@itom-xruntime-xmpp-svc/afc3b362-eb4e-47ce-8368-42214db8354b542b3bd6-8518-47a0-a6fb-89048a25b078\" to=\"223791286-dev_docker-20aec1d142de8c21feb4ce356f2a608c9cb26abf@itom-xruntime-xmpp-svc/afc3b362-eb4e-47ce-8368-42214db8354b542b3bd6-8518-47a0-a6fb-89048a25b078\" xmlns=\"jabber:client\"/></body>"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/http-bind/",
+      "postData": "<body rid=\"1556360268\" sid=\"7muuvdb4i5\" xmlns=\"http://jabber.org/protocol/httpbind\"/>",
+      "timestamp": 1768469310194,
+      "status": 200,
+      "responseBody": "<body xmlns='http://jabber.org/protocol/httpbind' ack='1556360268'><presence from=\"223791286-dev_docker-20aec1d142de8c21feb4ce356f2a608c9cb26abf@itom-xruntime-xmpp-svc/afc3b362-eb4e-47ce-8368-42214db8354b542b3bd6-8518-47a0-a6fb-89048a25b078\" to=\"223791286-dev_docker-20aec1d142de8c21feb4ce356f2a608c9cb26abf@itom-xruntime-xmpp-svc/afc3b362-eb4e-47ce-8368-42214db8354b542b3bd6-8518-47a0-a6fb-89048a25b078\" xmlns=\"jabber:client\"/></body>"
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//div[@data-aid='TA-Catalog']/div",
+        "css": "div.ess-category-item-widget.ess-new-catalog.widget > div.ess-category-item-content.widget-content > div.media > div.media-body > div.media-heading.ng-star-inserted > div.text-ellipsis",
+        "id": null,
+        "tag": "div",
+        "text": "TA-Catalog",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 491,
+        "y": 360
+      },
+      "timestamp": 1768469311499
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/catalog/category/10129?requestOnBehalf=",
+      "postData": null,
+      "timestamp": 1768469311540,
+      "status": 200,
+      "responseBody": "{\"properties\":{\"Description\":\"TA-catalog-description\",\"Id\":\"10129\",\"LastUpdateTime\":1768398029246,\"DisplayLabel\":\"TA-Catalog\"},\"relatedPropertiesMap\":{},\"translations\":null,\"entityType\":\"Category\",\"id\":\"10129\",\"entityDescriptorName\":\"Category\",\"propertyNamesIterator\":[\"Description\",\"Id\",\"LastUpdateTime\",\"DisplayLabel\"],\"relatedPropertyNamesIterator\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/search/userSearches",
+      "postData": null,
+      "timestamp": 1768469312005,
+      "status": 200,
+      "responseBody": "{\"numOfUserHistoryResults\":\"-1\",\"results\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/catalog/category/10129/service-list?requestOnBehalf=",
+      "postData": null,
+      "timestamp": 1768469312006,
+      "status": 200,
+      "responseBody": "{\"services\":[{\"properties\":{\"CatalogDescription\":\"TA-description-create\",\"Category\":\"10129\",\"Id\":\"10130\",\"LastUpdateTime\":1768398030495,\"CatalogStatus\":\"Active\",\"DisplayLabel\":\"TA-ServiceDefinition\"},\"relatedPropertiesMap\":{},\"translations\":null,\"entityType\":\"ServiceDefinition\",\"id\":\"10130\",\"entityDescriptorName\":\"ServiceDefinition\",\"propertyNamesIterator\":[\"CatalogDescription\",\"Category\",\"Id\",\"LastUpdateTime\",\"CatalogStatus\",\"DisplayLabel\"],\"relatedPropertyNamesIterator\":[]}]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/search/userSearches",
+      "postData": null,
+      "timestamp": 1768469312005,
+      "status": 200,
+      "responseBody": "{\"numOfUserHistoryResults\":\"-1\",\"results\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/add-filter.svg",
+      "postData": null,
+      "timestamp": 1768469312429,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n\t width=\"16px\" height=\"16px\" viewBox=\"0 0 16 16\" style=\"enable-background:new 0 0 16 16;\" xml:space=\"preserve\">\n<style type=\"text/css\">\n\t.st0{fill:#231F20;}\n</style>\n<g>\n\t<path class=\"st0\" d=\"M6.3,16V7.7L1,1V0h15v1l-5.3,6.7v6.6L6.3,16z M2.3,1l5.1,6.3v7.2l2.3-0.9V7.3L14.7,1H2.3z\"/>\n</g>\n<g>\n\t<g>\n\t\t<rect x=\"2.2\" y=\"7.3\" class=\"st0\" width=\"1\" height=\"5.3\"/>\n\t</g>\n\t<g>\n\t\t<rect y=\"9.5\" class=\"st0\" width=\"5.3\" height=\"1\"/>\n\t</g>\n</g>\n</svg>\n"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/catalog/category/offering-list",
+      "postData": "{\"categoryId\":\"10129\",\"serviceIds\":[],\"categoryIds\":[],\"text\":\"\",\"returnNum\":20,\"offset\":0,\"sortBy\":\"popularity\",\"order\":\"desc\",\"requestOnBehalf\":\"\",\"searchQuery\":\"\"}",
+      "timestamp": 1768469312397,
+      "status": 200,
+      "responseBody": "{\"entities\":[],\"totalCount\":0}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/no-results.svg",
+      "postData": null,
+      "timestamp": 1768469312430,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n\t viewBox=\"0 0 90 90\" style=\"enable-background:new 0 0 90 90;\" xml:space=\"preserve\">\n<style type=\"text/css\">\n\t.st0{fill:#020202;stroke:#020202;stroke-width:0.1978;stroke-miterlimit:10;}\n</style>\n<path class=\"st0\" d=\"M45,0C20.2,0,0,20.2,0,45s20.2,45,45,45s45-20.2,45-45S69.8,0,45,0z M4,45C4,22.4,22.4,4,45,4\n\tc10.5,0,20.1,4,27.3,10.4L56.6,30.2H53v-5.7H37.1v5.7H22.7v33.1h0.8l-9.1,9.1C7.9,65.1,4,55.5,4,45z M24.2,61.7V46H40v0.8l-15,15\n\tL24.2,61.7L24.2,61.7z M46.3,46h2.3v4.3h-6.5L46.3,46z M40.6,51.7H50V46h15.7v15.7H30.6L40.6,51.7z M65.8,44.5H50h-2.3l12.9-12.9\n\th5.1v12.9H65.8z M42.2,44.5H40H24.2V31.6h30.9L42.2,44.5z M38.6,30.2v-4.3h12.9v4.3H38.6z M45,86c-10.7,0-20.5-4.1-27.8-10.9\n\tl11.9-11.9h38.2v-33h-5.1l13-13C81.9,24.5,86,34.3,86,45C86,67.6,67.6,86,"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/catalog/category/article-list",
+      "postData": "{\"categoryId\":\"10129\",\"categoryDisplayName\":\"\",\"categoryIds\":[],\"serviceIds\":[],\"text\":\"\",\"returnNum\":20,\"offset\":0,\"sortBy\":\"views\",\"order\":\"desc\",\"requestOnBehalf\":\"\",\"searchQuery\":\"\"}",
+      "timestamp": 1768469313029,
+      "status": 200,
+      "responseBody": "{\"entities\":[],\"totalCount\":0}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/news/filterNews?maxRelatedNews=8&category=10129&requestOnBehalf=",
+      "postData": null,
+      "timestamp": 1768469313045,
+      "status": 200,
+      "responseBody": "[]"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/search/textRelatedQuestions?onlyUnanswered=false",
+      "postData": "{\"text\":\"TA-Catalog TA-catalog-description\",\"maxResults\":3,\"withHighlights\":false,\"threshold\":10}",
+      "timestamp": 1768469312016,
+      "status": 200,
+      "responseBody": "[]"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/http-bind/",
+      "postData": "<body rid=\"1556360269\" sid=\"7muuvdb4i5\" xmlns=\"http://jabber.org/protocol/httpbind\"/>",
+      "timestamp": 1768469310707,
+      "status": 200,
+      "responseBody": "<body xmlns='http://jabber.org/protocol/httpbind' ack='1556360269'><iq type=\"get\" id=\"64-113\" to=\"223791286-dev_docker-20aec1d142de8c21feb4ce356f2a608c9cb26abf@itom-xruntime-xmpp-svc/afc3b362-eb4e-47ce-8368-42214db8354b542b3bd6-8518-47a0-a6fb-89048a25b078\" from=\"itom-xruntime-xmpp-svc\" xmlns=\"jabber:client\"><query xmlns=\"jabber:iq:version\"/></iq></body>"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/catalog/category/news-list",
+      "postData": "{\"categoryId\":\"10129\",\"categoryDisplayName\":\"\",\"categoryIds\":[],\"serviceIds\":[],\"text\":\"\",\"returnNum\":20,\"offset\":0,\"sortBy\":\"EffectiveFrom\",\"requestOnBehalf\":\"\",\"searchQuery\":\"\"}",
+      "timestamp": 1768469313657,
+      "status": 200,
+      "responseBody": "{\"entities\":[],\"totalCount\":0}"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/catalog/category/offering-list",
+      "postData": "{\"categoryId\":\"10129\",\"serviceIds\":[],\"categoryIds\":[],\"text\":\"\",\"returnNum\":20,\"offset\":0,\"sortBy\":\"popularity\",\"order\":\"desc\",\"requestOnBehalf\":\"\",\"searchQuery\":\"\"}",
+      "timestamp": 1768469314264,
+      "status": 200,
+      "responseBody": "{\"entities\":[],\"totalCount\":0}"
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//mat-icon[@class='mat-icon notranslate ess-main-page-header-back-button-arrow material-icons mat-ligature-font mat-icon-no-color']",
+        "css": "div.navigation-bar-wrapper > button.ess-main-page-header-back-button.ng-star-inserted > mat-icon.mat-icon.notranslate.ess-main-page-header-back-button-arrow.material-icons.mat-ligature-font.mat-icon-no-color",
+        "id": null,
+        "tag": "mat-icon",
+        "text": "navigate_before",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 28,
+        "y": 145
+      },
+      "timestamp": 1768469320892
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/catalog/category-list?requestOnBehalf=",
+      "postData": null,
+      "timestamp": 1768469320965,
+      "status": 200,
+      "responseBody": "{\"categories\":[{\"properties\":{\"Description\":\"TA-catalog-description\",\"BackgroundImage\":null,\"BackgroundColorRGB\":null,\"Id\":\"10129\",\"Image\":null,\"URL\":null,\"DisplayLabel\":\"TA-Catalog\",\"BackgroundColor\":null},\"relatedPropertiesMap\":{},\"translations\":null,\"entityType\":\"Category\",\"id\":\"10129\",\"entityDescriptorName\":\"Category\",\"propertyNamesIterator\":[\"Description\",\"BackgroundImage\",\"BackgroundColorRGB\",\"Id\",\"Image\",\"URL\",\"DisplayLabel\",\"BackgroundColor\"],\"relatedPropertyNamesIterator\":[]},{\"properties\":{\"Description\":\"TA Description\",\"BackgroundImage\":null,\"BackgroundColorRGB\":\"#175cd4\",\"Id\":\"10228\",\"Image\":null,\"URL\":null,\"DisplayLabel\":\"TA Category_Odhn\",\"BackgroundColor\":null},\"relatedPropertiesMap\":{},\"translations\":null,\"entityType\":\"Category\",\"id\":\"10228\",\"entityDescriptorName\":\"Category\",\"propertyNamesIterator\":[\"Description\",\"BackgroundImage\",\"BackgroundColorRGB\",\"Id\",\"Image\",\"URL\",\"DisplayLabel\",\"BackgroundColor\"],\"relatedPropertyNamesIterator\":[]}]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/search/userSearches",
+      "postData": null,
+      "timestamp": 1768469320965,
+      "status": 200,
+      "responseBody": "{\"numOfUserHistoryResults\":\"-1\",\"results\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/user-entitlement/Entitlement?withPermission=VIEW&includeInactive=false",
+      "postData": null,
+      "timestamp": 1768469321329,
+      "status": 200,
+      "responseBody": "[]"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/search/userSearches",
+      "postData": null,
+      "timestamp": 1768469320965,
+      "status": 200,
+      "responseBody": "{\"numOfUserHistoryResults\":\"-1\",\"results\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/idea/hotOnesInCache?topN=3",
+      "postData": null,
+      "timestamp": 1768469321846,
+      "status": 200,
+      "responseBody": "{\"hotIdeas\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/news/topNews?maxRelatedNews=3&requestOnBehalf=",
+      "postData": null,
+      "timestamp": 1768469321953,
+      "status": 200,
+      "responseBody": "[]"
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//div[@data-aid='TA Category_Odhn']/div",
+        "css": "div.ess-category-item-widget.ess-new-catalog.widget > div.ess-category-item-content.widget-content > div.media > div.media-body > div.media-heading.ng-star-inserted > div.text-ellipsis",
+        "id": null,
+        "tag": "div",
+        "text": "TA Category_Odhn",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 730,
+        "y": 360
+      },
+      "timestamp": 1768469323665
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/catalog/category/10228?requestOnBehalf=",
+      "postData": null,
+      "timestamp": 1768469323699,
+      "status": 200,
+      "responseBody": "{\"properties\":{\"BackgroundColorRGB\":\"#175cd4\",\"Description\":\"TA Description\",\"Id\":\"10228\",\"LastUpdateTime\":1768399407174,\"DisplayLabel\":\"TA Category_Odhn\"},\"relatedPropertiesMap\":{},\"translations\":null,\"entityType\":\"Category\",\"id\":\"10228\",\"entityDescriptorName\":\"Category\",\"propertyNamesIterator\":[\"BackgroundColorRGB\",\"Description\",\"Id\",\"LastUpdateTime\",\"DisplayLabel\"],\"relatedPropertyNamesIterator\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/search/userSearches",
+      "postData": null,
+      "timestamp": 1768469324256,
+      "status": 200,
+      "responseBody": "{\"numOfUserHistoryResults\":\"-1\",\"results\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/catalog/category/10228/service-list?requestOnBehalf=",
+      "postData": null,
+      "timestamp": 1768469324256,
+      "status": 200,
+      "responseBody": "{\"services\":[{\"properties\":{\"Category\":\"10228\",\"Id\":\"10225\",\"LastUpdateTime\":1768399417281,\"CatalogStatus\":\"Active\",\"DisplayLabel\":\"TA Service Definition_uyWB\"},\"relatedPropertiesMap\":{},\"translations\":null,\"entityType\":\"ServiceDefinition\",\"id\":\"10225\",\"entityDescriptorName\":\"ServiceDefinition\",\"propertyNamesIterator\":[\"Category\",\"Id\",\"LastUpdateTime\",\"CatalogStatus\",\"DisplayLabel\"],\"relatedPropertyNamesIterator\":[]}]}"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/search/textRelatedQuestions?onlyUnanswered=false",
+      "postData": "{\"text\":\"TA Category_Odhn TA Description\",\"maxResults\":3,\"withHighlights\":false,\"threshold\":10}",
+      "timestamp": 1768469324266,
+      "status": 200,
+      "responseBody": "[]"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/search/userSearches",
+      "postData": null,
+      "timestamp": 1768469324256,
+      "status": 200,
+      "responseBody": "{\"numOfUserHistoryResults\":\"-1\",\"results\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/catalog/category/offering-list",
+      "postData": "{\"categoryId\":\"10228\",\"serviceIds\":[],\"categoryIds\":[],\"text\":\"\",\"returnNum\":20,\"offset\":0,\"sortBy\":\"popularity\",\"order\":\"desc\",\"requestOnBehalf\":\"\",\"searchQuery\":\"\"}",
+      "timestamp": 1768469324786,
+      "status": 200,
+      "responseBody": "{\"entities\":[{\"properties\":{\"UserOptions\":\"{\\\"complexTypeProperties\\\":[{\\\"properties\\\":{}}]}\",\"Description\":\"<p>TA Desc</p>\",\"AllowPublic\":\"Never\",\"DisplayLabel\":\"Ping pong paddles_GB\",\"PublicScope\":\"Private\",\"Status\":\"Active\",\"Service\":\"10225\",\"Promote\":\"Normal\",\"OfferingType\":\"ServiceOffering\",\"SubscriptionActionType\":\"Create\",\"Id\":\"10227\"},\"relatedPropertiesMap\":{\"Service\":{\"Category\":\"10228\",\"CatalogStatus\":\"Active\"}},\"translations\":null,\"entityType\":\"Offering\",\"id\":\"10227\",\"entityDescriptorName\":\"Offering\",\"propertyNamesIterator\":[\"UserOptions\",\"Description\",\"AllowPublic\",\"DisplayLabel\",\"PublicScope\",\"Status\",\"Service\",\"Promote\",\"OfferingType\",\"SubscriptionActionType\",\"Id\"],\"relatedPropertyNamesIterator\":[\"Service\"]}],\"totalCount\":1}"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/catalog/category/offering-list",
+      "postData": "{\"categoryId\":\"10228\",\"serviceIds\":[],\"categoryIds\":[],\"text\":\"\",\"returnNum\":20,\"offset\":0,\"sortBy\":\"popularity\",\"order\":\"desc\",\"requestOnBehalf\":\"\",\"searchQuery\":\"\"}",
+      "timestamp": 1768469325525,
+      "status": 200,
+      "responseBody": "{\"entities\":[{\"properties\":{\"UserOptions\":\"{\\\"complexTypeProperties\\\":[{\\\"properties\\\":{}}]}\",\"Description\":\"<p>TA Desc</p>\",\"AllowPublic\":\"Never\",\"DisplayLabel\":\"Ping pong paddles_GB\",\"PublicScope\":\"Private\",\"Status\":\"Active\",\"Service\":\"10225\",\"Promote\":\"Normal\",\"OfferingType\":\"ServiceOffering\",\"SubscriptionActionType\":\"Create\",\"Id\":\"10227\"},\"relatedPropertiesMap\":{\"Service\":{\"Category\":\"10228\",\"CatalogStatus\":\"Active\"}},\"translations\":null,\"entityType\":\"Offering\",\"id\":\"10227\",\"entityDescriptorName\":\"Offering\",\"propertyNamesIterator\":[\"UserOptions\",\"Description\",\"AllowPublic\",\"DisplayLabel\",\"PublicScope\",\"Status\",\"Service\",\"Promote\",\"OfferingType\",\"SubscriptionActionType\",\"Id\"],\"relatedPropertyNamesIterator\":[\"Service\"]}],\"totalCount\":1}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/news/filterNews?maxRelatedNews=8&category=10228&requestOnBehalf=",
+      "postData": null,
+      "timestamp": 1768469325536,
+      "status": 200,
+      "responseBody": "[]"
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//span[@class='mdc-button__label']",
+        "css": "div.tab-item-btn-wrapper > div.tab-item-btn-content > div.tab-item-btn-middle > div.tab-item-btn-navigate > button.mdc-button.mat-mdc-button-base.mdc-button--unelevated.mat-mdc-unelevated-button.mat-unthemed.cdk-focused.cdk-mouse-focused > span.mdc-button__label",
+        "id": null,
+        "tag": "span",
+        "text": "Request",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1054,
+        "y": 491
+      },
+      "timestamp": 1768469328678
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/push/presence",
+      "postData": "{\"UserIds\":[\"10018\"]}",
+      "timestamp": 1768469328291,
+      "status": 200,
+      "responseBody": "{\"presenceJSONs\":[{\"UserId\":\"10018\",\"IsOnline\":true}]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/search/userSearches",
+      "postData": null,
+      "timestamp": 1768469328742,
+      "status": 200,
+      "responseBody": "{\"numOfUserHistoryResults\":\"-1\",\"results\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/catalog/offeringWithBundles/10227?requestOnBehalf=",
+      "postData": null,
+      "timestamp": 1768469328743,
+      "status": 200,
+      "responseBody": "{\"offering\":{\"properties\":{\"Status\":\"Active\",\"UserOptions\":\"{\\\"complexTypeProperties\\\":[{\\\"properties\\\":{}}]}\",\"Description\":\"<p>TA Desc</p>\",\"AllowPublic\":\"Never\",\"Service\":\"10225\",\"Promote\":\"Normal\",\"DisplayLabel\":\"Ping pong paddles_GB\",\"SupportedOnMobile\":false,\"OfferingType\":\"ServiceOffering\",\"SubscriptionActionType\":\"Create\",\"PublicScope\":\"Private\",\"LastUpdateTime\":1768399418742,\"Id\":\"10227\"},\"relatedPropertiesMap\":{\"Service\":{\"Category\":\"10228\",\"CatalogStatus\":\"Active\"}},\"translations\":null,\"entityType\":\"Offering\",\"id\":\"10227\",\"entityDescriptorName\":\"Offering\",\"propertyNamesIterator\":[\"Status\",\"UserOptions\",\"Description\",\"AllowPublic\",\"Service\",\"Promote\",\"DisplayLabel\",\"SupportedOnMobile\",\"OfferingType\",\"SubscriptionActionType\",\"PublicScope\",\"LastUpdateTime\",\"Id\"],\"relatedPropertyNamesIterator\":[\"Service\"]},\"bundledOfferings\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/search/userSearches",
+      "postData": null,
+      "timestamp": 1768469328743,
+      "status": 200,
+      "responseBody": "{\"numOfUserHistoryResults\":\"-1\",\"results\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/catalog/offering/10227/voteCount",
+      "postData": null,
+      "timestamp": 1768469329396,
+      "status": 200,
+      "responseBody": "{\"count\":0,\"userIncluded\":false}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/search/relatedQuestions?link=10227&maxRelatedQuestions=3",
+      "postData": null,
+      "timestamp": 1768469329430,
+      "status": 200,
+      "responseBody": "[]"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/catalog/offeringWithBundles/10227?requestOnBehalf=",
+      "postData": null,
+      "timestamp": 1768469329430,
+      "status": 200,
+      "responseBody": "{\"offering\":{\"properties\":{\"Status\":\"Active\",\"UserOptions\":\"{\\\"complexTypeProperties\\\":[{\\\"properties\\\":{}}]}\",\"Description\":\"<p>TA Desc</p>\",\"AllowPublic\":\"Never\",\"Service\":\"10225\",\"Promote\":\"Normal\",\"DisplayLabel\":\"Ping pong paddles_GB\",\"SupportedOnMobile\":false,\"OfferingType\":\"ServiceOffering\",\"SubscriptionActionType\":\"Create\",\"PublicScope\":\"Private\",\"LastUpdateTime\":1768399418742,\"Id\":\"10227\"},\"relatedPropertiesMap\":{\"Service\":{\"Category\":\"10228\",\"CatalogStatus\":\"Active\"}},\"translations\":null,\"entityType\":\"Offering\",\"id\":\"10227\",\"entityDescriptorName\":\"Offering\",\"propertyNamesIterator\":[\"Status\",\"UserOptions\",\"Description\",\"AllowPublic\",\"Service\",\"Promote\",\"DisplayLabel\",\"SupportedOnMobile\",\"OfferingType\",\"SubscriptionActionType\",\"PublicScope\",\"LastUpdateTime\",\"Id\"],\"relatedPropertyNamesIterator\":[\"Service\"]},\"bundledOfferings\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/news/filterNews?maxRelatedNews=8&offering=10227&requestOnBehalf=",
+      "postData": null,
+      "timestamp": 1768469329430,
+      "status": 200,
+      "responseBody": "[]"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/forms/Request",
+      "postData": null,
+      "timestamp": 1768469330031,
+      "status": 200,
+      "responseBody": "{\"completionStatus\":\"OK\",\"results\":[{\"id\":\"696787afe4b02e59e445bcec\",\"name\":\"Mobile Request New\",\"domain\":\"saw\",\"entityType\":\"Request\",\"sections\":[{\"name\":\"RequestDetails\",\"domain\":\"saw\",\"fields\":[{\"domain\":\"saw\",\"newLine\":true,\"fieldSize\":\"MEDIUM\",\"editorType\":\"TextBox\",\"modelAttribute\":\"DisplayLabel\"},{\"domain\":\"saw\",\"newLine\":true,\"fieldSize\":\"MEDIUM\",\"editorType\":\"RichEditor\",\"modelAttribute\":\"Description\"},{\"domain\":\"saw\",\"newLine\":true,\"fieldSize\":\"MEDIUM\",\"editorType\":\"EntityPicker\",\"dataProvider\":{\"id\":\"ENTITY_DATA_PROVIDER\"},\"modelAttribute\":\"RequestedByPerson\"},{\"domain\":\"saw\",\"newLine\":true,\"fieldSize\":\"MEDIUM\",\"editorType\":\"EntityPicker\",\"dataProvider\":{\"id\":\"ENTITY_DATA_PROVIDER\"},\"modelAttribute\":\"RequestedForPerson\"},{\"domain\":\"saw\",\"newLine\":true,\"fieldSize\":\"MEDIUM\",\"editorType\":\"EntityPicker\",\"dataProvider\":{\"id\":\"ENTITY_DATA_PROVIDER\"},\"modelAttribute\":\"RequestedForProject\"},{\"domain\":\"saw\",\"newLine\":true,\"fieldSize\":\"MEDIUM\",\"editorType\":\"DropDownList\",\"modelAttribu"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/search/relatedQuestions?link=10227&maxRelatedQuestions=3",
+      "postData": null,
+      "timestamp": 1768469329430,
+      "status": 200,
+      "responseBody": "[]"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/forms/Request",
+      "postData": null,
+      "timestamp": 1768469330033,
+      "status": 200,
+      "responseBody": "{\"completionStatus\":\"OK\",\"results\":[{\"id\":\"696787afe4b02e59e445bcec\",\"name\":\"Mobile Request New\",\"domain\":\"saw\",\"entityType\":\"Request\",\"sections\":[{\"name\":\"RequestDetails\",\"domain\":\"saw\",\"fields\":[{\"domain\":\"saw\",\"newLine\":true,\"fieldSize\":\"MEDIUM\",\"editorType\":\"TextBox\",\"modelAttribute\":\"DisplayLabel\"},{\"domain\":\"saw\",\"newLine\":true,\"fieldSize\":\"MEDIUM\",\"editorType\":\"RichEditor\",\"modelAttribute\":\"Description\"},{\"domain\":\"saw\",\"newLine\":true,\"fieldSize\":\"MEDIUM\",\"editorType\":\"EntityPicker\",\"dataProvider\":{\"id\":\"ENTITY_DATA_PROVIDER\"},\"modelAttribute\":\"RequestedByPerson\"},{\"domain\":\"saw\",\"newLine\":true,\"fieldSize\":\"MEDIUM\",\"editorType\":\"EntityPicker\",\"dataProvider\":{\"id\":\"ENTITY_DATA_PROVIDER\"},\"modelAttribute\":\"RequestedForPerson\"},{\"domain\":\"saw\",\"newLine\":true,\"fieldSize\":\"MEDIUM\",\"editorType\":\"EntityPicker\",\"dataProvider\":{\"id\":\"ENTITY_DATA_PROVIDER\"},\"modelAttribute\":\"RequestedForProject\"},{\"domain\":\"saw\",\"newLine\":true,\"fieldSize\":\"MEDIUM\",\"editorType\":\"DropDownList\",\"modelAttribu"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/catalog/service/offering-list",
+      "postData": "{\"serviceIds\":[\"10225\"],\"returnNum\":4,\"sortBy\":\"popularity\",\"requestOnBehalf\":\"\",\"offset\":0,\"order\":\"asc\"}",
+      "timestamp": 1768469330342,
+      "status": 200,
+      "responseBody": "{\"entities\":[{\"properties\":{\"UserOptions\":\"{\\\"complexTypeProperties\\\":[{\\\"properties\\\":{}}]}\",\"Description\":\"<p>TA Desc</p>\",\"AllowPublic\":\"Never\",\"DisplayLabel\":\"Ping pong paddles_GB\",\"PublicScope\":\"Private\",\"Status\":\"Active\",\"Service\":\"10225\",\"Promote\":\"Normal\",\"OfferingType\":\"ServiceOffering\",\"SubscriptionActionType\":\"Create\",\"Id\":\"10227\"},\"relatedPropertiesMap\":{\"Service\":{\"Category\":\"10228\",\"CatalogStatus\":\"Active\"}},\"translations\":null,\"entityType\":\"Offering\",\"id\":\"10227\",\"entityDescriptorName\":\"Offering\",\"propertyNamesIterator\":[\"UserOptions\",\"Description\",\"AllowPublic\",\"DisplayLabel\",\"PublicScope\",\"Status\",\"Service\",\"Promote\",\"OfferingType\",\"SubscriptionActionType\",\"Id\"],\"relatedPropertyNamesIterator\":[\"Service\"]}],\"totalCount\":1}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ems/Person/10018/associations/PersonToGroup?layout=Id",
+      "postData": null,
+      "timestamp": 1768469330966,
+      "status": 200,
+      "responseBody": "{\"entities\":[{\"entity_type\":\"PersonGroup\",\"properties\":{\"LastUpdateTime\":1768392640091,\"Id\":\"10121\"},\"related_properties\":{}},{\"entity_type\":\"PersonGroup\",\"properties\":{\"LastUpdateTime\":1768393400703,\"Id\":\"10122\"},\"related_properties\":{}},{\"entity_type\":\"PersonGroup\",\"properties\":{\"LastUpdateTime\":1768394191677,\"Id\":\"10205\"},\"related_properties\":{}},{\"entity_type\":\"PersonGroup\",\"properties\":{\"LastUpdateTime\":1768394191680,\"Id\":\"10209\"},\"related_properties\":{}},{\"entity_type\":\"PersonGroup\",\"properties\":{\"LastUpdateTime\":1768394604692,\"Id\":\"10211\"},\"related_properties\":{}},{\"entity_type\":\"PersonGroup\",\"properties\":{\"LastUpdateTime\":1768395803003,\"Id\":\"10212\"},\"related_properties\":{}}],\"meta\":{\"completion_status\":\"OK\",\"total_count\":6,\"errorDetailsList\":[],\"errorDetailsMetaList\":[],\"query_time\":1768469330056409}}"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/workflow/simulator/Request",
+      "postData": "{\"NewEntity\":{\"entity_type\":\"Request\",\"properties\":{\"RequestsOffering\":\"10227\",\"CreationSource\":\"CreationSourceEss\",\"RequestedByPerson\":\"10018\",\"RequestedForPerson\":\"10018\",\"StartDate\":1768469330022}}}",
+      "timestamp": 1768469331599,
+      "status": 200,
+      "responseBody": "{\"Errors\":[],\"CascadingRules\":[{\"FieldSelectionRule\":{\"Field\":\"RequestedForPerson\",\"Filters\":[{\"Filter\":\"in\",\"SubField\":\"Manager\",\"EvaluatedValues\":[\"10018\"]},{\"Filter\":\"in\",\"SubField\":\"EmployeeStatus\",\"EvaluatedValues\":[\"LeaveOfAbsence\",null,\"Active\"]}],\"Title\":\"Team member\",\"TemplateName\":\"FieldSelectionRule\"}},{\"FieldSelectionRule\":{\"Field\":\"RequestedForPerson\",\"Filters\":[{\"Filter\":\"in\",\"SubField\":\"OnBehalfToPerson.Id\",\"EvaluatedValues\":[\"10018\"]},{\"Filter\":\"in\",\"SubField\":\"EmployeeStatus\",\"EvaluatedValues\":[\"LeaveOfAbsence\",null,\"Active\"]}],\"Title\":\"On behalf of individual persons\",\"TemplateName\":\"FieldSelectionRule\"}},{\"FieldSelectionRule\":{\"Field\":\"RequestedForPerson\",\"Filters\":[{\"Filter\":\"in\",\"SubField\":\"Id\",\"EvaluatedValues\":[\"10018\"]},{\"Filter\":\"in\",\"SubField\":\"EmployeeStatus\",\"EvaluatedValues\":[\"LeaveOfAbsence\",null,\"Active\"]}],\"Title\":\"Requested by\",\"TemplateName\":\"FieldSelectionRule\"}},{\"FieldSelectionRule\":{\"Field\":\"RegisteredForLocation\",\"Filters\":[{\"Filter\":\"in\",\"SubFiel"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/smax/portal/assets/images/icons/attachment.svg",
+      "postData": null,
+      "timestamp": 1768469332832,
+      "status": 200,
+      "responseBody": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg width=\"16px\" height=\"16px\" viewBox=\"0 0 16 16\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <!-- Generator: Sketch 41 (35326) - http://www.bohemiancoding.com/sketch -->\n    <g stroke=\"none\" stroke-width=\"1\">\n        <g>\n            <path d=\"M8.62735212,5.12519579 L3.43764156,10.3978453 C2.71356627,11.13345 2.71356627,12.7427322 3.43765106,13.4783466 C4.29539826,14.3497517 5.65355598,14.2822759 7.00301136,13.0890721 L14.6876811,5.28364879 C15.8713136,4.08116944 15.782992,2.22137461 14.5639814,0.982953789 C13.3412964,-0.259199971 11.4979905,-0.349439286 10.3098804,0.857235278 L2.15461521,9.14235621 C0.615128262,10.7063563 0.615128262,13.2598964 2.15461521,14.8238965 C3.69817519,16.3920345 6.22440746,16.3920345 7.76796743,14.8238965 L15.923483,6.53852117 L15.2527407,5.87829169 L7.09722516,14.163667 C5.92237954,15.3572196 4.0002031,15.3572196 2.82535749,14.163667 C1.64643885,12.9659765 1.6464388"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/rms/Favorites?filter=(IsPublic%20!=%20true%20and%20Owner%20=%20%2710018%27%20and%20FavoriteName%20=%20%27grid_persistence_view%27%20and%20GridId%20=%20%27saw-m2mPicker-PersonGroup-RelatedSubscriptionFullAccessByGroup%27)",
+      "postData": null,
+      "timestamp": 1768469332833,
+      "status": 200,
+      "responseBody": "{\"completionStatus\":\"OK\",\"results\":[],\"totalCount\":0}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ems/PersonGroup?filter=(GroupFullAccessToRequestRelatedSubscription[Id%20=%200])&layout=Id&meta=totalCount&order=Id&size=250",
+      "postData": null,
+      "timestamp": 1768469332833,
+      "status": 200,
+      "responseBody": "{\"entities\":[],\"meta\":{\"completion_status\":\"OK\",\"total_count\":0,\"errorDetailsList\":[],\"errorDetailsMetaList\":[],\"query_time\":1768469331699158}}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/rms/Favorites?filter=(IsPublic%20!=%20true%20and%20Owner%20=%20%2710018%27%20and%20FavoriteName%20=%20%27grid_persistence_view%27%20and%20GridId%20=%20%27saw-m2mPicker-PersonGroup-RelatedSubscriptionOperationAccessByGroup%27)",
+      "postData": null,
+      "timestamp": 1768469332981,
+      "status": 200,
+      "responseBody": "{\"completionStatus\":\"OK\",\"results\":[],\"totalCount\":0}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ems/PersonGroup?filter=(GroupOperationAccessToRequestRelatedSubscription[Id%20=%200])&layout=Id&meta=totalCount&order=Id&size=250",
+      "postData": null,
+      "timestamp": 1768469332987,
+      "status": 200,
+      "responseBody": "{\"entities\":[],\"meta\":{\"completion_status\":\"OK\",\"total_count\":0,\"errorDetailsList\":[],\"errorDetailsMetaList\":[],\"query_time\":1768469331868314}}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/rms/Favorites?filter=(IsPublic%20!=%20true%20and%20Owner%20=%20%2710018%27%20and%20FavoriteName%20=%20%27grid_persistence_view%27%20and%20GridId%20=%20%27saw-m2mPicker-PersonGroup-RelatedSubscriptionModificationAccessByGroup%27)",
+      "postData": null,
+      "timestamp": 1768469332988,
+      "status": 200,
+      "responseBody": "{\"completionStatus\":\"OK\",\"results\":[],\"totalCount\":0}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ems/PersonGroup?filter=(GroupModificationAccessToRequestRelatedSubscription[Id%20=%200])&layout=Id&meta=totalCount&order=Id&size=250",
+      "postData": null,
+      "timestamp": 1768469332988,
+      "status": 200,
+      "responseBody": "{\"entities\":[],\"meta\":{\"completion_status\":\"OK\",\"total_count\":0,\"errorDetailsList\":[],\"errorDetailsMetaList\":[],\"query_time\":1768469332201541}}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/rms/Favorites?filter=(IsPublic%20!=%20true%20and%20Owner%20=%20%2710018%27%20and%20FavoriteName%20=%20%27grid_persistence_view%27%20and%20GridId%20=%20%27saw-m2mPicker-PersonGroup-RelatedSubscriptionCancelationAccessByGroup%27)",
+      "postData": null,
+      "timestamp": 1768469332988,
+      "status": 200,
+      "responseBody": "{\"completionStatus\":\"OK\",\"results\":[],\"totalCount\":0}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ems/PersonGroup?filter=(GroupCancelationAccessToRequestRelatedSubscription[Id%20=%200])&layout=Id&meta=totalCount&order=Id&size=250",
+      "postData": null,
+      "timestamp": 1768469332988,
+      "status": 200,
+      "responseBody": "{\"entities\":[],\"meta\":{\"completion_status\":\"OK\",\"total_count\":0,\"errorDetailsList\":[],\"errorDetailsMetaList\":[],\"query_time\":1768469332500169}}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/request/platform-proxy/Offering/10227/getComments?customTabId=null",
+      "postData": null,
+      "timestamp": 1768469332988,
+      "status": 200,
+      "responseBody": "[]"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ems/PersonGroup?filter=(GroupFullAccessToRequestRelatedSubscription[Id%20=%200])&layout=Id,Name,Email&meta=totalCount&size=250",
+      "postData": null,
+      "timestamp": 1768469333087,
+      "status": 200,
+      "responseBody": "{\"entities\":[],\"meta\":{\"completion_status\":\"OK\",\"total_count\":0,\"errorDetailsList\":[],\"errorDetailsMetaList\":[],\"query_time\":1768469332643947}}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ems/PersonGroup?filter=(GroupModificationAccessToRequestRelatedSubscription[Id%20=%200])&layout=Id,Name,Email&meta=totalCount&size=250",
+      "postData": null,
+      "timestamp": 1768469333095,
+      "status": 200,
+      "responseBody": "{\"entities\":[],\"meta\":{\"completion_status\":\"OK\",\"total_count\":0,\"errorDetailsList\":[],\"errorDetailsMetaList\":[],\"query_time\":1768469332730249}}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ems/PersonGroup?filter=(GroupOperationAccessToRequestRelatedSubscription[Id%20=%200])&layout=Id,Name,Email&meta=totalCount&size=250",
+      "postData": null,
+      "timestamp": 1768469333095,
+      "status": 200,
+      "responseBody": "{\"entities\":[],\"meta\":{\"completion_status\":\"OK\",\"total_count\":0,\"errorDetailsList\":[],\"errorDetailsMetaList\":[],\"query_time\":1768469332787249}}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ems/PersonGroup?filter=(GroupCancelationAccessToRequestRelatedSubscription[Id%20=%200])&layout=Id,Name,Email&meta=totalCount&size=250",
+      "postData": null,
+      "timestamp": 1768469333096,
+      "status": 200,
+      "responseBody": "{\"entities\":[],\"meta\":{\"completion_status\":\"OK\",\"total_count\":0,\"errorDetailsList\":[],\"errorDetailsMetaList\":[],\"query_time\":1768469332969803}}"
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id='cke_2_contents']/div/p",
+        "css": "div.cke_contents.cke_reset > div.cke_wysiwyg_div.cke_reset.cke_enable_context_menu.cke_editable.cke_editable_themed.cke_contents_ltr > p",
+        "id": null,
+        "tag": "p",
+        "text": "\n",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 610,
+        "y": 343
+      },
+      "timestamp": 1768469338759
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/http-bind/",
+      "postData": "<body rid=\"1556360270\" sid=\"7muuvdb4i5\" xmlns=\"http://jabber.org/protocol/httpbind\"><iq id=\"64-113\" type=\"error\" xmlns=\"jabber:client\"><error type=\"cancel\"><service-unavailable xmlns=\"urn:ietf:params:xml:ns:xmpp-stanzas\"/></error></iq></body>",
+      "timestamp": 1768469314212,
+      "status": 200,
+      "responseBody": "<body xmlns=\"http://jabber.org/protocol/httpbind\" ack=\"1556360271\"/>"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/http-bind/",
+      "postData": "<body rid=\"1556360271\" sid=\"7muuvdb4i5\" xmlns=\"http://jabber.org/protocol/httpbind\"><presence xmlns=\"jabber:client\"/></body>",
+      "timestamp": 1768469339761,
+      "status": 200,
+      "responseBody": "<body xmlns='http://jabber.org/protocol/httpbind' ack='1556360271'><presence from=\"223791286-dev_docker-20aec1d142de8c21feb4ce356f2a608c9cb26abf@itom-xruntime-xmpp-svc/afc3b362-eb4e-47ce-8368-42214db8354b542b3bd6-8518-47a0-a6fb-89048a25b078\" to=\"223791286-dev_docker-20aec1d142de8c21feb4ce356f2a608c9cb26abf@itom-xruntime-xmpp-svc/afc3b362-eb4e-47ce-8368-42214db8354b542b3bd6-8518-47a0-a6fb-89048a25b078\" xmlns=\"jabber:client\"/></body>"
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id='cke_2_contents']/div",
+        "css": "div.cke_contents.cke_reset > div.cke_wysiwyg_div.cke_reset.cke_enable_context_menu.cke_editable.cke_editable_themed.cke_contents_ltr",
+        "id": null,
+        "tag": "div",
+        "text": "dfasdcsadc",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 610,
+        "y": 383
+      },
+      "timestamp": 1768469343979
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id='cke_2_contents']/div",
+        "css": "div.cke_contents.cke_reset > div.cke_wysiwyg_div.cke_reset.cke_enable_context_menu.cke_editable.cke_editable_themed.cke_contents_ltr",
+        "id": null,
+        "tag": "div",
+        "text": "dfasdcsadc",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 610,
+        "y": 383
+      },
+      "timestamp": 1768469350340
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//div[@data-aid='service-request-form']/div[2]/ess-new-request-form/div/div/ess-form/ess-loader/div",
+        "css": "ess-new-request-form.ng-star-inserted > div > div.ng-star-inserted > ess-form > ess-loader > div.ess-loader-wrapper",
+        "id": null,
+        "tag": "div",
+        "text": "All fields marked with an asterisk (*) must be com",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 610,
+        "y": 703
+      },
+      "timestamp": 1768469357935
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/workflow/simulator/Request",
+      "postData": "{\"NewEntity\":{\"entity_type\":\"Request\",\"properties\":{\"RequestsOffering\":\"10227\",\"CreationSource\":\"CreationSourceEss\",\"RequestedByPerson\":\"10018\",\"RequestedForPerson\":\"10018\",\"StartDate\":1768469330022,\"PhaseId\":\"Log\",\"DataDomains\":[\"Public\"],\"Priority\":\"LowPriority\",\"CreateTime\":1768469330605,\"ServiceImpacted\":false,\"FirstTouch\":true,\"Active\":true,\"SubscriptionActionType\":\"Create\",\"PublicScope\":\"Private\",\"OfferingWorkflow\":\"0\",\"ImpactScope\":\"SingleUser\",\"ChatStatus\":\"ChatStatusNone\",\"FirstLine\":true,\"ProcessId\":\"Support\",\"Urgency\":\"SlightDisruption\",\"PreferredContactMethod\":\"PreferredContactMethodEmail\",\"RequestType\":\"ServiceRequest\",\"Description\":\"<p>dfasd</p><p>csadc</p>\",\"RequestedByCompany\":null,\"RequestToCompany\":null,\"ProductInstance\":null,\"ProductVersion\":null,\"ProductEnvironment\":null,\"Entitlement\":null,\"RegisteredForActualService\":null,\"RegisteredForDevice\":null,\"RegisteredForInfrastructurePeripheral\":null,\"RegisteredForEnterpriseAsset\":null,\"RegisteredForSubscription\":null}}}",
+      "timestamp": 1768469357861,
+      "status": 200,
+      "responseBody": "{\"Errors\":[],\"CascadingRules\":[{\"FieldSelectionRule\":{\"Field\":\"RequestedForPerson\",\"Filters\":[{\"Filter\":\"in\",\"SubField\":\"Manager\",\"EvaluatedValues\":[\"10018\"]},{\"Filter\":\"in\",\"SubField\":\"EmployeeStatus\",\"EvaluatedValues\":[\"LeaveOfAbsence\",null,\"Active\"]}],\"Title\":\"Team member\",\"TemplateName\":\"FieldSelectionRule\"}},{\"FieldSelectionRule\":{\"Field\":\"RequestedForPerson\",\"Filters\":[{\"Filter\":\"in\",\"SubField\":\"OnBehalfToPerson.Id\",\"EvaluatedValues\":[\"10018\"]},{\"Filter\":\"in\",\"SubField\":\"EmployeeStatus\",\"EvaluatedValues\":[\"LeaveOfAbsence\",null,\"Active\"]}],\"Title\":\"On behalf of individual persons\",\"TemplateName\":\"FieldSelectionRule\"}},{\"FieldSelectionRule\":{\"Field\":\"RequestedForPerson\",\"Filters\":[{\"Filter\":\"in\",\"SubField\":\"Id\",\"EvaluatedValues\":[\"10018\"]},{\"Filter\":\"in\",\"SubField\":\"EmployeeStatus\",\"EvaluatedValues\":[\"LeaveOfAbsence\",null,\"Active\"]}],\"Title\":\"Requested by\",\"TemplateName\":\"FieldSelectionRule\"}},{\"FieldSelectionRule\":{\"Field\":\"RegisteredForLocation\",\"Filters\":[{\"Filter\":\"in\",\"SubFiel"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/push/presence",
+      "postData": "{\"UserIds\":[\"10018\"]}",
+      "timestamp": 1768469361286,
+      "status": 200,
+      "responseBody": "{\"presenceJSONs\":[{\"UserId\":\"10018\",\"IsOnline\":true}]}"
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"smax-basic-form-0-RequestToCompanySelectLabel_2858340733\"]",
+        "css": "#smax-basic-form-0-RequestToCompanySelectLabel_2858340733",
+        "id": "smax-basic-form-0-RequestToCompanySelectLabel_2858340733",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 568,
+        "y": 436
+      },
+      "timestamp": 1768469361981
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ems/Company?layout=Name,Id,DisplayLabel,CompanyLogo,Tenant,Code,ManagedCustomer,IsDeleted&meta=totalCount&order=DisplayLabel%20asc&size=30",
+      "postData": null,
+      "timestamp": 1768469361799,
+      "status": 200,
+      "responseBody": "{\"entities\":[{\"entity_type\":\"Company\",\"properties\":{\"IsDeleted\":false,\"LastUpdateTime\":1768399373009,\"Id\":\"10222\",\"Code\":\"Lining_aH\",\"DisplayLabel\":\"Lining_aH\"},\"related_properties\":{}}],\"meta\":{\"completion_status\":\"OK\",\"total_count\":1,\"errorDetailsList\":[],\"errorDetailsMetaList\":[],\"query_time\":1768469360793127}}"
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//span[@class='ng-select-text']",
+        "css": "div.ng-option.ng-option-marked.ng-star-inserted > div.ng-select-tmp-div.ng-star-inserted > div.ng-select-tmp-div.ng-star-inserted > span.ng-select-option-span > span > span.ng-select-text",
+        "id": null,
+        "tag": "span",
+        "text": "Lining_aH",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 217,
+        "y": 514
+      },
+      "timestamp": 1768469364701
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/workflow/simulator/Request",
+      "postData": "{\"NewEntity\":{\"entity_type\":\"Request\",\"properties\":{\"RequestsOffering\":\"10227\",\"CreationSource\":\"CreationSourceEss\",\"RequestedByPerson\":\"10018\",\"RequestedForPerson\":\"10018\",\"StartDate\":1768469330022,\"PhaseId\":\"Log\",\"DataDomains\":[\"Public\"],\"Priority\":\"LowPriority\",\"CreateTime\":1768469356812,\"FirstTouch\":true,\"Active\":true,\"SubscriptionActionType\":\"Create\",\"PublicScope\":\"Private\",\"OfferingWorkflow\":\"0\",\"ImpactScope\":\"SingleUser\",\"ChatStatus\":\"ChatStatusNone\",\"FirstLine\":true,\"ProcessId\":\"Support\",\"Urgency\":\"SlightDisruption\",\"PreferredContactMethod\":\"PreferredContactMethodEmail\",\"RequestType\":\"ServiceRequest\",\"Description\":\"<p>dfasd</p><p>csadc</p>\",\"RequestToCompany\":\"10222\",\"RequestedByCompany\":null,\"ProductInstance\":null,\"ProductVersion\":null,\"ProductEnvironment\":null,\"Entitlement\":null,\"RegisteredForActualService\":null,\"RegisteredForDevice\":null,\"RegisteredForInfrastructurePeripheral\":null,\"RegisteredForEnterpriseAsset\":null,\"RegisteredForSubscription\":null}}}",
+      "timestamp": 1768469364810,
+      "status": 200,
+      "responseBody": "{\"Errors\":[],\"CascadingRules\":[{\"FieldSelectionRule\":{\"Field\":\"RequestedForPerson\",\"Filters\":[{\"Filter\":\"in\",\"SubField\":\"Manager\",\"EvaluatedValues\":[\"10018\"]},{\"Filter\":\"in\",\"SubField\":\"EmployeeStatus\",\"EvaluatedValues\":[\"LeaveOfAbsence\",null,\"Active\"]}],\"Title\":\"Team member\",\"TemplateName\":\"FieldSelectionRule\"}},{\"FieldSelectionRule\":{\"Field\":\"RequestedForPerson\",\"Filters\":[{\"Filter\":\"in\",\"SubField\":\"OnBehalfToPerson.Id\",\"EvaluatedValues\":[\"10018\"]},{\"Filter\":\"in\",\"SubField\":\"EmployeeStatus\",\"EvaluatedValues\":[\"LeaveOfAbsence\",null,\"Active\"]}],\"Title\":\"On behalf of individual persons\",\"TemplateName\":\"FieldSelectionRule\"}},{\"FieldSelectionRule\":{\"Field\":\"RequestedForPerson\",\"Filters\":[{\"Filter\":\"in\",\"SubField\":\"Id\",\"EvaluatedValues\":[\"10018\"]},{\"Filter\":\"in\",\"SubField\":\"EmployeeStatus\",\"EvaluatedValues\":[\"LeaveOfAbsence\",null,\"Active\"]}],\"Title\":\"Requested by\",\"TemplateName\":\"FieldSelectionRule\"}},{\"FieldSelectionRule\":{\"Field\":\"RegisteredForLocation\",\"Filters\":[{\"Filter\":\"in\",\"SubFiel"
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id='ess-main-content-area']/div/ess-loader/div",
+        "css": "main.ess-content-area.ng-tns-c1516181258-11 > div.ng-tns-c1516181258-11 > ess-loader > div.ess-loader-wrapper",
+        "id": null,
+        "tag": "div",
+        "text": "Service Offering\nPing pong paddles_GB\nthumb_up\nRec",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 610,
+        "y": -14
+      },
+      "timestamp": 1768469372393
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/request/createRequest",
+      "postData": "{\"entities\":[{\"entity_type\":\"Request\",\"properties\":{\"RequestsOffering\":\"10227\",\"CreationSource\":\"CreationSourceEss\",\"RequestedByPerson\":\"10018\",\"RequestedForPerson\":\"10018\",\"StartDate\":1768469330022,\"SubscriptionActionType\":\"Create\",\"PreferredContactMethod\":\"PreferredContactMethodEmail\",\"Description\":\"<p>dfasd</p><p>csadc</p>\",\"RequestToCompany\":\"10222\",\"RequestedByCompany\":null,\"ProductInstance\":null,\"ProductVersion\":null,\"ProductEnvironment\":null,\"Entitlement\":null,\"RegisteredForActualService\":null,\"RegisteredForDevice\":null,\"RegisteredForInfrastructurePeripheral\":null,\"RegisteredForEnterpriseAsset\":null,\"RegisteredForSubscription\":null,\"DisplayLabel\":\"Ping pong paddles_GB\",\"PublicScope\":\"Private\"}}],\"operation\":\"CREATE\"}",
+      "timestamp": 1768469372390,
+      "status": 200,
+      "responseBody": "{\"entity_result_list\":[{\"entity\":{\"entity_type\":\"Request\",\"properties\":{\"LastUpdateTime\":1768469371592,\"Id\":\"10252\"},\"related_properties\":{}},\"completion_status\":\"OK\"}],\"relationship_result_list\":[],\"translation_result_list\":[],\"meta\":{\"completion_status\":\"OK\"}}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/users/userRelatedData/SURVEY",
+      "postData": null,
+      "timestamp": 1768469373172,
+      "status": 200,
+      "responseBody": "{\"feedbackRequests\":null,\"approvals\":null,\"surveys\":[],\"requests\":null,\"relatedOfferings\":null}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/users/userRelatedData/APPROVAL",
+      "postData": null,
+      "timestamp": 1768469373170,
+      "status": 200,
+      "responseBody": "{\"feedbackRequests\":null,\"approvals\":{\"results\":[],\"totalCount\":0,\"completionStatus\":\"OK\",\"parentRequests\":{}},\"surveys\":null,\"requests\":null,\"relatedOfferings\":null}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/users/userRelatedData/FEEDBACK_REQUEST",
+      "postData": null,
+      "timestamp": 1768469373172,
+      "status": 200,
+      "responseBody": "{\"feedbackRequests\":{\"requests\":[],\"bundledRequests\":null,\"bundledOfferings\":null,\"totalCount\":0},\"approvals\":null,\"surveys\":null,\"requests\":null,\"relatedOfferings\":null}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/users/userRelatedData/REQUEST",
+      "postData": null,
+      "timestamp": 1768469373173,
+      "status": 200,
+      "responseBody": "{\"feedbackRequests\":null,\"approvals\":null,\"surveys\":null,\"requests\":{\"requests\":[],\"bundledRequests\":null,\"bundledOfferings\":null,\"totalCount\":0,\"relatedOfferings\":null,\"resolvedRequests\":[]},\"relatedOfferings\":[{\"properties\":{\"Status\":\"Active\",\"OfferingType\":\"ServiceOffering\",\"Description\":\"<p>TA Desc</p>\",\"PublicScope\":\"Private\",\"LastUpdateTime\":1768399418742,\"CreateTime\":1768469371428,\"Id\":\"10227\",\"DisplayLabel\":\"Ping pong paddles_GB\"},\"relatedPropertiesMap\":{},\"translations\":null,\"entityType\":\"Offering\",\"id\":\"10227\",\"entityDescriptorName\":\"Offering\",\"propertyNamesIterator\":[\"Status\",\"OfferingType\",\"Description\",\"PublicScope\",\"LastUpdateTime\",\"CreateTime\",\"Id\",\"DisplayLabel\"],\"relatedPropertyNamesIterator\":[]}]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/request/chatAvailable/10252",
+      "postData": null,
+      "timestamp": 1768469373256,
+      "status": 200,
+      "responseBody": "{\"isChatAvailable\":false}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/search/userSearches",
+      "postData": null,
+      "timestamp": 1768469373257,
+      "status": 200,
+      "responseBody": "{\"numOfUserHistoryResults\":\"-1\",\"results\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/search/userSearches",
+      "postData": null,
+      "timestamp": 1768469373257,
+      "status": 200,
+      "responseBody": "{\"numOfUserHistoryResults\":\"-1\",\"results\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/request/pendingChatRequests2",
+      "postData": null,
+      "timestamp": 1768469373938,
+      "status": 200,
+      "responseBody": "{\"success\":\"true\",\"requests\":[]}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/users/userRelatedData/APPROVAL",
+      "postData": null,
+      "timestamp": 1768469376817,
+      "status": 200,
+      "responseBody": "{\"feedbackRequests\":null,\"approvals\":{\"results\":[],\"totalCount\":0,\"completionStatus\":\"OK\",\"parentRequests\":{}},\"surveys\":null,\"requests\":null,\"relatedOfferings\":null}"
+    },
+    {
+      "type": "api_call",
+      "method": "GET",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/ess/request/allRequestsWithBundles",
+      "postData": null,
+      "timestamp": 1768469376815,
+      "status": 200,
+      "responseBody": "{\"requests\":[{\"properties\":{\"PhaseId\":\"Log\",\"Description\":\"<p>dfasd</p><p>csadc</p>\",\"LastUpdateTime\":1768469372526,\"CreateTime\":1768469372337,\"RequestedForPerson\":\"10018\",\"ProcessId\":\"Service\",\"Id\":\"10252\",\"DisplayLabel\":\"Ping pong paddles_GB\",\"RequestType\":\"ServiceRequest\",\"RequestsOffering\":\"10227\"},\"relatedPropertiesMap\":{\"RequestsOffering\":{\"Id\":\"10227\"}},\"translations\":null,\"entityType\":\"Request\",\"id\":\"10252\",\"entityDescriptorName\":\"Request\",\"propertyNamesIterator\":[\"PhaseId\",\"Description\",\"LastUpdateTime\",\"CreateTime\",\"RequestedForPerson\",\"ProcessId\",\"Id\",\"DisplayLabel\",\"RequestType\",\"RequestsOffering\"],\"relatedPropertyNamesIterator\":[\"RequestsOffering\"]},{\"properties\":{\"PhaseId\":\"Close\",\"Description\":\"<p>TA description</p>\",\"LastUpdateTime\":1768399428313,\"CreateTime\":1768399422068,\"RequestedForPerson\":\"10018\",\"ProcessId\":\"Service\",\"Id\":\"10230\",\"DisplayLabel\":\"Table tennis net is broken_9b\",\"RequestType\":\"ServiceRequest\",\"RequestsOffering\":\"10227\"},\"relatedPropertiesMap\":{\"Reque"
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//a[@data-aid='menu-it-agent-interface']/div",
+        "css": "mat-list-item.mat-mdc-list-item.mdc-list-item.user-summary-item.mat-mdc-list-item-single-line.mdc-list-item--with-one-line.ng-star-inserted > span.mdc-list-item__content > span.mat-mdc-list-item-unscoped-content.mdc-list-item__primary-text > ess-header-user-profile-item > a.mat-mdc-tooltip-trigger.ess-header-item-link.ess-focus-btn.ng-star-inserted.cdk-focused.cdk-mouse-focused > div.ess-header-menu-item-label.without-total-count.ng-star-inserted",
+        "id": null,
+        "tag": "div",
+        "text": "Agent Interface",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 110,
+        "y": 466
+      },
+      "timestamp": 1768469378875
+    },
+    {
+      "type": "popup",
+      "timestamp": 1768469379515,
+      "url": "https://maple-aio-2-m1.otxlab.net/saw",
+      "action": "opened",
+      "popupId": "popup1"
+    },
+    {
+      "type": "popup_navigation",
+      "timestamp": 1768469389872,
+      "url": "https://maple-aio-2-m1.otxlab.net/dashboard",
+      "popupId": "popup1"
+    },
+    {
+      "type": "popup_navigation",
+      "timestamp": 1768469389873,
+      "url": "https://maple-aio-2-m1.otxlab.net/dashboard?TENANTID=223791286",
+      "popupId": "popup1"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/push/presence",
+      "postData": "{\"UserIds\":[\"10018\"]}",
+      "timestamp": 1768469394296,
+      "status": 200,
+      "responseBody": "{\"presenceJSONs\":[{\"UserId\":\"10018\",\"IsOnline\":true}]}"
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/http-bind/",
+      "postData": "<body rid=\"1556360272\" sid=\"7muuvdb4i5\" xmlns=\"http://jabber.org/protocol/httpbind\"/>",
+      "timestamp": 1768469340195,
+      "status": 200,
+      "responseBody": "<body xmlns='http://jabber.org/protocol/httpbind' ack='1556360272'><presence from=\"223791286-dev_docker-20aec1d142de8c21feb4ce356f2a608c9cb26abf@itom-xruntime-xmpp-svc/1a572a41-6be4-4009-95fb-9e14af0725c41829\" to=\"223791286-dev_docker-20aec1d142de8c21feb4ce356f2a608c9cb26abf@itom-xruntime-xmpp-svc/afc3b362-eb4e-47ce-8368-42214db8354b542b3bd6-8518-47a0-a6fb-89048a25b078\" xmlns=\"jabber:client\"/></body>"
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id='application-menu-main-button']/img",
+        "css": "div.application-menu-main-button.inline-block > img.main-menu-button-icon",
+        "id": null,
+        "tag": "img",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 28,
+        "y": 29
+      },
+      "timestamp": 1768469400210
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//a[@data-aid='menu-item-service-request-management']",
+        "css": "li.pl-color-badge-request.hovered > a",
+        "id": null,
+        "tag": "a",
+        "text": "Service Request",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 792,
+        "y": 153
+      },
+      "timestamp": 1768469403003
+    },
+    {
+      "type": "popup_navigation",
+      "timestamp": 1768469403196,
+      "url": "https://maple-aio-2-m1.otxlab.net/saw/Requests",
+      "popupId": "popup1"
+    },
+    {
+      "type": "popup_navigation",
+      "timestamp": 1768469403286,
+      "url": "https://maple-aio-2-m1.otxlab.net/saw/Requests?TENANTID=223791286",
+      "popupId": "popup1"
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//button[@data-aid='tool-bar-btn-add']/span/span",
+        "css": "span.tool-bar-item > span > span > button.btn.btn-icon.plToolbarItem.tool-bar-btn-add.grid-add-item-btn > span > span",
+        "id": null,
+        "tag": "span",
+        "text": " New",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 90,
+        "y": 176
+      },
+      "timestamp": 1768469409549
+    },
+    {
+      "type": "ui_event",
+      "action": "input",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"new_DisplayLabel\"]",
+        "css": "#new_DisplayLabel",
+        "id": "new_DisplayLabel",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "abcd",
+      "position": {
+        "x": 851,
+        "y": 148
+      },
+      "timestamp": 1768469413497
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"new_DisplayLabel\"]",
+        "css": "#new_DisplayLabel",
+        "id": "new_DisplayLabel",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "abcd",
+      "position": {
+        "x": 851,
+        "y": 148
+      },
+      "timestamp": 1768469414166
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id='cke_45_contents']/div",
+        "css": "div.cke_contents.cke_reset > div.cke_wysiwyg_div.cke_reset.cke_enable_context_menu.cke_editable.cke_editable_themed.cke_contents_ltr",
+        "id": null,
+        "tag": "div",
+        "text": "\n",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 851,
+        "y": 267
+      },
+      "timestamp": 1768469414379
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"dialog-button-0\"]",
+        "css": "#dialog-button-0",
+        "id": "dialog-button-0",
+        "tag": "button",
+        "text": "SAVE",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 80,
+        "y": 678
+      },
+      "timestamp": 1768469422940
+    },
+    {
+      "type": "api_call",
+      "method": "POST",
+      "url": "https://maple-aio-2-m1.otxlab.net/rest/223791286/push/presence",
+      "postData": "{\"UserIds\":[\"10018\"]}",
+      "timestamp": 1768469427299,
+      "status": 200,
+      "responseBody": "{\"presenceJSONs\":[{\"UserId\":\"10018\",\"IsOnline\":true}]}"
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id='logged-in-user-name']/pl-avatar/span/pl-image/img",
+        "css": "span > pl-avatar > span.avatar-wrapper.logged-in-user-image.online-presence > pl-image.ts-avatar > img.image-small-size.logged-in-user-image.ts-image",
+        "id": null,
+        "tag": "img",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1492,
+        "y": 28
+      },
+      "timestamp": 1768469430945
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//a[normalize-space(text())='Logout']",
+        "css": "ul > li.logged-in-user-wrapper > span.dropdown.open > ul.dropdown-menu > li > a",
+        "id": null,
+        "tag": "a",
+        "text": "Logout",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1427,
+        "y": 143
+      },
+      "timestamp": 1768469433226
+    },
+    {
+      "type": "popup_navigation",
+      "timestamp": 1768469434667,
+      "url": "https://maple-aio-2-m1.otxlab.net/idm-service/idm/v0/logout?tenant=223791286&code=f3c69df4-58b6-43d7-8f3d-a576935dd07a&tryLocal=true",
+      "popupId": "popup1"
+    },
+    {
+      "type": "popup_navigation",
+      "timestamp": 1768469437199,
+      "url": "https://maple-aio-2-m1.otxlab.net/idm-service/idm/v0/logout?tenant=223791286&code=f3c69df4-58b6-43d7-8f3d-a576935dd07a&tryLocal=true",
+      "popupId": "popup1"
+    },
+    {
+      "type": "popup",
+      "timestamp": 1768469441086,
+      "action": "closed",
+      "popupId": "popup1"
+    }
+  ]
+}

@@ -1,0 +1,2307 @@
+{
+  "meta": {
+    "url": "https://maple-aio-2-m1.otxlab.net:443/saw/ess?TENANTID=211650513",
+    "timestamp": 1774411875543,
+    "userAgent": "Playwright Automation",
+    "recordedAt": "2026-03-25T04:11:15.544Z",
+    "filteredAt": "2026-03-25T04:11:15.549Z",
+    "originalEventCount": 365,
+    "uiEventCount": 153,
+    "filteredEventCount": 138,
+    "deduplicatedAt": "2026-03-25T04:11:15.551Z",
+    "deduplicatedCount": 119
+  },
+  "events": [
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"username\"]",
+        "css": "#username",
+        "id": "username",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": "t10_admin",
+      "position": {
+        "x": 768,
+        "y": 387
+      },
+      "timestamp": 1774411030534
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"next\"]",
+        "css": "#next",
+        "id": "next",
+        "tag": "button",
+        "text": "Next",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 768,
+        "y": 503
+      },
+      "timestamp": 1774411032483
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"password\"]",
+        "css": "#password",
+        "id": "password",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 768,
+        "y": 415
+      },
+      "timestamp": 1774411034631
+    },
+    {
+      "type": "ui_event",
+      "action": "keypress",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"password\"]",
+        "css": "#password",
+        "id": "password",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": "Admin_1234",
+      "position": {
+        "x": 768,
+        "y": 415
+      },
+      "timestamp": 1774411038226
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"password\"]",
+        "css": "#password",
+        "id": "password",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": "Admin_1234",
+      "position": {
+        "x": 768,
+        "y": 415
+      },
+      "timestamp": 1774411038226
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//*[@id=\"submit\"]",
+        "css": "#submit",
+        "id": "submit",
+        "tag": "button",
+        "text": "Sign in",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 865,
+        "y": 531
+      },
+      "timestamp": 1774411038229
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "main",
+      "locators": {
+        "xpath": "//a[@data-aid='menu-it-agent-interface']/div",
+        "css": "mat-list-item.mat-mdc-list-item.mdc-list-item.user-summary-item.mat-mdc-list-item-single-line.mdc-list-item--with-one-line.ng-star-inserted > span.mdc-list-item__content > span.mat-mdc-list-item-unscoped-content.mdc-list-item__primary-text > ess-header-user-profile-item > a.mat-mdc-tooltip-trigger.ess-header-item-link.ess-focus-btn.ng-star-inserted.cdk-focused.cdk-mouse-focused > div.ess-header-menu-item-label.without-total-count.ng-star-inserted",
+        "id": null,
+        "tag": "div",
+        "text": "Agent Interface",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 110,
+        "y": 466
+      },
+      "timestamp": 1774411058326
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id='application-menu-main-button']/span",
+        "css": "div.application-menu-main-button.inline-block > span.main-menu-button-icon",
+        "id": null,
+        "tag": "span",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 28,
+        "y": 29
+      },
+      "timestamp": 1774411074726
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//a[@data-aid='menu-item-service-catalog-management']",
+        "css": "li.pl-color-badge-category.hovered > a",
+        "id": null,
+        "tag": "a",
+        "text": "Service Catalog",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 204,
+        "y": 186
+      },
+      "timestamp": 1774411076702
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//div[@data-aid='pl-columns-list-item']/div[3]/div/div/div",
+        "css": "div.pl-columns-list-li-wrapper > div.pl-columns-list-item.active > div.pl-columns-list-item-string > div.pl-columns-list-item-string-container > div.pl-columns-list-item-description > div.pl-columns-list-item-description-preview",
+        "id": null,
+        "tag": "div",
+        "text": "Phone and Mobile",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 297,
+        "y": 161
+      },
+      "timestamp": 1774411082764
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//div[@data-aid='pl-columns-list-item']/div[3]/div/div/div",
+        "css": "div > div.pl-columns-list-item.active > div.pl-columns-list-item-string.pl-columns-list-item-string-muti-lines > div.pl-columns-list-item-string-container > div.pl-columns-list-item-description > div.pl-columns-list-item-description-preview",
+        "id": null,
+        "tag": "div",
+        "text": "Calling Card",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 782,
+        "y": 247
+      },
+      "timestamp": 1774411086991
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//div[@data-aid='add-btn-3']",
+        "css": "div.pl-columns-header > div > div.pl-columns-header-custom-view > div.pl-columns-header-customization > div > div.pl-columns-header-add-text",
+        "id": null,
+        "tag": "div",
+        "text": "Add",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1461,
+        "y": 118
+      },
+      "timestamp": 1774411089955
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"new_DisplayLabel\"]",
+        "css": "#new_DisplayLabel",
+        "id": "new_DisplayLabel",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "test",
+      "position": {
+        "x": 851,
+        "y": 148
+      },
+      "timestamp": 1774411094244
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id='cke_1_contents']/div",
+        "css": "div.cke_contents.cke_reset > div.cke_wysiwyg_div.cke_reset.cke_enable_context_menu.cke_editable.cke_editable_themed.cke_contents_ltr",
+        "id": null,
+        "tag": "div",
+        "text": "\n",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 851,
+        "y": 267
+      },
+      "timestamp": 1774411094464
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"dialog-button-0\"]",
+        "css": "#dialog-button-0",
+        "id": "dialog-button-0",
+        "tag": "button",
+        "text": "SAVE",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 80,
+        "y": 678
+      },
+      "timestamp": 1774411113820
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//div[@data-aid='pl-columns-list-item']/div[3]/div/div/div/a",
+        "css": "div.pl-columns-list-item.active > div.pl-columns-list-item-string.pl-columns-list-item-string-muti-lines > div.pl-columns-list-item-string-container > div.pl-columns-list-item-description > div.pl-columns-list-item-description-preview > a",
+        "id": null,
+        "tag": "a",
+        "text": "test",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1136,
+        "y": 472
+      },
+      "timestamp": 1774411121311
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id='tab-3']/div",
+        "css": "div.pl-tab-panel-navigation-item-link.pl-tab-panel-navigation-item > div.tab-panel-navigation-item-tab-text",
+        "id": null,
+        "tag": "div",
+        "text": "Rules",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 63,
+        "y": 303
+      },
+      "timestamp": 1774411149992
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//div[@data-aid='rule-event-header']/div/span/i",
+        "css": "div.entity-editor-tabs-margin.standard-container > div.rules-sections-margin > div.accordion-heading.top-bordered > div.accordion-toggle > span > i.icon-12.icon-arrow-med-right",
+        "id": null,
+        "tag": "i",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 256,
+        "y": 203
+      },
+      "timestamp": 1774411151893
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//div[@data-aid='add-before-btn-clickable']",
+        "css": "div.entity-editor-tabs-margin.standard-container > div.rules-sections-margin > div.accordion-body.in.collapse.rules-top-border > div.entity-rule-list > div.dropdown > div.rule-add-button",
+        "id": null,
+        "tag": "div",
+        "text": "Add a rule to run before request record rules",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 881,
+        "y": 259
+      },
+      "timestamp": 1774411160190
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//li[@data-aid='rule-AfterUpdate-dslCondition']/a",
+        "css": "ul.dropdown-menu.rules-tab-panel-menu > li > a",
+        "id": null,
+        "tag": "a",
+        "text": "\"If...Then\" rule",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1001,
+        "y": 284
+      },
+      "timestamp": 1774411161701
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//li[@data-aid='DataSetMultipleFieldsActionTemplate.displayLabel']",
+        "css": "div > div > div.add-rule-rules-area > div.accordion-body.in.collapse > ul.rule-text-lines > li.rule-text-line",
+        "id": null,
+        "tag": "li",
+        "text": "Set fields",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 828,
+        "y": 463
+      },
+      "timestamp": 1774411165856
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"dialog-button-0\"]",
+        "css": "#dialog-button-0",
+        "id": "dialog-button-0",
+        "tag": "button",
+        "text": "OK",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 583,
+        "y": 657
+      },
+      "timestamp": 1774411167226
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//span[@data-aid='default_dsl']",
+        "css": "span.control-template-placeholder.editor-template-placeholder > pl-editor-popover > span.editor-popover-wrapper > a > span > span",
+        "id": null,
+        "tag": "span",
+        "text": "expression",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 357,
+        "y": 323
+      },
+      "timestamp": 1774411168870
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//div[@data-aid='brPopover_dsl']/div/div/div/div[6]",
+        "css": "div.editor-template-placeholder > div.dsl-expression-hint-editor.condition-expression-ltr.extended-size > div.dsl-editor > div.ng-pristine.ng-untouched.ng-empty.ng-invalid.ng-invalid-required.ng-valid-dsl > div.CodeMirror.cm-s-default.CodeMirror-wrap.CodeMirror-focused > div.CodeMirror-scroll",
+        "id": null,
+        "tag": "div",
+        "text": " \n​",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 479,
+        "y": 447
+      },
+      "timestamp": 1774411169977
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//div[@data-aid='brPopover_dsl']/div/div/div/div/textarea",
+        "css": "div.dsl-expression-hint-editor.condition-expression-ltr.extended-size > div.dsl-editor > div.ng-untouched.ng-valid-dsl.ng-not-empty.ng-dirty.ng-valid-parse.ng-valid.ng-valid-required > div.CodeMirror.cm-s-default.CodeMirror-wrap.CodeMirror-focused > div > textarea",
+        "id": null,
+        "tag": "textarea",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "oup.Name==null",
+      "position": {
+        "x": 319,
+        "y": 374
+      },
+      "timestamp": 1774411199900
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//button[@data-aid='popover-btn-ok']",
+        "css": "html.no-js > body.placement-bottom > div.popover.am-fade.bottom.editor-popover > div.popover-content > div.ng-valid-dsl.ng-dirty.ng-valid-parse.ng-valid.ng-valid-required > button.btn.min-width.btn-primary.ok-button",
+        "id": null,
+        "tag": "button",
+        "text": "OK",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 97,
+        "y": 514
+      },
+      "timestamp": 1774411200132
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//span[@data-aid='default_entityValues']",
+        "css": "span.control-template-placeholder.editor-template-placeholder > pl-editor-popover > span.editor-popover-wrapper > a > span > span",
+        "id": null,
+        "tag": "span",
+        "text": "field values",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 370,
+        "y": 355
+      },
+      "timestamp": 1774411202896
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//span[@data-aid='addItem']",
+        "css": "div.entity-fields-editor-area > table > tbody > tr > td > span.add-row.btn-icon",
+        "id": null,
+        "tag": "span",
+        "text": " Add Item",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 327,
+        "y": 413
+      },
+      "timestamp": 1774411204667
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"s2id_autogen51_search\"]",
+        "css": "#s2id_autogen51_search",
+        "id": "s2id_autogen51_search",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "ass",
+      "position": {
+        "x": 336,
+        "y": 460
+      },
+      "timestamp": 1774411210896
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//button[@data-aid='popover-btn-ok']",
+        "css": "html.no-js > body.placement-bottom > div.popover.am-fade.bottom.editor-popover > div.popover-content > div.ng-dirty.ng-valid-parse.ng-valid.ng-valid-required > button.btn.min-width.btn-primary.ok-button",
+        "id": null,
+        "tag": "button",
+        "text": "OK",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 81,
+        "y": 519
+      },
+      "timestamp": 1774411216448
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//button[@data-aid='tool-bar-btn-save']/span/span",
+        "css": "span.tool-bar-item > span > span > button.btn.btn-icon.plToolbarItem.tool-bar-btn-save.entity-page-toolbar-save > span > span",
+        "id": null,
+        "tag": "span",
+        "text": " Save",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 205,
+        "y": 117
+      },
+      "timestamp": 1774411218632
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id='application-menu-main-button']/span",
+        "css": "div.application-menu-main-button.inline-block > span.main-menu-button-icon",
+        "id": null,
+        "tag": "span",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 28,
+        "y": 29
+      },
+      "timestamp": 1774411222895
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//h3[@data-aid='admin-menu-category-open-button']/i",
+        "css": "div.menu-category.admin-menu-category.section-title-in-lower-size > h3.nav-header.admin-menu-category-title.category-title > i.open-section-icon.icon-arrow-med-right",
+        "id": null,
+        "tag": "i",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 83,
+        "y": 489
+      },
+      "timestamp": 1774411225318
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//a[@data-aid='menu-item-entity-management']",
+        "css": "li.hovered > a",
+        "id": null,
+        "tag": "a",
+        "text": "Studio",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 204,
+        "y": 256
+      },
+      "timestamp": 1774411226936
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id='pane.id']/a",
+        "css": "li > a",
+        "id": null,
+        "tag": "a",
+        "text": "Processes and Rules",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 234,
+        "y": 130
+      },
+      "timestamp": 1774411232523
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//div[@data-aid='selected-process-Support']",
+        "css": "div.fixed-container > div > div.main-navigation > ul.nav > li > div.process",
+        "id": null,
+        "tag": "div",
+        "text": "Support (41)",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 145,
+        "y": 460
+      },
+      "timestamp": 1774411239959
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//div[@data-aid='selected-process-Support']/span[2]",
+        "css": "div > div.main-navigation > ul.nav > li > div.process > span.clickable",
+        "id": null,
+        "tag": "span",
+        "text": "Support (41)",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 99,
+        "y": 460
+      },
+      "timestamp": 1774411241889
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//span[@data-aid='event-tooltip']/i",
+        "css": "div.fixed-header-wrap > div.fixed-header > div.accordion-heading.top-bordered > div.accordion-toggle > span > i.icon-12.icon-arrow-med-right",
+        "id": null,
+        "tag": "i",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1147,
+        "y": 455
+      },
+      "timestamp": 1774411244708
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "(//div[@data-aid='add-btn-clickable'])[4]",
+        "css": "div.fixed-header-wrap > div.fixed-header > div.accordion-heading.top-bordered.selected > div.accordion-toggle > div.ui-rfloat.dropdown > div.clickable",
+        "id": null,
+        "tag": "div",
+        "text": " Add",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1465,
+        "y": 454
+      },
+      "timestamp": 1774411247197
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//li[@data-aid='rule-AfterUpdate-dslCondition']/a",
+        "css": "ul.dropdown-menu.rules-panel-menu > li > a",
+        "id": null,
+        "tag": "a",
+        "text": "\"If...Then\" rule",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1401,
+        "y": 521
+      },
+      "timestamp": 1774411248770
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//li[@data-aid='DataSetMultipleFieldsActionTemplate.displayLabel']",
+        "css": "div > div > div.add-rule-rules-area > div.accordion-body.in.collapse > ul.rule-text-lines > li.rule-text-line",
+        "id": null,
+        "tag": "li",
+        "text": "Set fields",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 758,
+        "y": 469
+      },
+      "timestamp": 1774411257397
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"dialog-button-0\"]",
+        "css": "#dialog-button-0",
+        "id": "dialog-button-0",
+        "tag": "button",
+        "text": "OK",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 80,
+        "y": 678
+      },
+      "timestamp": 1774411258872
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//span[@data-aid='default_dsl']",
+        "css": "span.control-template-placeholder.editor-template-placeholder > pl-editor-popover > span.editor-popover-wrapper > a > span > span",
+        "id": null,
+        "tag": "span",
+        "text": "expression",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1248,
+        "y": 534
+      },
+      "timestamp": 1774411262496
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//div[@data-aid='brPopover_dsl']/div/div/div/div[6]",
+        "css": "div.editor-template-placeholder > div.dsl-expression-hint-editor.condition-expression-ltr.extended-size > div.dsl-editor > div.ng-pristine.ng-untouched.ng-empty.ng-invalid.ng-invalid-required.ng-valid-dsl > div.CodeMirror.cm-s-default.CodeMirror-wrap.CodeMirror-focused > div.CodeMirror-scroll",
+        "id": null,
+        "tag": "div",
+        "text": " \n​",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1100,
+        "y": 628
+      },
+      "timestamp": 1774411263667
+    },
+    {
+      "type": "ui_event",
+      "action": "input",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//div[@data-aid='brPopover_dsl']/div/div/div/div/textarea",
+        "css": "div.dsl-expression-hint-editor.condition-expression-ltr.extended-size > div.dsl-editor > div.ng-untouched.ng-valid-dsl.ng-not-empty.ng-dirty.ng-valid-parse.ng-valid.ng-valid-required > div.CodeMirror.cm-s-default.CodeMirror-wrap.CodeMirror-focused > div > textarea",
+        "id": null,
+        "tag": "textarea",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 710,
+        "y": 572
+      },
+      "timestamp": 1774411265613
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//div[@data-aid='brPopover_dsl']/div/div/div/div/textarea",
+        "css": "div.dsl-expression-hint-editor.condition-expression-ltr.extended-size > div.dsl-editor > div.ng-untouched.ng-valid-dsl.ng-dirty.ng-valid-parse.ng-not-empty.ng-valid.ng-valid-required > div.CodeMirror.cm-s-default.CodeMirror-wrap.CodeMirror-focused > div > textarea",
+        "id": null,
+        "tag": "textarea",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "entity.AssignedToGroup.HomeLocation=='Ask'",
+      "position": {
+        "x": 1010,
+        "y": 572
+      },
+      "timestamp": 1774411308789
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//button[@data-aid='popover-btn-ok']",
+        "css": "html.no-js > body.placement-bottom > div.popover.am-fade.bottom.editor-popover > div.popover-content > div.ng-valid-dsl.ng-dirty.ng-valid-parse.ng-valid.ng-valid-required > button.btn.min-width.btn-primary.ok-button",
+        "id": null,
+        "tag": "button",
+        "text": "OK",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 719,
+        "y": 712
+      },
+      "timestamp": 1774411309016
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//span[@data-aid='default_entityValues']",
+        "css": "span.control-template-placeholder.editor-template-placeholder > pl-editor-popover > span.editor-popover-wrapper > a > span > span",
+        "id": null,
+        "tag": "span",
+        "text": "field values",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1262,
+        "y": 452
+      },
+      "timestamp": 1774411313279
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//span[@data-aid='addItem']",
+        "css": "div.entity-fields-editor-area > table > tbody > tr > td > span.add-row.btn-icon",
+        "id": null,
+        "tag": "span",
+        "text": " Add Item",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1219,
+        "y": 354
+      },
+      "timestamp": 1774411315068
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"s2id_autogen318_search\"]",
+        "css": "#s2id_autogen318_search",
+        "id": "s2id_autogen318_search",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "OLA",
+      "position": {
+        "x": 1227,
+        "y": 330
+      },
+      "timestamp": 1774411329876
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"s2id_autogen520_search\"]",
+        "css": "#s2id_autogen520_search",
+        "id": "s2id_autogen520_search",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "premi",
+      "position": {
+        "x": 1220,
+        "y": 349
+      },
+      "timestamp": 1774411336643
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//span[@data-aid='addItem']",
+        "css": "div.entity-fields-editor-area > table > tbody > tr > td > span.add-row.btn-icon",
+        "id": null,
+        "tag": "span",
+        "text": " Add Item",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 825,
+        "y": 353
+      },
+      "timestamp": 1774411338896
+    },
+    {
+      "type": "ui_event",
+      "action": "input",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"s2id_autogen546_search\"]",
+        "css": "#s2id_autogen546_search",
+        "id": "s2id_autogen546_search",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "Sla",
+      "position": {
+        "x": 935,
+        "y": 329
+      },
+      "timestamp": 1774411342440
+    },
+    {
+      "type": "ui_event",
+      "action": "keypress",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"s2id_autogen546_search\"]",
+        "css": "#s2id_autogen546_search",
+        "id": "s2id_autogen546_search",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "Sla",
+      "position": {
+        "x": 935,
+        "y": 329
+      },
+      "timestamp": 1774411342766
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"s2id_autogen756_search\"]",
+        "css": "#s2id_autogen756_search",
+        "id": "s2id_autogen756_search",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "pre",
+      "position": {
+        "x": 1220,
+        "y": 349
+      },
+      "timestamp": 1774411347826
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//button[@data-aid='popover-btn-ok']",
+        "css": "html.no-js > body.placement-bottom > div.popover.am-fade.editor-popover.top > div.popover-content > div.ng-dirty.ng-valid-parse.ng-valid.ng-valid-required > button.btn.min-width.btn-primary.ok-button",
+        "id": null,
+        "tag": "button",
+        "text": "OK",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 825,
+        "y": 409
+      },
+      "timestamp": 1774411350110
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//button[@data-aid='tool-bar-btn-save']/span/span",
+        "css": "span.tool-bar-item > span > span > button.btn.btn-icon.plToolbarItem.tool-bar-btn-save > span > span",
+        "id": null,
+        "tag": "span",
+        "text": " Save",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 51,
+        "y": 166
+      },
+      "timestamp": 1774411353199
+    },
+    {
+      "type": "ui_event",
+      "action": "input",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"s2id_autogen312_search\"]",
+        "css": "#s2id_autogen312_search",
+        "id": "s2id_autogen312_search",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "gro",
+      "position": {
+        "x": 165,
+        "y": 133
+      },
+      "timestamp": 1774411393068
+    },
+    {
+      "type": "ui_event",
+      "action": "keypress",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"s2id_autogen312_search\"]",
+        "css": "#s2id_autogen312_search",
+        "id": "s2id_autogen312_search",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "gro",
+      "position": {
+        "x": 165,
+        "y": 133
+      },
+      "timestamp": 1774411393189
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id='pane.id']/a",
+        "css": "li > a",
+        "id": null,
+        "tag": "a",
+        "text": "Forms",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 119,
+        "y": 130
+      },
+      "timestamp": 1774411398212
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//button[@data-aid='tool-bar-btn-add-field']/span/span",
+        "css": "span.tool-bar-item > span > span > button.btn.btn-icon.plToolbarItem.tool-bar-btn-add-field > span > span",
+        "id": null,
+        "tag": "span",
+        "text": " Add field",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 476,
+        "y": 170
+      },
+      "timestamp": 1774411400751
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"field-filter\"]",
+        "css": "#field-filter",
+        "id": "field-filter",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "home",
+      "position": {
+        "x": 763,
+        "y": 126
+      },
+      "timestamp": 1774411407055
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//a[normalize-space(text())='Home location']",
+        "css": "li > a",
+        "id": null,
+        "tag": "a",
+        "text": "Home location",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 770,
+        "y": 183
+      },
+      "timestamp": 1774411407273
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"dialog-button-0\"]",
+        "css": "#dialog-button-0",
+        "id": "dialog-button-0",
+        "tag": "button",
+        "text": "ADD",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 638,
+        "y": 400
+      },
+      "timestamp": 1774411408892
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"dialog-button-1\"]",
+        "css": "#dialog-button-1",
+        "id": "dialog-button-1",
+        "tag": "button",
+        "text": "DONE",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 738,
+        "y": 400
+      },
+      "timestamp": 1774411411305
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//button[@data-aid='tool-bar-btn-save']/span/span",
+        "css": "span.tool-bar-item > span > span > button.btn.btn-icon.plToolbarItem.tool-bar-btn-save > span > span",
+        "id": null,
+        "tag": "span",
+        "text": " Save",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 296,
+        "y": 170
+      },
+      "timestamp": 1774411413429
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"application-menu-main-button\"]",
+        "css": "#application-menu-main-button",
+        "id": "application-menu-main-button",
+        "tag": "div",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 28,
+        "y": 28
+      },
+      "timestamp": 1774411416577
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//a[@data-aid='menu-item-people']",
+        "css": "li.hovered > a",
+        "id": null,
+        "tag": "a",
+        "text": "People",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 498,
+        "y": 256
+      },
+      "timestamp": 1774411419304
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id='menu-subitem-1']/a",
+        "css": "div.subitem-link > a.item-text",
+        "id": null,
+        "tag": "a",
+        "text": "Groups",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 552,
+        "y": 29
+      },
+      "timestamp": 1774411424940
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//a[normalize-space(text())='10245']",
+        "css": "div.slickgrid_117976.ui-widget.platform-grid > div.slick-viewport > div.grid-canvas > div.ui-widget-content.slick-row.even.item-id-10245 > div.slick-cell.l1.r1 > a.entity-link-id",
+        "id": null,
+        "tag": "a",
+        "text": "10245",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 111,
+        "y": 510
+      },
+      "timestamp": 1774411434303
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"full_HomeLocation\"]",
+        "css": "#full_HomeLocation",
+        "id": "full_HomeLocation",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "Ask",
+      "position": {
+        "x": 1275,
+        "y": 202
+      },
+      "timestamp": 1774411441520
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//button[@data-aid='tool-bar-btn-save']",
+        "css": "div.tool-bar > div.toolbar-spacing > span.tool-bar-item > span > span > button.btn.btn-icon.plToolbarItem.tool-bar-btn-save.entity-page-toolbar-save",
+        "id": null,
+        "tag": "button",
+        "text": " Save",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 205,
+        "y": 118
+      },
+      "timestamp": 1774411441746
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id='application-menu-main-button']/span",
+        "css": "div.application-menu-main-button.inline-block > span.main-menu-button-icon",
+        "id": null,
+        "tag": "span",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 28,
+        "y": 29
+      },
+      "timestamp": 1774411449773
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//a[@data-aid='menu-item-ess-home']/span",
+        "css": "li.hovered > a > span.menu-home-section-item-text",
+        "id": null,
+        "tag": "span",
+        "text": "Home",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1111,
+        "y": 386
+      },
+      "timestamp": 1774411454907
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//div[@data-aid='ess-home-page']/div/ul/li/div/div/div",
+        "css": "div > ul.ess-home-category-ul > li.ess-category-tile.ng-star-inserted > div.ess-category-item-widget.ess-new-catalog.widget > div.ess-category-item-content.widget-content > div.media",
+        "id": null,
+        "tag": "div",
+        "text": "Phone and Mobile",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 278,
+        "y": 282
+      },
+      "timestamp": 1774411467059
+    },
+    {
+      "type": "ui_event",
+      "action": "input",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"mat-input-55\"]",
+        "css": "#mat-input-55",
+        "id": "mat-input-55",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": {
+          "attr": "data-aid",
+          "value": "ess-search-box-input",
+          "xpath": "//input[@data-aid='ess-search-box-input']"
+        }
+      },
+      "value": "test",
+      "position": {
+        "x": 391,
+        "y": 113
+      },
+      "timestamp": 1774411486754
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"navigation-bar\"]",
+        "css": "#navigation-bar",
+        "id": "navigation-bar",
+        "tag": "div",
+        "text": "navigate_before\nPhone and Mobile\nSuggested results",
+        "dataTestId": null,
+        "data": {
+          "attr": "data-aid",
+          "value": "navigation-bar",
+          "xpath": "//div[@data-aid='navigation-bar']"
+        }
+      },
+      "value": null,
+      "position": {
+        "x": 610,
+        "y": 126
+      },
+      "timestamp": 1774411492813
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id=\"mat-input-55\"]",
+        "css": "#mat-input-55",
+        "id": "mat-input-55",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null,
+        "data": {
+          "attr": "data-aid",
+          "value": "ess-search-box-input",
+          "xpath": "//input[@data-aid='ess-search-box-input']"
+        }
+      },
+      "value": "test",
+      "position": {
+        "x": 391,
+        "y": -1455
+      },
+      "timestamp": 1774411524445
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//*[@id='mat-tab-nav-panel-0']/nav/mat-paginator/div/div/div[2]/button[2]/span[3]",
+        "css": "mat-paginator.mat-mdc-paginator.ng-tns-c1744466871-7.ng-star-inserted > div.mat-mdc-paginator-outer-container > div.mat-mdc-paginator-container > div.mat-mdc-paginator-range-actions > button.mdc-icon-button.mat-mdc-icon-button.mat-mdc-button-base.mat-mdc-tooltip-trigger.mat-mdc-paginator-navigation-next.mat-mdc-button-disabled-interactive.mat-unthemed.cdk-focused.cdk-mouse-focused > span.mat-mdc-button-touch-target",
+        "id": null,
+        "tag": "span",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 764,
+        "y": 702
+      },
+      "timestamp": 1774411524659
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup1",
+      "locators": {
+        "xpath": "//a[@data-aid='menu-it-agent-interface']/div",
+        "css": "mat-list-item.mat-mdc-list-item.mdc-list-item.user-summary-item.mat-mdc-list-item-single-line.mdc-list-item--with-one-line.ng-star-inserted > span.mdc-list-item__content > span.mat-mdc-list-item-unscoped-content.mdc-list-item__primary-text > ess-header-user-profile-item > a.mat-mdc-tooltip-trigger.ess-header-item-link.ess-focus-btn.ng-star-inserted.cdk-focused.cdk-mouse-focused > div.ess-header-menu-item-label.without-total-count.ng-star-inserted",
+        "id": null,
+        "tag": "div",
+        "text": "Agent Interface",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 110,
+        "y": 466
+      },
+      "timestamp": 1774411532341
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//*[@id='application-menu-main-button']/span",
+        "css": "div.application-menu-main-button.inline-block > span.main-menu-button-icon",
+        "id": null,
+        "tag": "span",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 28,
+        "y": 29
+      },
+      "timestamp": 1774411553559
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//a[@data-aid='menu-item-service-catalog-management']",
+        "css": "li.pl-color-badge-category.hovered > a",
+        "id": null,
+        "tag": "a",
+        "text": "Service Catalog",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 204,
+        "y": 186
+      },
+      "timestamp": 1774411555182
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "(//div[@data-aid='pl-columns-list-item'])[1]",
+        "css": "div > div.pl-columns-list-panel > ul > li.pl-columns-list-li > div.pl-columns-list-li-wrapper > div.pl-columns-list-item.active",
+        "id": null,
+        "tag": "div",
+        "text": "Phone and Mobile",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 288,
+        "y": 162
+      },
+      "timestamp": 1774411557664
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//div[@data-aid='pl-columns-list-item']/div[3]/div/div[2]",
+        "css": "li.pl-columns-list-li > div > div.pl-columns-list-item.active > div.pl-columns-list-item-string.pl-columns-list-item-string-muti-lines > div.pl-columns-list-item-string-container > div.pl-columns-list-item-type",
+        "id": null,
+        "tag": "div",
+        "text": "Operation",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 782,
+        "y": 265
+      },
+      "timestamp": 1774411564559
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//*[@id='application-menu-main-button']/span",
+        "css": "div.application-menu-main-button.inline-block > span.main-menu-button-icon",
+        "id": null,
+        "tag": "span",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 28,
+        "y": 29
+      },
+      "timestamp": 1774411575343
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//*[@id='menu-home-item-5']/a[2]",
+        "css": "li.hovered > a.open-in-new-tab-icon.icon-open-new-tab",
+        "id": null,
+        "tag": "a",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1269,
+        "y": 386
+      },
+      "timestamp": 1774411578946
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup3",
+      "locators": {
+        "xpath": "//div[@data-aid='ess-home-page']/div/ul/li/div/div/div",
+        "css": "div > ul.ess-home-category-ul > li.ess-category-tile.ng-star-inserted > div.ess-category-item-widget.ess-new-catalog.widget > div.ess-category-item-content.widget-content > div.media",
+        "id": null,
+        "tag": "div",
+        "text": "Phone and Mobile",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 278,
+        "y": 282
+      },
+      "timestamp": 1774411600190
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup3",
+      "locators": {
+        "xpath": "//a[normalize-space(text())='Cancel my Calling Card']",
+        "css": "ess-tab-item.ess-tab-item.ng-tns-c1744466871-7 > div.tab-item > div.tab-item-main > div.tab-item-content > div.tab-item-title > a.mat-mdc-tooltip-trigger.tab-item-link.text-ellipsis.ess-focus-link.cdk-focused.cdk-mouse-focused",
+        "id": null,
+        "tag": "a",
+        "text": "Cancel my Calling Card",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 385,
+        "y": 504
+      },
+      "timestamp": 1774411613644
+    },
+    {
+      "type": "ui_event",
+      "action": "input",
+      "pageType": "popup3",
+      "locators": {
+        "xpath": "//*[@id=\"mat-input-64\"]",
+        "css": "#mat-input-64",
+        "id": "mat-input-64",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "calling card",
+      "position": {
+        "x": 391,
+        "y": 113
+      },
+      "timestamp": 1774411689644
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "popup3",
+      "locators": {
+        "xpath": "//*[@id=\"mat-input-64\"]",
+        "css": "#mat-input-64",
+        "id": "mat-input-64",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "test",
+      "position": {
+        "x": 391,
+        "y": 113
+      },
+      "timestamp": 1774411706795
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup3",
+      "locators": {
+        "xpath": "//ess-page[@data-aid='category-page']/div/div/div/div",
+        "css": "ess-category-page.ng-star-inserted > ess-page.ess-category-page.content-panel-no-padding.content-panel-background-transparent.ng-tns-c3708041968-10.ng-star-inserted > div.ess-container.ng-tns-c3708041968-10 > div.ng-tns-c3708041968-10 > div.ess-content.ess-main-content.ng-tns-c3708041968-10 > div.ess-navigation-bar.ng-tns-c3708041968-10",
+        "id": null,
+        "tag": "div",
+        "text": "navigate_before\nPhone and Mobile\nMore",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 610,
+        "y": 123
+      },
+      "timestamp": 1774411707022
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup3",
+      "locators": {
+        "xpath": "//a[@data-aid='header-button-home']/span",
+        "css": "div.header.oob-theme > div.ess-header-right.header-right > a.mat-mdc-tooltip-trigger.ess-header-company-logo-link.ess-focus-masthead.cdk-focused.cdk-mouse-focused > span.service-portal.ng-star-inserted",
+        "id": null,
+        "tag": "span",
+        "text": "Service Portal",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 240,
+        "y": 28
+      },
+      "timestamp": 1774411713653
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup3",
+      "locators": {
+        "xpath": "//*[@id=\"mat-input-66\"]",
+        "css": "#mat-input-66",
+        "id": "mat-input-66",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 379,
+        "y": 113
+      },
+      "timestamp": 1774411720196
+    },
+    {
+      "type": "ui_event",
+      "action": "keypress",
+      "pageType": "popup3",
+      "locators": {
+        "xpath": "//*[@id=\"mat-input-66\"]",
+        "css": "#mat-input-66",
+        "id": "mat-input-66",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "test ",
+      "position": {
+        "x": 527,
+        "y": 113
+      },
+      "timestamp": 1774411722259
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "popup3",
+      "locators": {
+        "xpath": "//*[@id=\"mat-input-66\"]",
+        "css": "#mat-input-66",
+        "id": "mat-input-66",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "test ",
+      "position": {
+        "x": 523,
+        "y": 113
+      },
+      "timestamp": 1774411722267
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "popup3",
+      "locators": {
+        "xpath": "//*[@id=\"mat-mdc-checkbox-25-input\"]",
+        "css": "#mat-mdc-checkbox-25-input",
+        "id": "mat-mdc-checkbox-25-input",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "on",
+      "position": {
+        "x": 283,
+        "y": 347
+      },
+      "timestamp": 1774411730557
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "(//div[@data-aid='pl-columns-list-item'])[22]",
+        "css": "div > div.pl-columns-tab.active > ul > li.pl-columns-list-li.ServiceOffering > div.ServiceOffering > div.pl-columns-list-item.active",
+        "id": null,
+        "tag": "div",
+        "text": "test\nService Offering",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1263,
+        "y": 483
+      },
+      "timestamp": 1774411735220
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//div[@data-aid='add-btn-2']",
+        "css": "div.pl-columns-header > div > div.pl-columns-header-custom-view > div.pl-columns-header-customization > div > div.pl-columns-header-add-text",
+        "id": null,
+        "tag": "div",
+        "text": "Add",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 976,
+        "y": 118
+      },
+      "timestamp": 1774411737200
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//*[@id=\"new_DisplayLabel\"]",
+        "css": "#new_DisplayLabel",
+        "id": "new_DisplayLabel",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "test",
+      "position": {
+        "x": 857,
+        "y": 254
+      },
+      "timestamp": 1774411742286
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//*[@id=\"dialog-button-0\"]",
+        "css": "#dialog-button-0",
+        "id": "dialog-button-0",
+        "tag": "button",
+        "text": "SAVE",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 80,
+        "y": 678
+      },
+      "timestamp": 1774411742503
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//div[@data-aid='pl-columns-list-item']/div[3]/div/div/div/a",
+        "css": "div.pl-columns-list-item.active > div.pl-columns-list-item-string.pl-columns-list-item-string-muti-lines > div.pl-columns-list-item-string-container > div.pl-columns-list-item-description > div.pl-columns-list-item-description-preview > a",
+        "id": null,
+        "tag": "a",
+        "text": "test",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 642,
+        "y": 247
+      },
+      "timestamp": 1774411755740
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//*[@id='singleButton']/span",
+        "css": "button.btn.transition-button.phase-button-no-overflow > span",
+        "id": null,
+        "tag": "span",
+        "text": "  BUILD",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1486,
+        "y": 176
+      },
+      "timestamp": 1774411758669
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//*[@id='saveButton']/button",
+        "css": "div.manual-actions-div > button.btn.min-width.btn-primary",
+        "id": null,
+        "tag": "button",
+        "text": "Save",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1476,
+        "y": 176
+      },
+      "timestamp": 1774411759365
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//*[@id='multiButton']/button/span",
+        "css": "div.btn-group > button.btn.actions-dropdown.transition-button.phase-button-no-overflow > span",
+        "id": null,
+        "tag": "span",
+        "text": "  OPERATE",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1437,
+        "y": 176
+      },
+      "timestamp": 1774411762190
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//*[@id='saveButton']/button",
+        "css": "div.manual-actions-div > button.btn.min-width.btn-primary",
+        "id": null,
+        "tag": "button",
+        "text": "Save",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1476,
+        "y": 176
+      },
+      "timestamp": 1774411762877
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//button[@data-aid='tool-bar-btn-back']/span/span",
+        "css": "span.tool-bar-item > span > span > button.btn.btn-icon.plToolbarItem.tool-bar-btn-back > span > span",
+        "id": null,
+        "tag": "span",
+        "text": " Back",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 56,
+        "y": 117
+      },
+      "timestamp": 1774411767110
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//div[@data-aid='panel-2']/div[3]/div/div",
+        "css": "div.pl-columns-page > div > div.pl-columns-panel.panel2 > div.pl-columns-pagination > div.pl-columns-pagination-body > div.pl-columns-pagination-left-triangle.pl-columns-pagination-default-cursor",
+        "id": null,
+        "tag": "div",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 585,
+        "y": 637
+      },
+      "timestamp": 1774411777780
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "(//div[@data-aid='pl-columns-list-item'])[7]",
+        "css": "div > div.pl-columns-tab.active > ul > li.pl-columns-list-li > div > div.pl-columns-list-item.active",
+        "id": null,
+        "tag": "div",
+        "text": "Calling Card\nOperation",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 773,
+        "y": 258
+      },
+      "timestamp": 1774411780889
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//div[@data-aid='pl-columns-list-item']/div[3]/div/div/div/a",
+        "css": "div.pl-columns-list-item.active > div.pl-columns-list-item-string.pl-columns-list-item-string-muti-lines > div.pl-columns-list-item-string-container > div.pl-columns-list-item-description > div.pl-columns-list-item-description-preview > a",
+        "id": null,
+        "tag": "a",
+        "text": "test",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1136,
+        "y": 472
+      },
+      "timestamp": 1774411783130
+    },
+    {
+      "type": "ui_event",
+      "action": "change",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//*[@id=\"s2id_autogen42_search\"]",
+        "css": "#s2id_autogen42_search",
+        "id": "s2id_autogen42_search",
+        "tag": "input",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": "test",
+      "position": {
+        "x": 1257,
+        "y": 458
+      },
+      "timestamp": 1774411793349
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "(//button[@data-aid='tool-bar-btn-save'])[1]",
+        "css": "div.tool-bar > div.toolbar-spacing > span.tool-bar-item > span > span > button.btn.btn-icon.plToolbarItem.tool-bar-btn-save.entity-page-toolbar-save",
+        "id": null,
+        "tag": "button",
+        "text": " Save",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 205,
+        "y": 118
+      },
+      "timestamp": 1774411796403
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//html/body",
+        "css": "html.no-js > body.placement-bottom",
+        "id": null,
+        "tag": "body",
+        "text": "Service Management\nService Catalog Management\nCata",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 763,
+        "y": 834
+      },
+      "timestamp": 1774411801344
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//*[@id='application-menu-main-button']/span",
+        "css": "div.application-menu-main-button.inline-block > span.main-menu-button-icon",
+        "id": null,
+        "tag": "span",
+        "text": null,
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 28,
+        "y": 29
+      },
+      "timestamp": 1774411804445
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//a[@data-aid='menu-item-ess-home']/span",
+        "css": "li.hovered > a > span.menu-home-section-item-text",
+        "id": null,
+        "tag": "span",
+        "text": "Home",
+        "dataTestId": null
+      },
+      "value": null,
+      "position": {
+        "x": 1111,
+        "y": 386
+      },
+      "timestamp": 1774411806509
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//div[@data-aid='ess-home-page']/div/ul/li/div/div/div/div",
+        "css": "ul.ess-home-category-ul > li.ess-category-tile.ng-star-inserted > div.ess-category-item-widget.ess-new-catalog.widget > div.ess-category-item-content.widget-content > div.media > div.ess-home-category-icon-placeholder.ng-star-inserted",
+        "id": null,
+        "tag": "div",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 278,
+        "y": 230
+      },
+      "timestamp": 1774411822467
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//*[@id='mat-tab-nav-panel-0']/nav/mat-paginator/div/div/div[2]/button[2]/span[3]",
+        "css": "mat-paginator.mat-mdc-paginator.ng-tns-c1744466871-7.ng-star-inserted > div.mat-mdc-paginator-outer-container > div.mat-mdc-paginator-container > div.mat-mdc-paginator-range-actions > button.mdc-icon-button.mat-mdc-icon-button.mat-mdc-button-base.mat-mdc-tooltip-trigger.mat-mdc-paginator-navigation-next.mat-mdc-button-disabled-interactive.mat-unthemed.cdk-focused.cdk-mouse-focused > span.mat-mdc-button-touch-target",
+        "id": null,
+        "tag": "span",
+        "text": null,
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 764,
+        "y": 702
+      },
+      "timestamp": 1774411830442
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//ess-tab-item[@data-aid='test']/div/div[3]/div/div[2]/div/button/span[2]",
+        "css": "div.tab-item-btn-wrapper > div.tab-item-btn-content > div.tab-item-btn-middle > div.tab-item-btn-navigate > button.mdc-button.mat-mdc-button-base.mdc-button--unelevated.mat-mdc-unelevated-button.mat-unthemed.cdk-focused.cdk-mouse-focused > span.mdc-button__label",
+        "id": null,
+        "tag": "span",
+        "text": "Request",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 1053,
+        "y": 524
+      },
+      "timestamp": 1774411837866
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//*[@id='cke_2_contents']/div",
+        "css": "div.cke_contents.cke_reset > div.cke_wysiwyg_div.cke_reset.cke_enable_context_menu.cke_editable.cke_editable_themed.cke_contents_ltr",
+        "id": null,
+        "tag": "div",
+        "text": "\n",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 610,
+        "y": 520
+      },
+      "timestamp": 1774411852968
+    },
+    {
+      "type": "ui_event",
+      "action": "click",
+      "pageType": "popup2",
+      "locators": {
+        "xpath": "//*[@id='ess-main-content-area']/div/ess-loader/div",
+        "css": "main.ess-content-area.ng-tns-c3708041968-8 > div.ng-tns-c3708041968-8 > ess-loader > div.ess-loader-wrapper",
+        "id": null,
+        "tag": "div",
+        "text": "Loading...\nService Offering\ntest\nthumb_up\nRecommen",
+        "dataTestId": null,
+        "data": null
+      },
+      "value": null,
+      "position": {
+        "x": 610,
+        "y": 251
+      },
+      "timestamp": 1774411856749
+    }
+  ]
+}
