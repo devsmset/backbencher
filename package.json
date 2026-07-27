@@ -3,33 +3,15 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "automate": "node src/automation/full-workflow.js",
-    "process": "node src/automation/process-existing.js",
-    "api:extract": "node \"API testing/extract-apis.js\"",
-    "api:test": "playwright test -c playwright.api.config.js",
-    "api:test:smoke": "set MAX_APIS=20&& playwright test -c playwright.api.config.js",
-    "mcp:playwright": "playwright-mcp",
     "record": "node src/recorders/recorder.js",
-    "filter": "node src/filters/filter-events.js",
-    "deduplicate": "node src/utils/deduplicate.js",
-    "playback": "node src/playback/playback-unified.js",
-    "playback:fallback": "node src/playback/playback-fallback.js",
-    "playback:filtered": "node src/playback/playback-filtered.js",
-    "playback:basic": "node src/playback/playback.js",
-    "list": "node src/utils/list-recordings.js",
-    "testcases": "node src/utils/generate-test-cases.js",
-    "ai:generate": "node src/ai/generate-with-copilot.js"
+    "filter": "node src/filters/filter-api.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "Playwright UI + API Recorder & Automation System",
-  "devDependencies": {
-    "@playwright/mcp": "^0.0.75",
-    "@playwright/test": "^1.57.0"
-  },
+  "description": "Playwright session recorder + API-call filter",
+  "devDependencies": {},
   "dependencies": {
-    "pptxgenjs": "^4.0.1"
+    "playwright": "^1.57.0"
   }
 }

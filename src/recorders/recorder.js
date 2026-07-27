@@ -1,28 +1,29 @@
 /**
- * UNIFIED RECORDER
+ * SESSION RECORDER
  * ================
- * Complete UI + API recorder with all features:
+ * Records a browser session (UI interactions + API calls) and saves it to
+ * recordings/ on completion:
  * - Multiple locator strategies (XPath, CSS, ID, data-testid, text)
  * - SSL/certificate handling
  * - API request/response capture
  * - Input value capture
  * - Navigation tracking
  * - Click, input, change, and keypress events
- * 
+ *
  * Usage: node src/recorders/recorder.js [url]
+ * Press ENTER in the terminal to stop recording and save the session.
  */
 
 const fs = require("fs");
 const path = require("path");
 const { chromium } = require("playwright");
 const readline = require("readline");
-const { generateTestCases } = require("../utils/generate-test-cases");
 
 // ============ CONFIGURATION ============
 
 
 const DEFAULT_URL = "https://maple-aio-2-m1.otxlab.net:443/saw/ess?TENANTID=223791286";
-const RECORDINGS_DIR = path.join(__dirname, "..", "..", "artifacts", "recordings");
+const RECORDINGS_DIR = path.join(__dirname, "..", "..", "recordings");
 
 // ============ HELPERS ============
 
@@ -641,12 +642,6 @@ async function record(startUrl) {
 
     fs.writeFileSync(filepath, JSON.stringify(recording, null, 2));
 
-    try {
-      generateTestCases(filepath);
-    } catch (error) {
-      console.log(`⚠️  Test case generation failed: ${error.message}`);
-    }
-
     // Event summary
     const eventCounts = {};
     events.forEach(e => {
@@ -664,9 +659,8 @@ async function record(startUrl) {
       console.log(`   ${type}: ${count}`);
     });
     console.log("=".repeat(70));
-    console.log("\n💡 Next steps:");
-    console.log(`   Process & Execute: npm run process artifacts/recordings/${filename}`);
-    console.log(`   Just Playback:     npm run playback artifacts/recordings/${filename}`);
+    console.log("\n💡 Next step:");
+    console.log(`   Filter API calls: npm run filter recordings/${filename}`);
     console.log("=".repeat(70) + "\n");
 
     await browser.close();

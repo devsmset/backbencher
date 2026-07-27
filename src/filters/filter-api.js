@@ -1,54 +1,97 @@
+/**
+ * API CALL FILTER
+ * ===============
+ * Reads a recording JSON produced by the recorder and extracts only the
+ * API calls (api_request / api_response events), pairing each request with
+ * its matching response and ordering the result chronologically by timestamp.
+ *
+ * Usage: node src/filters/filter-api.js <recording.json> [output.json]
+ */
+
 const fs = require("fs");
 const path = require("path");
 
-const inputFile = path.join(__dirname, "..", "..", "artifacts", "recordings", "recording-raw.json");
-const outputFile = path.join(__dirname, "../output/ui-spec.json");
+function filterApiCalls(inputFile, outputFile) {
+  const recordingPath = path.resolve(inputFile);
+  const recording = JSON.parse(fs.readFileSync(recordingPath, "utf8"));
+  const allEvents = Array.isArray(recording.events) ? recording.events : [];
 
-const raw = JSON.parse(fs.readFileSync(inputFile, "utf-8"));
+  const requests = allEvents.filter((e) => e.type === "api_request");
+  const responses = allEvents.filter((e) => e.type === "api_response");
+  const usedResponses = new Set();
 
-const uiEvents = raw.events.filter(
-  e =>
-    e.type === "ui_event" &&
-    ["click", "input", "change"].includes(e.event)
-);
+  const apiCalls = requests.map((req) => {
+    const response = responses.find(
+      (res) =>
+        !usedResponses.has(res) &&
+        res.url === req.url &&
+        res.timestamp >= req.timestamp
+    );
 
-const cleanedUI = uiEvents.map((e, index) => ({
-  step: index + 1,
-  action: e.event,
-  value: e.value || e.valuePreview || null,
+    if (response) {
+      usedResponses.add(response);
+    }
 
-  locators: {
-    dataId: e.locators?.dataId || null,
-    id: e.locators?.id || null,
-    xpath: e.locators?.xpath || null,
-    css: e.locators?.css || null,
-    className: e.locators?.class || null,
-    domPath: e.domPath || null
-  },
+    return {
+      method: req.method,
+      url: req.url,
+      requestTimestamp: req.timestamp,
+      requestHeaders: req.headers || null,
+      postData: req.postData || null,
+      status: response ? response.status : null,
+      responseBody: response ? response.responseBody : null,
+      responseTimestamp: response ? response.timestamp : null,
+    };
+  });
 
-  fallbackOrder: [
-    "dataId",
-    "id",
-    "xpath",
-    "css",
-    "className",
-    "domPath"
-  ]
-}));
+  apiCalls.sort((a, b) => a.requestTimestamp - b.requestTimestamp);
 
-fs.writeFileSync(
-  outputFile,
-  JSON.stringify(
-    {
-      meta: {
-        generatedAt: new Date().toISOString(),
-        totalSteps: cleanedUI.length
-      },
-      steps: cleanedUI
+  const result = {
+    meta: {
+      sourceFile: path.basename(recordingPath),
+      sessionUrl: recording.meta ? recording.meta.url : null,
+      filteredAt: new Date().toISOString(),
+      totalApiCalls: apiCalls.length,
     },
-    null,
-    2
-  )
-);
+    apiCalls,
+  };
 
-console.log("✅ UI spec created:", outputFile);
+  const outputPath = path.resolve(
+    outputFile ||
+      path.join(
+        path.dirname(recordingPath),
+        `${path.basename(recordingPath, ".json")}-api-calls.json`
+      )
+  );
+
+  fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
+
+  console.log(`📂 Read: ${recordingPath}`);
+  console.log(`📊 Total events: ${allEvents.length}`);
+  console.log(`🔎 API calls found: ${apiCalls.length}`);
+  console.log(`✅ Saved: ${outputPath}`);
+
+  return outputPath;
+}
+
+// ============ RUN ============
+
+const inputFile = process.argv[2];
+const outputFile = process.argv[3];
+
+if (require.main === module) {
+  if (!inputFile) {
+    console.error("❌ Please provide a recording file to filter.");
+    console.error("   Example: node src/filters/filter-api.js recordings/recording-1766507394510.json");
+    process.exit(1);
+  }
+
+  try {
+    filterApiCalls(inputFile, outputFile);
+  } catch (error) {
+    console.error("❌ Error filtering API calls:", error.message);
+    process.exit(1);
+  }
+}
+
+module.exports = { filterApiCalls };
