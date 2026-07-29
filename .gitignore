@@ -1,1 +1,37 @@
+# Dependencies
 node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Turborepo / tooling caches
+.turbo/
+.vite/
+
+# Test coverage
+coverage/
+
+# Env files (keep .env.example tracked)
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Runtime/generated data (sessions, SQLite store, knowledge packs)
+data/backbencher.db
+data/backbencher.db-shm
+data/backbencher.db-wal
+data/sessions/
+data/knowledge-packs/
+
+# Legacy recorder output
+recordings/
+
+# OS/editor
+.DS_Store
+

@@ -1,0 +1,210 @@
+{
+  "$ref": "#/definitions/KnowledgePack",
+  "definitions": {
+    "KnowledgePack": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "number",
+          "const": 1
+        },
+        "builtAt": {
+          "type": "integer"
+        },
+        "contentHash": {
+          "type": "string"
+        },
+        "catalog": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "operationId": {
+                "type": "string"
+              },
+              "method": {
+                "type": "string"
+              },
+              "template": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "area": {
+                "type": "string"
+              },
+              "auth": {
+                "type": "string"
+              },
+              "statuses": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "reviewState": {
+                "type": "string",
+                "enum": [
+                  "unreviewed",
+                  "in_review",
+                  "approved",
+                  "deprecated",
+                  "ignored"
+                ]
+              }
+            },
+            "required": [
+              "operationId",
+              "method",
+              "template",
+              "auth",
+              "statuses",
+              "reviewState"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "operations": {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        "flows": {
+          "type": "array",
+          "items": {}
+        },
+        "guides": {
+          "type": "array",
+          "items": {}
+        },
+        "dataflow": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "producer": {
+                "type": "object",
+                "properties": {
+                  "operationId": {
+                    "type": "string"
+                  },
+                  "location": {
+                    "type": "string",
+                    "enum": [
+                      "responseBody",
+                      "responseHeader"
+                    ]
+                  },
+                  "jsonPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "operationId",
+                  "location",
+                  "jsonPath"
+                ],
+                "additionalProperties": false
+              },
+              "consumer": {
+                "type": "object",
+                "properties": {
+                  "operationId": {
+                    "type": "string"
+                  },
+                  "location": {
+                    "type": "string",
+                    "enum": [
+                      "path",
+                      "query",
+                      "requestBody",
+                      "requestHeader"
+                    ]
+                  },
+                  "jsonPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "operationId",
+                  "location",
+                  "jsonPath"
+                ],
+                "additionalProperties": false
+              },
+              "evidenceCount": {
+                "type": "integer"
+              },
+              "valueEntropyOk": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "producer",
+              "consumer",
+              "evidenceCount",
+              "valueEntropyOk"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "authProfiles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "description"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "environments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "baseUrl": {
+                "type": "string"
+              },
+              "destructive": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "name",
+              "baseUrl",
+              "destructive"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "version",
+        "builtAt",
+        "contentHash",
+        "catalog",
+        "operations",
+        "flows",
+        "guides",
+        "dataflow",
+        "authProfiles",
+        "environments"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

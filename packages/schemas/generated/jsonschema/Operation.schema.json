@@ -1,0 +1,169 @@
+{
+  "$ref": "#/definitions/Operation",
+  "definitions": {
+    "Operation": {
+      "type": "object",
+      "properties": {
+        "operationId": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "host": {
+          "type": "string"
+        },
+        "pathTemplate": {
+          "type": "object",
+          "properties": {
+            "template": {
+              "type": "string"
+            },
+            "params": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "position": {
+                    "type": "integer"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "uuid",
+                      "numeric",
+                      "slug",
+                      "opaque"
+                    ]
+                  },
+                  "observedValues": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 20
+                  }
+                },
+                "required": [
+                  "name",
+                  "position",
+                  "kind",
+                  "observedValues"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "template",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        "observedCount": {
+          "type": "integer"
+        },
+        "statusCodesObserved": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "requestSchema": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "responseSchemas": {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        "queryParams": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "required": {
+                "type": "boolean"
+              },
+              "observedValues": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 10
+              }
+            },
+            "required": [
+              "name",
+              "required",
+              "observedValues"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "authObserved": {
+          "type": "string",
+          "enum": [
+            "cookie",
+            "bearer",
+            "none",
+            "mixed"
+          ]
+        },
+        "contentTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "exampleCorrelationIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 5
+        },
+        "firstSeenSessionId": {
+          "type": "string"
+        },
+        "lastSeenAt": {
+          "type": "integer"
+        },
+        "volatileResponseFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "operationId",
+        "method",
+        "host",
+        "pathTemplate",
+        "observedCount",
+        "statusCodesObserved",
+        "responseSchemas",
+        "queryParams",
+        "authObserved",
+        "contentTypes",
+        "exampleCorrelationIds",
+        "firstSeenSessionId",
+        "lastSeenAt",
+        "volatileResponseFields"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

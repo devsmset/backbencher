@@ -1,0 +1,25 @@
+{
+  "name": "@backbencher/cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "bb": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "dev": "tsx src/index.ts",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@backbencher/agent": "workspace:*",
+    "@backbencher/derive": "workspace:*",
+    "@backbencher/portal-api": "workspace:*",
+    "@backbencher/recorder": "workspace:*",
+    "@backbencher/shared": "workspace:*",
+    "@backbencher/store": "workspace:*",
+    "@backbencher/testkit": "workspace:*"
+  }
+}

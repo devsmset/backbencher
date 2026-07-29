@@ -1,0 +1,56 @@
+{
+  "$ref": "#/definitions/PathTemplate",
+  "definitions": {
+    "PathTemplate": {
+      "type": "object",
+      "properties": {
+        "template": {
+          "type": "string"
+        },
+        "params": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "position": {
+                "type": "integer"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "uuid",
+                  "numeric",
+                  "slug",
+                  "opaque"
+                ]
+              },
+              "observedValues": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 20
+              }
+            },
+            "required": [
+              "name",
+              "position",
+              "kind",
+              "observedValues"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "template",
+        "params"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

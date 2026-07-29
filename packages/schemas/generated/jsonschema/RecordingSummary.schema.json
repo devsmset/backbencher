@@ -1,0 +1,53 @@
+{
+  "$ref": "#/definitions/RecordingSummary",
+  "definitions": {
+    "RecordingSummary": {
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string"
+        },
+        "startedAt": {
+          "type": "integer"
+        },
+        "endedAt": {
+          "type": "integer"
+        },
+        "durationMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "totalEvents": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "eventCounts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "distinctEndpoints": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warnings": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "sessionId",
+        "startedAt",
+        "endedAt",
+        "durationMs",
+        "totalEvents",
+        "eventCounts",
+        "distinctEndpoints",
+        "warnings"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

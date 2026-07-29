@@ -1,0 +1,83 @@
+{
+  "$ref": "#/definitions/OperationAnnotation",
+  "definitions": {
+    "OperationAnnotation": {
+      "type": "object",
+      "properties": {
+        "operationId": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "productArea": {
+          "type": "string"
+        },
+        "reviewState": {
+          "type": "string",
+          "enum": [
+            "unreviewed",
+            "in_review",
+            "approved",
+            "deprecated",
+            "ignored"
+          ]
+        },
+        "paramDocs": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "correctionOverrides": {
+          "type": "object",
+          "properties": {
+            "pathTemplate": {
+              "type": "string"
+            },
+            "requiredQueryParams": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "ignoreFields": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "testingGuidance": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "updatedBy": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "operationId",
+        "reviewState",
+        "updatedBy",
+        "updatedAt"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

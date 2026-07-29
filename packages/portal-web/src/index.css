@@ -1,0 +1,65 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg: #0d1218;
+    --bg-glow: #183347;
+    --panel: #161d26;
+    --panel2: #1e2732;
+    --line: #2a3644;
+    --text: #dbe5ef;
+    --muted: #93a4b7;
+    --accent: #56a7ff;
+    --accent2: #40c057;
+    --warn: #ff922b;
+    --chip: #2d3a49;
+  }
+
+  * {
+    @apply box-border;
+  }
+
+  body {
+    @apply m-0 min-h-screen font-sans text-sm leading-6 text-[--text];
+    background:
+      radial-gradient(circle at 0% -10%, color-mix(in srgb, var(--bg-glow) 65%, transparent) 0%, transparent 40%),
+      radial-gradient(circle at 100% -20%, color-mix(in srgb, var(--accent) 18%, transparent) 0%, transparent 34%),
+      var(--bg);
+  }
+
+  a {
+    @apply text-[--accent] no-underline;
+  }
+
+  a:hover {
+    @apply underline;
+  }
+
+  code {
+    @apply font-mono text-xs;
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    @apply rounded-lg border border-[--line] bg-[--panel2] px-2.5 py-1.5 text-[--text];
+  }
+
+  button {
+    @apply cursor-pointer;
+  }
+
+  button:hover {
+    @apply border-[--accent];
+  }
+
+  button:disabled {
+    @apply cursor-not-allowed opacity-65;
+  }
+}
+

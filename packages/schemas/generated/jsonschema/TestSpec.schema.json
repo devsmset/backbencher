@@ -1,0 +1,208 @@
+{
+  "$ref": "#/definitions/TestSpec",
+  "definitions": {
+    "TestSpec": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "number",
+          "const": 1
+        },
+        "specId": {
+          "type": "string"
+        },
+        "scenarioId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "environment": {
+          "type": "string"
+        },
+        "authProfile": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "operationId": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "request": {
+                "type": "object",
+                "properties": {
+                  "pathParams": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "query": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "headers": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "body": {}
+                },
+                "additionalProperties": false
+              },
+              "extract": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "expect": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "integer"
+                        }
+                      }
+                    ]
+                  },
+                  "schemaConformance": {
+                    "type": "boolean",
+                    "default": true
+                  },
+                  "jsonAssertions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string"
+                        },
+                        "op": {
+                          "type": "string",
+                          "enum": [
+                            "equals",
+                            "notEquals",
+                            "contains",
+                            "matches",
+                            "exists",
+                            "absent",
+                            "gt",
+                            "lt",
+                            "lengthGte"
+                          ]
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "path",
+                        "op"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "default": []
+                  }
+                },
+                "required": [
+                  "status"
+                ],
+                "additionalProperties": false
+              },
+              "poll": {
+                "type": "object",
+                "properties": {
+                  "untilStatus": {
+                    "type": "number"
+                  },
+                  "untilPath": {
+                    "type": "string"
+                  },
+                  "untilValue": {},
+                  "timeoutMs": {
+                    "type": "number"
+                  },
+                  "intervalMs": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "timeoutMs",
+                  "intervalMs"
+                ],
+                "additionalProperties": false
+              },
+              "continueOnFailure": {
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "required": [
+              "id",
+              "operationId",
+              "description",
+              "expect"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "cleanup": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "operationId": {
+                "type": "string"
+              },
+              "request": {},
+              "ignoreFailure": {
+                "type": "boolean",
+                "default": true
+              }
+            },
+            "required": [
+              "operationId"
+            ],
+            "additionalProperties": false
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "version",
+        "specId",
+        "scenarioId",
+        "title",
+        "environment",
+        "authProfile",
+        "tags",
+        "steps"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

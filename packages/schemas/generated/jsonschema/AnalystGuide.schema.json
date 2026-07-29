@@ -1,0 +1,71 @@
+{
+  "$ref": "#/definitions/AnalystGuide",
+  "definitions": {
+    "AnalystGuide": {
+      "type": "object",
+      "properties": {
+        "guideId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "object",
+          "properties": {
+            "productArea": {
+              "type": "string"
+            },
+            "operationIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            },
+            "flowIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            }
+          },
+          "additionalProperties": false
+        },
+        "audience": {
+          "type": "string",
+          "const": "qa_agent"
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "must_read",
+            "reference"
+          ]
+        },
+        "updatedBy": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "guideId",
+        "title",
+        "body",
+        "scope",
+        "audience",
+        "priority",
+        "updatedBy",
+        "updatedAt"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

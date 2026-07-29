@@ -1,0 +1,339 @@
+{
+  "$ref": "#/definitions/RecordingEvent",
+  "definitions": {
+    "RecordingEvent": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "api_request"
+            },
+            "correlationId": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": "integer"
+            },
+            "method": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            },
+            "resourceType": {
+              "type": "string",
+              "enum": [
+                "xhr",
+                "fetch",
+                "document",
+                "other"
+              ]
+            },
+            "headers": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "headersSource": {
+              "type": "string",
+              "enum": [
+                "sync",
+                "all"
+              ]
+            },
+            "postData": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "postDataTruncated": {
+              "type": "boolean"
+            },
+            "frameUrl": {
+              "type": "string"
+            },
+            "pageLabel": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "correlationId",
+            "timestamp",
+            "method",
+            "url",
+            "resourceType",
+            "headers",
+            "headersSource",
+            "postData",
+            "postDataTruncated",
+            "pageLabel"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "api_response"
+            },
+            "correlationId": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": "integer"
+            },
+            "status": {
+              "type": "integer"
+            },
+            "headers": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "headersSource": {
+              "type": "string",
+              "enum": [
+                "sync",
+                "all"
+              ]
+            },
+            "bodyKind": {
+              "type": "string",
+              "enum": [
+                "json",
+                "text",
+                "binary",
+                "empty",
+                "unavailable"
+              ]
+            },
+            "body": {
+              "anyOf": [
+                {},
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "bodyBytes": {
+              "type": "integer"
+            },
+            "bodyTruncated": {
+              "type": "boolean"
+            },
+            "timing": {
+              "type": "object",
+              "properties": {
+                "requestStart": {
+                  "type": "number"
+                },
+                "responseEnd": {
+                  "type": "number"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "type",
+            "correlationId",
+            "timestamp",
+            "status",
+            "headers",
+            "bodyKind",
+            "bodyTruncated"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "ui_event"
+            },
+            "timestamp": {
+              "type": "integer"
+            },
+            "action": {
+              "type": "string",
+              "enum": [
+                "click",
+                "input",
+                "change",
+                "keypress",
+                "submit"
+              ]
+            },
+            "pageLabel": {
+              "type": "string"
+            },
+            "frameUrl": {
+              "type": "string"
+            },
+            "locators": {
+              "type": "object",
+              "properties": {
+                "xpath": {
+                  "type": "string"
+                },
+                "css": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "tag": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "dataTestId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string"
+                },
+                "ariaLabel": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "value": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "redacted": {
+              "type": "boolean"
+            },
+            "position": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "number"
+                },
+                "y": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "x",
+                "y"
+              ],
+              "additionalProperties": false
+            },
+            "key": {
+              "type": "string"
+            },
+            "intentLabel": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "timestamp",
+            "action",
+            "pageLabel",
+            "locators",
+            "value",
+            "redacted"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "navigation"
+            },
+            "timestamp": {
+              "type": "integer"
+            },
+            "url": {
+              "type": "string"
+            },
+            "pageLabel": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "timestamp",
+            "url",
+            "pageLabel"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "popup"
+            },
+            "timestamp": {
+              "type": "integer"
+            },
+            "action": {
+              "type": "string",
+              "enum": [
+                "opened",
+                "closed"
+              ]
+            },
+            "url": {
+              "type": "string"
+            },
+            "popupId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "timestamp",
+            "action",
+            "popupId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "marker"
+            },
+            "timestamp": {
+              "type": "integer"
+            },
+            "label": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "timestamp",
+            "label"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

@@ -4,13 +4,19 @@
   "main": "index.js",
   "scripts": {
     "record": "node src/recorders/recorder.js",
-    "filter": "node src/filters/filter-api.js"
+    "filter": "node src/filters/filter-api.js",
+    "serve": "bash scripts/serve.sh"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "Playwright session recorder + API-call filter",
-  "devDependencies": {},
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "tsx": "^4.19.2",
+    "@types/node": "^22.10.2"
+  },
   "dependencies": {
     "playwright": "^1.57.0"
   }

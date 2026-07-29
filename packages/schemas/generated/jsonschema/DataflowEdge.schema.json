@@ -1,0 +1,74 @@
+{
+  "$ref": "#/definitions/DataflowEdge",
+  "definitions": {
+    "DataflowEdge": {
+      "type": "object",
+      "properties": {
+        "producer": {
+          "type": "object",
+          "properties": {
+            "operationId": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string",
+              "enum": [
+                "responseBody",
+                "responseHeader"
+              ]
+            },
+            "jsonPath": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "operationId",
+            "location",
+            "jsonPath"
+          ],
+          "additionalProperties": false
+        },
+        "consumer": {
+          "type": "object",
+          "properties": {
+            "operationId": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string",
+              "enum": [
+                "path",
+                "query",
+                "requestBody",
+                "requestHeader"
+              ]
+            },
+            "jsonPath": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "operationId",
+            "location",
+            "jsonPath"
+          ],
+          "additionalProperties": false
+        },
+        "evidenceCount": {
+          "type": "integer"
+        },
+        "valueEntropyOk": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "producer",
+        "consumer",
+        "evidenceCount",
+        "valueEntropyOk"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

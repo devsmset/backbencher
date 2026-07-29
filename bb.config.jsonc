@@ -1,0 +1,52 @@
+{
+  // Backbencher configuration (architecture §3.2). Loaded by @backbencher/shared.
+  "recorder": {
+    "defaultUrl": null, // must be passed via --url when null
+    "tlsPermissive": false, // opt-in; sets ignoreHTTPSErrors + cert flags
+    "apiFilter": {
+      "hostAllowlist": ["*.otxlab.net"], // empty = all hosts
+      "pathAllowPatterns": ["/api/", "/idm-service/", "/bo/"],
+      "resourceTypes": ["xhr", "fetch"],
+      "dropContentTypes": ["image/", "font/", "text/css", "text/javascript"],
+      "dropPathPatterns": ["/analytics", "/telemetry", "/sockjs", "\\.js$", "\\.css$"],
+      "dropMethods": ["OPTIONS"]
+    },
+    "inputDebounceMs": 1000,
+    "bodyCapBytes": 262144,
+    "blockServiceWorkers": true
+  },
+  "redaction": {
+    "headerDenylist": [
+      "authorization",
+      "cookie",
+      "set-cookie",
+      "x-csrf-token",
+      "proxy-authorization"
+    ],
+    "queryParamDenylist": [
+      "code",
+      "token",
+      "access_token",
+      "id_token",
+      "session",
+      "apikey",
+      "api_key"
+    ],
+    "bodyFieldDenylist": ["password", "secret", "token", "apiKey", "clientSecret"],
+    "placeholder": "***REDACTED***",
+    "keepAuthShape": true // record "Bearer ***" not "***" so auth KIND survives
+  },
+  "agent": {
+    "provider": "anthropic", // "anthropic" (ANTHROPIC_API_KEY) | "vertex" (Anthropic on GCP Vertex AI)
+    // "model": "claude-3-5-sonnet-latest",
+    "vertex": {
+      // "projectId": "my-gcp-project",
+      // "region": "us-east5",
+      // "credentialsFile": "./gcp-service-account.json" // path to a GCP service-account JSON
+    }
+  },
+  "environments": [
+    { "name": "staging", "baseUrl": "https://te-smax-stg-m.otxlab.net", "destructive": true },
+    { "name": "preprod", "baseUrl": "https://te-smax-preprod-m.otxlab.net", "destructive": false }
+  ]
+}

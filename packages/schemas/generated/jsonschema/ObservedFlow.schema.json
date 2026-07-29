@@ -1,0 +1,48 @@
+{
+  "$ref": "#/definitions/ObservedFlow",
+  "definitions": {
+    "ObservedFlow": {
+      "type": "object",
+      "properties": {
+        "flowId": {
+          "type": "string"
+        },
+        "sessionId": {
+          "type": "string"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "operationId": {
+                "type": "string"
+              },
+              "correlationId": {
+                "type": "string"
+              },
+              "precedingUiIntent": {
+                "type": "string"
+              },
+              "repeated": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "operationId",
+              "correlationId"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "flowId",
+        "sessionId",
+        "steps"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

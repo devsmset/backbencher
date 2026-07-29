@@ -1,0 +1,78 @@
+import { type Operation, OperationSchema } from "@backbencher/schemas";
+import { buildDataflowGraph } from "./dataflow.js";
+import { extractObservedFlow } from "./flows.js";
+import {
+  deriveAuthObserved,
+  deriveContentTypes,
+  deriveQueryParams,
+  inferRequestSchema,
+  inferResponseSchemas,
+} from "./inferSchemas.js";
+import { pairCalls } from "./pairCalls.js";
+import { templatizePaths } from "./templatize.js";
+import type { DerivationResult, PairedCall, SessionData } from "./types.js";
+import { detectVolatileFields } from "./volatile.js";
+
+// Deterministic, idempotent orchestration of every §5 pass: sessions in -> facts out. No LLM.
+
+export function runDerivation(sessions: SessionData[]): DerivationResult {
+  const allCalls: PairedCall[] = sessions.flatMap((s) => pairCalls(s));
+  const { operations: accums, callOp } = templatizePaths(allCalls);
+
+  const operations: Operation[] = [];
+  for (const accum of accums.values()) {
+    const calls = [...accum.calls].sort((a, b) => a.requestTimestamp - b.requestTimestamp);
+    const first = calls[0];
+    if (!first) continue;
+
+    const statusCodesObserved: Record<string, number> = {};
+    for (const c of calls) {
+      if (c.status !== null) {
+        statusCodesObserved[String(c.status)] = (statusCodesObserved[String(c.status)] ?? 0) + 1;
+      }
+    }
+    const lastSeenAt = calls.reduce((m, c) => Math.max(m, c.requestTimestamp), 0);
+
+    const op: Operation = OperationSchema.parse({
+      operationId: accum.operationId,
+      method: accum.method,
+      host: accum.host,
+      pathTemplate: {
+        template: accum.template,
+        params: accum.params.map((p) => ({
+          name: p.name,
+          position: p.position,
+          kind: p.kind,
+          observedValues: p.observedValues,
+        })),
+      },
+      observedCount: calls.length,
+      statusCodesObserved,
+      requestSchema: inferRequestSchema(calls),
+      responseSchemas: inferResponseSchemas(calls),
+      queryParams: deriveQueryParams(calls),
+      authObserved: deriveAuthObserved(calls),
+      contentTypes: deriveContentTypes(calls),
+      exampleCorrelationIds: calls.slice(0, 5).map((c) => c.correlationId),
+      firstSeenSessionId: first.sessionId,
+      lastSeenAt,
+      volatileResponseFields: detectVolatileFields(calls),
+    });
+    operations.push(op);
+  }
+  operations.sort((a, b) => a.operationId.localeCompare(b.operationId));
+
+  const { edges, clientGeneratedFields } = buildDataflowGraph(allCalls, callOp, accums);
+
+  const bySession = new Map<string, PairedCall[]>();
+  for (const c of allCalls) {
+    const arr = bySession.get(c.sessionId);
+    if (arr) arr.push(c);
+    else bySession.set(c.sessionId, [c]);
+  }
+  const flows = [...bySession.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([sessionId, calls]) => extractObservedFlow(sessionId, calls, callOp));
+
+  return { operations, dataflow: edges, flows, clientGeneratedFields };
+}
