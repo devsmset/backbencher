@@ -49,7 +49,7 @@ suite("recorder e2e", () => {
     ]);
     await handle.page.waitForTimeout(300);
 
-    const result = await handle.stop();
+    const result = await handle.stop({ name: "Fixture login", goal: "log in to the fixture app" });
     await fx.close();
 
     const lines = readFileSync(result.eventsPath, "utf8")

@@ -2,6 +2,8 @@ import type { ApiFilterConfig } from "@backbencher/shared";
 
 // Deterministic API-call filter (architecture §3.2). Decides which network requests to record.
 
+const ASSET_PATH_RE = /\.(?:svg|woff2?|ttf|otf|eot|ico|png|jpe?g|gif|webp|avif)(?:$|[?#])/i;
+
 function hostMatches(pattern: string, host: string): boolean {
   if (pattern === host) return true;
   if (pattern.startsWith("*.")) {
@@ -9,6 +11,28 @@ function hostMatches(pattern: string, host: string): boolean {
     return host.endsWith(suffix) || host === pattern.slice(2);
   }
   return false;
+}
+
+function matchesContentType(pattern: string, contentType: string): boolean {
+  const normalizedPattern = pattern.toLowerCase();
+  const normalizedType = contentType.toLowerCase();
+  return normalizedType.startsWith(normalizedPattern);
+}
+
+export function shouldDropCapturedResponse(
+  cfg: ApiFilterConfig,
+  url: string,
+  headers: Record<string, string>,
+): boolean {
+  const contentType = headers["content-type"] ?? "";
+  if (cfg.dropContentTypes.some((pattern) => matchesContentType(pattern, contentType))) {
+    return true;
+  }
+  try {
+    return ASSET_PATH_RE.test(new URL(url).pathname);
+  } catch {
+    return ASSET_PATH_RE.test(url);
+  }
 }
 
 export interface ApiFilter {

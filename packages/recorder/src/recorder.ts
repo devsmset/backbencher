@@ -1,9 +1,11 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   type ApiRequestEvent,
   type ApiResponseEvent,
   type RecordingMeta,
+  type RecordingMetaDraft,
+  RecordingMetaDraftSchema,
   RecordingMetaSchema,
   type RecordingSummary,
   RecordingSummarySchema,
@@ -19,7 +21,7 @@ import {
   redactUrl,
 } from "@backbencher/shared";
 import { type Browser, type BrowserContext, type Page, type Request, type Response, chromium } from "playwright";
-import { makeApiFilter } from "./apiFilter.js";
+import { makeApiFilter, shouldDropCapturedResponse } from "./apiFilter.js";
 import { captureBody } from "./bodyCapture.js";
 import { WriteQueue } from "./writeQueue.js";
 
@@ -31,10 +33,14 @@ export interface StartRecordingOptions {
   url: string;
   config?: BbConfig;
   headless?: boolean;
-  sessionName?: string;
-  goal?: string;
   authProfile?: string;
   operator?: string;
+}
+
+/** The analyst's own words, collected when they stop. Both are required to save a session. */
+export interface StopRecordingOptions {
+  name: string;
+  goal: string;
 }
 
 export interface RecorderResult {
@@ -51,7 +57,9 @@ export interface RecorderHandle {
   sessionDir: string;
   page: Page;
   context: BrowserContext;
-  stop(opts?: { goal?: string }): Promise<RecorderResult>;
+  stop(opts: StopRecordingOptions): Promise<RecorderResult>;
+  /** Abandon the recording without saving a session; used when the analyst supplies no name/goal. */
+  discard(): Promise<void>;
 }
 
 function mapResourceType(rt: string): ApiRequestEvent["resourceType"] {
@@ -145,8 +153,6 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
     if (!correlationId) return;
     inflight.delete(request);
 
-    const capture = await captureBody(response, rec.bodyCapBytes, redaction);
-
     // Upgrade to the fuller header set via allHeaders() (raw HTTP headers, incl. ones
     // CORS-safelisting hides from headers()), mirroring the request-side upgrade above.
     let headers = redactHeaders(response.headers(), redaction);
@@ -160,6 +166,10 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
     } catch {
       // Keep the sync headers already captured above.
     }
+
+    if (shouldDropCapturedResponse(rec.apiFilter, response.url(), headers)) return;
+
+    const capture = await captureBody(response, rec.bodyCapBytes, redaction);
 
     const event: ApiResponseEvent = {
       type: "api_response",
@@ -198,19 +208,17 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
 
   const userAgent = await page.evaluate(() => navigator.userAgent).catch(() => "unknown");
   const startedAt = Date.now();
-  const meta: RecordingMeta = {
+  const meta: RecordingMetaDraft = {
     version: 3,
     sessionId,
     startUrl: opts.url,
     startedAt,
     userAgent,
     recorderVersion: RECORDER_VERSION,
-    ...(opts.sessionName ? { sessionName: opts.sessionName } : {}),
-    ...(opts.goal ? { goal: opts.goal } : {}),
     ...(opts.authProfile ? { authProfile: opts.authProfile } : {}),
     ...(opts.operator ? { operator: opts.operator } : {}),
   };
-  RecordingMetaSchema.parse(meta);
+  RecordingMetaDraftSchema.parse(meta);
   writeFileSync(metaPath, `${JSON.stringify(meta, null, 2)}\n`);
 
   try {
@@ -221,13 +229,31 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
 
   let stopped = false;
 
+  const shutdown = async (): Promise<void> => {
+    await context.close();
+    await browser.close();
+  };
+
   return {
     sessionId,
     sessionDir,
     page,
     context,
-    async stop(stopOpts?: { goal?: string }): Promise<RecorderResult> {
+    async discard(): Promise<void> {
       if (stopped) throw new Error("recorder already stopped");
+      stopped = true;
+      await writeQueue.drain();
+      await shutdown();
+      rmSync(sessionDir, { recursive: true, force: true });
+      log.warn({ sessionId }, "recording discarded without a name and goal");
+    },
+    async stop(stopOpts: StopRecordingOptions): Promise<RecorderResult> {
+      if (stopped) throw new Error("recorder already stopped");
+      const name = stopOpts?.name?.trim() ?? "";
+      const goal = stopOpts?.goal?.trim() ?? "";
+      if (!name || !goal) {
+        throw new Error("A session needs both a name and a goal to be saved; use discard() to abandon it");
+      }
       stopped = true;
 
       // Flush any still-pending requests so nothing is silently dropped (§3.3).
@@ -249,11 +275,7 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
       await writeQueue.drain();
 
       const endedAt = Date.now();
-      const finalMeta: RecordingMeta = {
-        ...meta,
-        endedAt,
-        ...(stopOpts?.goal ? { goal: stopOpts.goal } : {}),
-      };
+      const finalMeta: RecordingMeta = RecordingMetaSchema.parse({ ...meta, endedAt, name, goal });
       writeFileSync(metaPath, `${JSON.stringify(finalMeta, null, 2)}\n`);
 
       const summary: RecordingSummary = RecordingSummarySchema.parse({
@@ -268,8 +290,7 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
       });
       writeFileSync(summaryPath, `${JSON.stringify(summary, null, 2)}\n`);
 
-      await context.close();
-      await browser.close();
+      await shutdown();
 
       return { sessionId, sessionDir, metaPath, eventsPath, summaryPath, summary };
     },

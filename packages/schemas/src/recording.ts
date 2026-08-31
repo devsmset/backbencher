@@ -3,11 +3,9 @@ import { z } from "zod";
 // Session recording v3 (realignment guide §3) — pure, timestamped API request/response
 // sequences. No UI events, no locators, no popups: a session is a scenario made of API calls.
 
-export const RecordingMetaSchema = z.object({
+const SessionMetaBase = z.object({
   version: z.literal(3),
   sessionId: z.string(), // ulid()
-  sessionName: z.string().optional(), // analyst names the session = the scenario it represents
-  goal: z.string().optional(), // free-text intent, e.g. "login and land on homepage"
   startUrl: z.string().url(),
   startedAt: z.number().int(), // epoch ms
   endedAt: z.number().int().optional(),
@@ -16,6 +14,26 @@ export const RecordingMetaSchema = z.object({
   authProfile: z.string().optional(), // e.g. "admin", "viewer" — CRITICAL for authz matrix
   appVersion: z.string().optional(),
   recorderVersion: z.string(),
+});
+
+/**
+ * What is on disk while a recording is running. The analyst supplies the name and goal when they
+ * stop, so an in-progress session legitimately has neither.
+ */
+export const RecordingMetaDraftSchema = SessionMetaBase.extend({
+  name: z.string().optional(),
+  goal: z.string().optional(),
+});
+export type RecordingMetaDraft = z.infer<typeof RecordingMetaDraftSchema>;
+
+/**
+ * A completed session. Name and goal are REQUIRED: the analyst's own words are the highest-signal
+ * text in the system — they are what a composition goal is matched against, and what an Exemplar
+ * teaches from. They cannot be reconstructed from a call list afterwards.
+ */
+export const RecordingMetaSchema = SessionMetaBase.extend({
+  name: z.string().min(1),
+  goal: z.string().min(1),
 });
 export type RecordingMeta = z.infer<typeof RecordingMetaSchema>;
 
