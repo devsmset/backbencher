@@ -22,6 +22,8 @@ const HTML = `<!doctype html>
           body: JSON.stringify({ username, password }),
         });
         const j = await r.json();
+        await fetch('/api/logo.svg');
+        await fetch('/api/page');
         document.getElementById('result').textContent = j.ok ? 'ok' : 'fail';
       });
     </script>
@@ -55,6 +57,16 @@ export async function startFixture(): Promise<Fixture> {
     if (url.startsWith("/api/profile")) {
       res.setHeader("content-type", "application/json");
       res.end(JSON.stringify({ id: "u1", name: "Suite Admin" }));
+      return;
+    }
+    if (url === "/api/logo.svg") {
+      res.setHeader("content-type", "image/svg+xml");
+      res.end('<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>');
+      return;
+    }
+    if (url === "/api/page") {
+      res.setHeader("content-type", "text/html");
+      res.end("<!doctype html><html><body>a page, not an api</body></html>");
       return;
     }
     res.statusCode = 404;

@@ -65,5 +65,14 @@ suite("recorder e2e", () => {
     expect(eventsText).toContain(CANARY);
     expect(eventsText).toContain("server-issued-token");
     expect(eventsText).not.toContain("***REDACTED***");
+
+    const requests = events.filter((e) => e.type === "api_request");
+    const responseIds = new Set(
+      events.filter((e) => e.type === "api_response").map((e) => e.correlationId),
+    );
+    const orphans = requests.filter((r) => !responseIds.has(r.correlationId));
+    expect(orphans.map((o) => o.url)).toEqual([]);
+
+    expect(requests.some((r) => r.url.includes("/api/logo.svg"))).toBe(false);
   }, 60000);
 });
