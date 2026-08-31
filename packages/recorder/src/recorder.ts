@@ -90,6 +90,10 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
   const apiFilter = makeApiFilter(rec.apiFilter);
   const inflight = new Map<Request, InflightEntry>();
 
+  // Response handling is async: `stop()` must await these before draining, or a pair can be
+  // appended after summary.json has already been written.
+  const pendingResponses = new Set<Promise<void>>();
+
   const browser: Browser = await chromium.launch({
     headless: opts.headless ?? false,
     args: rec.tlsPermissive
@@ -145,7 +149,7 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
     inflight.set(request, { correlationId, event, headersUpgraded });
   });
 
-  context.on("response", async (response: Response) => {
+  const handleResponse = async (response: Response): Promise<void> => {
     const request = response.request();
     const entry = inflight.get(request);
     if (!entry) return;
@@ -188,6 +192,12 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
         ...(capture.bodyBytes !== undefined ? { bodyBytes: capture.bodyBytes } : {}),
       } satisfies ApiResponseEvent),
     );
+  };
+
+  context.on("response", (response: Response) => {
+    const p = handleResponse(response);
+    pendingResponses.add(p);
+    void p.finally(() => pendingResponses.delete(p));
   });
 
   context.on("requestfailed", (request: Request) => {
@@ -260,6 +270,9 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
         throw new Error("A session needs both a name and a goal to be saved; use discard() to abandon it");
       }
       stopped = true;
+
+      // Let in-flight response handlers finish so their pairs are written before we flush.
+      await Promise.allSettled([...pendingResponses]);
 
       // Flush any still-pending requests so nothing is silently dropped (§3.3).
       for (const [, entry] of inflight) {
