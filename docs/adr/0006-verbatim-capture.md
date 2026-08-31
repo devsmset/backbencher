@@ -1,30 +1,23 @@
-# ADR-0006: Capture verbatim, with no redaction and no body cap
+# Capture is verbatim: no redaction, no body cap
 
-Status: accepted
-
-## Context
-
-Capture-time redaction (ADR-0004, consequence 3) replaced denylisted header values, query
-parameters, and body fields with `***REDACTED***`, and `recorder.bodyCapBytes` truncated bodies at
-256 KiB.
-
-The cost was larger than the storage fidelity it bought. `buildDataflowGraph` skipped any value
-containing the substring `REDACTED`, so every dataflow edge running through a token, a session
-identifier, or a field whose name merely contained `token` or `secret` was silently severed. Those
-are exactly the edges the composer needs to order a scenario. Truncation removed request bodies from
-schema inference entirely, and downgraded large JSON responses to opaque text.
-
-## Decision
-
-Capture everything verbatim. The redaction module, the `redaction` configuration block, and
-`recorder.bodyCapBytes` are deleted rather than made configurable — a disabled code path is a
-maintenance cost with no user.
-
-Binary response bodies are unchanged: still `bodyKind: "binary"` with the body dropped and
+The redaction module, the `redaction` configuration block, and `recorder.bodyCapBytes` are deleted.
+URLs, request and response headers, and request and response bodies are recorded exactly as sent and
+received. Binary response bodies are unchanged: still `bodyKind: "binary"` with the body dropped and
 `bodyBytes` recorded. The `recorder.apiFilter` is unchanged.
 
-This supersedes consequence 3 of ADR-0004 ("Redaction happens at exactly one boundary, at capture
-time on the Node side"). There is now no redaction boundary at all.
+## Why
+
+Capture-time redaction (ADR-0004, consequence 3) replaced denylisted header values, query parameters,
+and body fields with `***REDACTED***`. `recorder.bodyCapBytes` truncated bodies at 256 KiB. The cost
+was larger than the storage fidelity it bought.
+
+`buildDataflowGraph` skipped any value containing the substring `REDACTED`, severing exactly the token
+and session-identifier edges the composer needs to order a scenario, including edges through values
+that merely contained that substring. Truncation removed request bodies from schema inference entirely
+and downgraded large JSON responses to opaque text.
+
+This was deleted outright rather than made configurable. A disabled code path is a maintenance cost
+with no user.
 
 ## Consequences
 
@@ -40,3 +33,6 @@ Therefore:
 - Generated specs must be reviewed before being committed to any shared repository.
 
 The recording format is bumped to v4; v3 sessions no longer parse.
+
+This supersedes consequence 3 of ADR-0004 ("Redaction happens at exactly one boundary, at capture
+time on the Node side"). There is now no redaction boundary at all.
