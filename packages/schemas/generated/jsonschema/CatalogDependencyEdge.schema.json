@@ -1,0 +1,64 @@
+{
+  "$ref": "#/definitions/CatalogDependencyEdge",
+  "definitions": {
+    "CatalogDependencyEdge": {
+      "type": "object",
+      "properties": {
+        "producerOp": {
+          "type": "string"
+        },
+        "producerPath": {
+          "type": "string"
+        },
+        "consumerOp": {
+          "type": "string"
+        },
+        "consumerSlot": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string",
+              "enum": [
+                "path",
+                "query",
+                "header",
+                "body"
+              ]
+            },
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "location",
+            "path"
+          ],
+          "additionalProperties": false
+        },
+        "role": {
+          "type": "string"
+        },
+        "evidenceSessions": {
+          "type": "integer"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "strong",
+            "weak"
+          ]
+        }
+      },
+      "required": [
+        "producerOp",
+        "producerPath",
+        "consumerOp",
+        "consumerSlot",
+        "evidenceSessions",
+        "confidence"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

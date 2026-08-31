@@ -46,10 +46,8 @@
               "reviewState": {
                 "type": "string",
                 "enum": [
-                  "unreviewed",
-                  "in_review",
-                  "approved",
-                  "deprecated",
+                  "unannotated",
+                  "ready",
                   "ignored"
                 ]
               }
@@ -69,7 +67,11 @@
           "type": "object",
           "additionalProperties": {}
         },
-        "flows": {
+        "exemplars": {
+          "type": "array",
+          "items": {}
+        },
+        "compositions": {
           "type": "array",
           "items": {}
         },
@@ -197,7 +199,8 @@
         "contentHash",
         "catalog",
         "operations",
-        "flows",
+        "exemplars",
+        "compositions",
         "guides",
         "dataflow",
         "authProfiles",

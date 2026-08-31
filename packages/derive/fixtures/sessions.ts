@@ -34,7 +34,6 @@ export function apiCall(correlationId: string, spec: CallSpec): RecordingEvent[]
     headers: spec.reqHeaders ?? {},
     headersSource: "all",
     postData: spec.postData ?? null,
-    postDataTruncated: false,
     pageLabel: "main",
   };
   const res: RecordingEvent = {
@@ -45,7 +44,6 @@ export function apiCall(correlationId: string, spec: CallSpec): RecordingEvent[]
     headers: spec.resHeaders ?? { "content-type": "application/json" },
     bodyKind: spec.bodyKind ?? (spec.body === undefined ? "empty" : "json"),
     body: spec.body ?? null,
-    bodyTruncated: false,
   };
   return [req, res];
 }
@@ -56,7 +54,7 @@ export function makeSession(
   startUrl = "https://app.example.net/",
 ): SessionData {
   const meta: RecordingMeta = {
-    version: 3,
+    version: 4,
     sessionId,
     startUrl,
     startedAt: 1_700_000_000_000,

@@ -1,10 +1,11 @@
 import { z } from "zod";
 
-// Session recording v3 (realignment guide §3) — pure, timestamped API request/response
+// Session recording v4 (realignment guide §3) — pure, timestamped API request/response
 // sequences. No UI events, no locators, no popups: a session is a scenario made of API calls.
+// Everything is stored verbatim: no redaction, no body cap (ADR-0006).
 
 const SessionMetaBase = z.object({
-  version: z.literal(3),
+  version: z.literal(4),
   sessionId: z.string(), // ulid()
   startUrl: z.string().url(),
   startedAt: z.number().int(), // epoch ms
@@ -44,10 +45,9 @@ export const ApiRequestEventSchema = z.object({
   method: z.string(),
   url: z.string(),
   resourceType: z.enum(["xhr", "fetch", "document", "other"]),
-  headers: z.record(z.string()), // post-redaction
+  headers: z.record(z.string()),
   headersSource: z.enum(["sync", "all"]), // §3.1 bug 4: which header set was captured
-  postData: z.string().nullable(), // post-redaction, capped
-  postDataTruncated: z.boolean(),
+  postData: z.string().nullable(),
 });
 export type ApiRequestEvent = z.infer<typeof ApiRequestEventSchema>;
 
@@ -59,9 +59,8 @@ export const ApiResponseEventSchema = z.object({
   headers: z.record(z.string()),
   headersSource: z.enum(["sync", "all"]).optional(), // §3.1 bug 4: which header set was captured
   bodyKind: z.enum(["json", "text", "binary", "empty", "unavailable"]),
-  body: z.unknown().nullable(), // parsed JSON if json, capped string if text, null otherwise
+  body: z.unknown().nullable(), // parsed JSON if json, full string if text, null otherwise
   bodyBytes: z.number().int().optional(),
-  bodyTruncated: z.boolean(),
   timing: z
     .object({ requestStart: z.number(), responseEnd: z.number() })
     .partial()

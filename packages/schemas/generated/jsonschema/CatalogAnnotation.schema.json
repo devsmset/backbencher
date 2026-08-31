@@ -1,0 +1,59 @@
+{
+  "$ref": "#/definitions/CatalogAnnotation",
+  "definitions": {
+    "CatalogAnnotation": {
+      "type": "object",
+      "properties": {
+        "operationId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "does": {
+          "type": "string"
+        },
+        "productArea": {
+          "type": "string"
+        },
+        "sideEffect": {
+          "type": "string",
+          "enum": [
+            "read",
+            "create",
+            "update",
+            "delete",
+            "auth",
+            "unknown"
+          ]
+        },
+        "suggested": {
+          "type": "boolean",
+          "default": false
+        },
+        "reviewState": {
+          "type": "string",
+          "enum": [
+            "unannotated",
+            "ready",
+            "ignored"
+          ],
+          "default": "unannotated"
+        },
+        "updatedBy": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "operationId",
+        "updatedBy",
+        "updatedAt"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

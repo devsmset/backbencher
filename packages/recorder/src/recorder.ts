@@ -22,7 +22,7 @@ import { makeApiFilter, shouldDropCapturedResponse } from "./apiFilter.js";
 import { captureBody } from "./bodyCapture.js";
 import { WriteQueue } from "./writeQueue.js";
 
-export const RECORDER_VERSION = "3.0.0";
+export const RECORDER_VERSION = "4.0.0";
 
 const log = childLogger({ mod: "recorder" });
 
@@ -123,7 +123,6 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
       headers: request.headers(),
       headersSource: "sync",
       postData,
-      postDataTruncated: false,
     };
 
     Promise.race([request.allHeaders(), delay(5000)])
@@ -168,7 +167,6 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
       headersSource,
       bodyKind: capture.bodyKind,
       body: capture.body ?? null,
-      bodyTruncated: capture.bodyTruncated,
       ...(capture.bodyBytes !== undefined ? { bodyBytes: capture.bodyBytes } : {}),
     };
     writeQueue.push(Object.freeze(event));
@@ -186,7 +184,6 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
       headers: {},
       bodyKind: "unavailable",
       body: null,
-      bodyTruncated: false,
     };
     writeQueue.push(Object.freeze(event));
   });
@@ -197,7 +194,7 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
   const userAgent = await page.evaluate(() => navigator.userAgent).catch(() => "unknown");
   const startedAt = Date.now();
   const meta: RecordingMetaDraft = {
-    version: 3,
+    version: 4,
     sessionId,
     startUrl: opts.url,
     startedAt,
@@ -255,7 +252,6 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
             headers: {},
             bodyKind: "unavailable",
             body: null,
-            bodyTruncated: false,
           }),
         );
       }

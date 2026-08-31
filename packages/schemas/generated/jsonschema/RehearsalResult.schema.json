@@ -1,0 +1,62 @@
+{
+  "$ref": "#/definitions/RehearsalResult",
+  "definitions": {
+    "RehearsalResult": {
+      "type": "object",
+      "properties": {
+        "resultId": {
+          "type": "string"
+        },
+        "goalId": {
+          "type": "string"
+        },
+        "compositionId": {
+          "type": "string"
+        },
+        "unmetCount": {
+          "type": "integer"
+        },
+        "gapCount": {
+          "type": "integer"
+        },
+        "stepCount": {
+          "type": "integer"
+        },
+        "autoPass": {
+          "type": "boolean"
+        },
+        "humanVerdict": {
+          "type": "string",
+          "enum": [
+            "unjudged",
+            "good",
+            "wrong"
+          ],
+          "default": "unjudged"
+        },
+        "humanNote": {
+          "type": "string"
+        },
+        "ranBy": {
+          "type": "string"
+        },
+        "ranAt": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "resultId",
+        "goalId",
+        "compositionId",
+        "unmetCount",
+        "gapCount",
+        "stepCount",
+        "autoPass",
+        "ranBy",
+        "ranAt"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

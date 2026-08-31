@@ -1,14 +1,22 @@
 {
-  "$ref": "#/definitions/ObservedFlow",
+  "$ref": "#/definitions/Exemplar",
   "definitions": {
-    "ObservedFlow": {
+    "Exemplar": {
       "type": "object",
       "properties": {
-        "flowId": {
+        "exemplarId": {
           "type": "string"
         },
         "sessionId": {
           "type": "string"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "goal": {
+          "type": "string",
+          "minLength": 1
         },
         "steps": {
           "type": "array",
@@ -18,25 +26,42 @@
               "operationId": {
                 "type": "string"
               },
-              "correlationId": {
+              "intent": {
                 "type": "string"
               },
-              "repeated": {
-                "type": "integer"
+              "notes": {
+                "type": "string"
               }
             },
             "required": [
               "operationId",
-              "correlationId"
+              "intent"
             ],
             "additionalProperties": false
           }
+        },
+        "sourceFlowIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "updatedBy": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "integer"
         }
       },
       "required": [
-        "flowId",
+        "exemplarId",
         "sessionId",
-        "steps"
+        "name",
+        "goal",
+        "steps",
+        "updatedBy",
+        "updatedAt"
       ],
       "additionalProperties": false
     }

@@ -11,7 +11,7 @@
         "specId": {
           "type": "string"
         },
-        "scenarioId": {
+        "compositionId": {
           "type": "string"
         },
         "title": {
@@ -194,7 +194,7 @@
       "required": [
         "version",
         "specId",
-        "scenarioId",
+        "compositionId",
         "title",
         "environment",
         "authProfile",

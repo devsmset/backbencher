@@ -1,0 +1,194 @@
+{
+  "$ref": "#/definitions/Composition",
+  "definitions": {
+    "Composition": {
+      "type": "object",
+      "properties": {
+        "compositionId": {
+          "type": "string"
+        },
+        "goal": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "approved",
+            "rejected"
+          ],
+          "default": "draft"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "operationId": {
+                "type": "string"
+              },
+              "intent": {
+                "type": "string"
+              },
+              "satisfies": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              },
+              "autoAdded": {
+                "type": "boolean",
+                "default": false
+              },
+              "fromExemplarIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              }
+            },
+            "required": [
+              "operationId",
+              "intent"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "unmetDependencies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "operationId": {
+                "type": "string"
+              },
+              "slot": {
+                "type": "string"
+              },
+              "note": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "operationId",
+              "slot",
+              "note"
+            ],
+            "additionalProperties": false
+          },
+          "default": []
+        },
+        "candidateGaps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "suggestedName": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "description"
+            ],
+            "additionalProperties": false
+          },
+          "default": []
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "modelInfo": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": "string"
+            },
+            "packHash": {
+              "type": "string"
+            },
+            "promptHash": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "model"
+          ],
+          "additionalProperties": false
+        },
+        "testDecision": {
+          "type": "object",
+          "properties": {
+            "inScope": {
+              "type": "boolean"
+            },
+            "strategy": {
+              "type": "string",
+              "enum": [
+                "api_functional",
+                "api_negative",
+                "authz",
+                "contract_only",
+                "skip"
+              ]
+            },
+            "rationale": {
+              "type": "string"
+            },
+            "riskLevel": {
+              "type": "string",
+              "enum": [
+                "critical",
+                "high",
+                "medium",
+                "low"
+              ]
+            },
+            "environments": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "inScope",
+            "strategy",
+            "rationale",
+            "riskLevel",
+            "environments"
+          ],
+          "additionalProperties": false
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "integer"
+        },
+        "updatedBy": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "compositionId",
+        "goal",
+        "steps",
+        "createdBy",
+        "createdAt",
+        "updatedBy",
+        "updatedAt"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

@@ -4,6 +4,7 @@ import {
   KnowledgePackSchema,
   OperationSchema,
   RecordingEventSchema,
+  RecordingMetaSchema,
   TestSpecSchema,
   schemaRegistry,
 } from "../src/index.js";
@@ -19,7 +20,6 @@ describe("recording contracts", () => {
     headers: { accept: "*/*" },
     headersSource: "all" as const,
     postData: null,
-    postDataTruncated: false,
     pageLabel: "main",
   };
 
@@ -34,6 +34,21 @@ describe("recording contracts", () => {
 
   it("rejects an unknown event type", () => {
     expect(() => RecordingEventSchema.parse({ type: "nope", timestamp: 1 })).toThrow();
+  });
+
+  it("rejects a v3 session meta", () => {
+    expect(() =>
+      RecordingMetaSchema.parse({
+        version: 3,
+        sessionId: "s1",
+        startUrl: "https://example.net/",
+        startedAt: 1,
+        userAgent: "t",
+        recorderVersion: "t",
+        name: "n",
+        goal: "g",
+      }),
+    ).toThrow();
   });
 });
 

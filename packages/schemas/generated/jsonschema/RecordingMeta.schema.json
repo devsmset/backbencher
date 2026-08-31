@@ -6,12 +6,9 @@
       "properties": {
         "version": {
           "type": "number",
-          "const": 2
+          "const": 4
         },
         "sessionId": {
-          "type": "string"
-        },
-        "sessionName": {
           "type": "string"
         },
         "startUrl": {
@@ -39,8 +36,13 @@
         "recorderVersion": {
           "type": "string"
         },
-        "migratedFromV1": {
-          "type": "boolean"
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "goal": {
+          "type": "string",
+          "minLength": 1
         }
       },
       "required": [
@@ -49,7 +51,9 @@
         "startUrl",
         "startedAt",
         "userAgent",
-        "recorderVersion"
+        "recorderVersion",
+        "name",
+        "goal"
       ],
       "additionalProperties": false
     }

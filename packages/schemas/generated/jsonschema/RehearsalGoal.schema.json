@@ -1,0 +1,34 @@
+{
+  "$ref": "#/definitions/RehearsalGoal",
+  "definitions": {
+    "RehearsalGoal": {
+      "type": "object",
+      "properties": {
+        "goalId": {
+          "type": "string"
+        },
+        "goal": {
+          "type": "string",
+          "minLength": 1
+        },
+        "note": {
+          "type": "string"
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "goalId",
+        "goal",
+        "createdBy",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

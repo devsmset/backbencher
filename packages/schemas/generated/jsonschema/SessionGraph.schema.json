@@ -1,0 +1,133 @@
+{
+  "$ref": "#/definitions/SessionGraph",
+  "definitions": {
+    "SessionGraph": {
+      "type": "object",
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "correlationId": {
+                "type": "string"
+              },
+              "operationId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "method": {
+                "type": "string"
+              },
+              "host": {
+                "type": "string"
+              },
+              "pathname": {
+                "type": "string"
+              },
+              "status": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "requestTimestamp": {
+                "type": "integer"
+              },
+              "responseTimestamp": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "correlationId",
+              "operationId",
+              "method",
+              "host",
+              "pathname",
+              "status",
+              "requestTimestamp",
+              "responseTimestamp"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "producerCorrelationId": {
+                "type": "string"
+              },
+              "producerLocation": {
+                "type": "string",
+                "enum": [
+                  "responseBody",
+                  "responseHeader"
+                ]
+              },
+              "producerJsonPath": {
+                "type": "string"
+              },
+              "consumerCorrelationId": {
+                "type": "string"
+              },
+              "consumerLocation": {
+                "type": "string",
+                "enum": [
+                  "path",
+                  "query",
+                  "requestBody",
+                  "requestHeader"
+                ]
+              },
+              "consumerJsonPath": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              },
+              "confidence": {
+                "type": "string",
+                "enum": [
+                  "strong",
+                  "weak"
+                ]
+              }
+            },
+            "required": [
+              "producerCorrelationId",
+              "producerLocation",
+              "producerJsonPath",
+              "consumerCorrelationId",
+              "consumerLocation",
+              "consumerJsonPath",
+              "value",
+              "confidence"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "nodes",
+        "edges"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

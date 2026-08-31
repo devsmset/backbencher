@@ -41,12 +41,12 @@ function seed() {
     dataflow: [],
     flows: [{ flowId: "s1:flow", sessionId: "s1", steps: [{ operationId: "op_one", correlationId: "c1" }] }],
   });
-  store.sessions.upsertFromMeta({ version: 3, sessionId: "s1", startUrl: "https://app.example.net/", startedAt: Date.now(), userAgent: "t", recorderVersion: "t" });
+  store.sessions.upsertFromMeta({ version: 4, sessionId: "s1", startUrl: "https://app.example.net/", startedAt: Date.now(), userAgent: "t", recorderVersion: "t" });
   mkdirSync(sessionDir, { recursive: true });
-  writeFileSync(join(sessionDir, "meta.json"), JSON.stringify({ version: 3, sessionId: "s1", startUrl: "https://app.example.net/", startedAt: Date.now(), userAgent: "t", recorderVersion: "t" }));
+  writeFileSync(join(sessionDir, "meta.json"), JSON.stringify({ version: 4, sessionId: "s1", startUrl: "https://app.example.net/", startedAt: Date.now(), userAgent: "t", recorderVersion: "t" }));
   writeFileSync(
     join(sessionDir, "events.ndjson"),
-    `${JSON.stringify({ type: "api_request", correlationId: "c1", timestamp: Date.now(), method: "GET", url: "https://app.example.net/api/one", resourceType: "xhr", headers: {}, headersSource: "all", postData: null, postDataTruncated: false })}\n`,
+    `${JSON.stringify({ type: "api_request", correlationId: "c1", timestamp: Date.now(), method: "GET", url: "https://app.example.net/api/one", resourceType: "xhr", headers: {}, headersSource: "all", postData: null })}\n`,
   );
 }
 

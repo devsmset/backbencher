@@ -1,0 +1,93 @@
+{
+  "$ref": "#/definitions/OperationDependency",
+  "definitions": {
+    "OperationDependency": {
+      "type": "object",
+      "properties": {
+        "operationId": {
+          "type": "string"
+        },
+        "requires": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "consumerSlot": {
+                "type": "object",
+                "properties": {
+                  "location": {
+                    "type": "string",
+                    "enum": [
+                      "path",
+                      "query",
+                      "header",
+                      "body"
+                    ]
+                  },
+                  "path": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "location",
+                  "path"
+                ],
+                "additionalProperties": false
+              },
+              "role": {
+                "type": "string"
+              },
+              "satisfiableBy": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "consumerSlot",
+              "satisfiableBy"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "produces": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "clientGenerated": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "authRequired": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "operationId",
+        "requires",
+        "produces",
+        "clientGenerated",
+        "authRequired"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

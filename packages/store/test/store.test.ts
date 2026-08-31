@@ -88,7 +88,7 @@ describe("store", () => {
     store.audit.append({ entityType: "operation", entityId: "op_abc", action: "annotate", actor: "alice" });
     expect(store.audit.list("operation", "op_abc")).toHaveLength(1);
     store.sessions.upsertFromMeta({
-      version: 3,
+      version: 4,
       sessionId: "s1",
       name: "Login and land on homepage",
       goal: "log in as an admin and reach the dashboard",
