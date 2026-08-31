@@ -1,16 +1,14 @@
 {
-  "name": "project_2",
+  "name": "backbencher",
   "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "record": "node src/recorders/recorder.js",
-    "filter": "node src/filters/filter-api.js",
     "serve": "bash scripts/serve.sh"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "Playwright session recorder + API-call filter",
+  "description": "Turns recorded product usage into an API catalog, composes API scenarios from it, and compiles them into Playwright tests",
   "devDependencies": {
     "typescript": "^5.7.2",
     "vitest": "^2.1.8",
