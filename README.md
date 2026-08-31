@@ -34,7 +34,7 @@ pnpm install
 pnpm -r build
 ```
 
-Configure hosts to record, redaction rules, model routing, and target environments in
+Configure hosts to record, model routing, and target environments in
 [bb.config.jsonc](./bb.config.jsonc).
 
 Then either drive everything from the browser:

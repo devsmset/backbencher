@@ -49,13 +49,13 @@ reconciliation, and compilation are pure functions. The LLM proposes; determinis
 
 ```
 backbencher/
-├── bb.config.jsonc          recorder, redaction, llm models/tasks, environments
+├── bb.config.jsonc          recorder, llm models/tasks, environments
 ├── CONTEXT.md               domain glossary
 ├── docs/adr/                architecture decision records
 ├── apps/cli/                @backbencher/cli — the `bb` binary
 ├── packages/
 │   ├── schemas/             Zod contracts; depends on no other package
-│   ├── shared/              config, logger, redaction, ids, dataDir
+│   ├── shared/              config, logger, ids, dataDir
 │   ├── llm/                 provider adapters + per-task model routing
 │   ├── derive/              deterministic derivation pipeline
 │   ├── store/               Drizzle schema + repositories (SQLite)
@@ -80,7 +80,7 @@ Zod schemas with `z.infer` types, parsed at every boundary. `SCHEMAS_VERSION = "
 
 - **`recording.ts`** — `RecordingMetaSchema` (requires `name` and `goal`), `ApiRequestEventSchema`
   (`correlationId`, method, url, headers, postData), `ApiResponseEventSchema` (`correlationId`,
-  status, `bodyKind`, truncation flags).
+  status, `bodyKind`, `bodyBytes`).
 - **`apimodel.ts`** — `PathTemplateSchema`, `OperationSchema` (request/response schemas per status,
   query params, `authObserved`, `volatileResponseFields`), `DataflowEdgeSchema` (`evidenceCount`,
   `valueEntropyOk`), `ObservedFlowSchema`.
@@ -113,8 +113,8 @@ Capture is API-only; there is no UI instrumentation, no injected script, and no 
 - **`apiFilter.ts`** — host allowlist with wildcards, resource type `xhr`/`fetch`, path allow/drop
   patterns, drops `OPTIONS`. Configured under `recorder.apiFilter`.
 - **`bodyCapture.ts`** — reads the body eagerly inside the response handler, which avoids Playwright's
-  evicted-body trap; caps at `bodyCapBytes`; classifies `json|text|binary|empty|unavailable`; redacts
-  before anything is written.
+  evicted-body trap; stores it in full; classifies `json|text|binary|empty|unavailable`. Binary bodies
+  are dropped, with `bodyBytes` recorded.
 - Status encodes capture failure modes: `0` for a request that failed at the network layer, `-1` for a
   request still in flight when `stop()` drains.
 - `stop({ name, goal })` **requires both** and throws otherwise; `discard()` abandons the run. This is
@@ -338,7 +338,8 @@ Each of these has been got wrong at least once, or would be by anyone who didn't
    depth against replayed identifiers.
 7. **Never let raw capture-scale data near the model.** The pack catalog plus on-demand detail is the
    contract. An oversized prompt means retrieval is too loose, not that the budget is too small.
-8. **Redact at capture time.** No unredacted intermediate artifact should ever exist on disk.
+8. **Capture verbatim.** No redaction, no body cap. Sessions hold live credentials, so `data/` stays
+   gitignored and recordings use non-production accounts (ADR-0006).
 9. **Under-templatization fragments dependencies.** If `/tickets/{id}` was not templatized, every id
    becomes its own Operation and the dependency edges shatter. Re-run derivation after a portal merge.
 10. **Don't let a topological sort override a valid model ordering.** Real product flows carry
@@ -372,5 +373,6 @@ Each of these has been got wrong at least once, or would be by anyone who didn't
 The system began as a two-file JavaScript prototype: a Playwright recorder that captured UI events
 alongside network traffic, and a filter that paired requests to responses by URL and timestamp. That
 code has been deleted, but several current choices are direct reactions to how it failed —
-correlationId-based pairing, entropy-gated dataflow, capture-time redaction, and symmetric body
-truncation all exist because the prototype got those wrong. See ADR-0003 and ADR-0004.
+correlationId-based pairing and entropy-gated dataflow exist because the prototype got those wrong.
+Capture-time redaction and body truncation were later removed for the reasons in ADR-0006.
+See ADR-0003, ADR-0004, and ADR-0006.
