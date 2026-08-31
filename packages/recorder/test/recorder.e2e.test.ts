@@ -74,5 +74,10 @@ suite("recorder e2e", () => {
     expect(orphans.map((o) => o.url)).toEqual([]);
 
     expect(requests.some((r) => r.url.includes("/api/logo.svg"))).toBe(false);
+
+    // `/api/page` is fetched from the same click handler as the svg, so its presence proves the
+    // asset fetch ran too — and that an XHR returning HTML is still recorded, since the
+    // document-scoped HTML rule must not catch it.
+    expect(requests.some((r) => r.url.includes("/api/page"))).toBe(true);
   }, 60000);
 });
