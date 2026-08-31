@@ -19,7 +19,7 @@ export function inferRequestSchema(
   opts: BuildOptions = DEFAULT_BUILD_OPTIONS,
 ): JsonSchema | null {
   const bodies = calls
-    .filter((c) => !c.requestBodyTruncated && isObjectBody(c.requestBody))
+    .filter((c) => isObjectBody(c.requestBody))
     .map((c) => c.requestBody);
   return inferUnion(bodies, opts);
 }
@@ -30,7 +30,7 @@ export function inferResponseSchemas(
 ): Record<string, JsonSchema> {
   const byStatus = new Map<number, unknown[]>();
   for (const c of calls) {
-    if (c.status === null || c.responseBodyTruncated) continue;
+    if (c.status === null) continue;
     if (!isObjectBody(c.responseBody)) continue;
     const arr = byStatus.get(c.status);
     if (arr) arr.push(c.responseBody);

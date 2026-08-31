@@ -24,10 +24,6 @@ const COMMON_WORDS = new Set([
   "default", "none", "test", "ui", "en", "json",
 ]);
 
-function isRedacted(v: string): boolean {
-  return v.includes("REDACTED");
-}
-
 // Entropy gate (§5.5 step 4). Returns null to drop; otherwise whether the value is high-entropy.
 export function entropy(value: string): { keep: boolean; ok: boolean } {
   if (value.length < 6) return { keep: false, ok: false };
@@ -60,13 +56,12 @@ export function collectProducers(calls: PairedCall[], callOp: Map<PairedCall, st
     if (!op) continue;
     if (c.responseBody !== null && c.responseTimestamp !== null) {
       for (const leaf of walkScalars(c.responseBody)) {
-        if (isRedacted(leaf.value)) continue;
         producers.push({ op, location: "responseBody", jsonPath: leaf.path, value: leaf.value, ts: c.responseTimestamp, sessionId: c.sessionId, correlationId: c.correlationId });
       }
     }
     if (c.responseTimestamp !== null) {
       for (const [name, value] of Object.entries(c.responseHeaders)) {
-        if (STD_RES_HEADERS.has(name.toLowerCase()) || isRedacted(value)) continue;
+        if (STD_RES_HEADERS.has(name.toLowerCase())) continue;
         producers.push({ op, location: "responseHeader", jsonPath: name, value, ts: c.responseTimestamp, sessionId: c.sessionId, correlationId: c.correlationId });
       }
     }
@@ -86,23 +81,20 @@ export function collectConsumers(
     const params = operations.get(op)?.params ?? [];
     for (const p of params) {
       const value = c.segments[p.position];
-      if (value && !isRedacted(value)) {
+      if (value) {
         consumers.push({ op, location: "path", jsonPath: p.name, value, ts: c.requestTimestamp, sessionId: c.sessionId, correlationId: c.correlationId });
       }
     }
     for (const [name, value] of c.query) {
-      if (!isRedacted(value)) {
-        consumers.push({ op, location: "query", jsonPath: name, value, ts: c.requestTimestamp, sessionId: c.sessionId, correlationId: c.correlationId });
-      }
+      consumers.push({ op, location: "query", jsonPath: name, value, ts: c.requestTimestamp, sessionId: c.sessionId, correlationId: c.correlationId });
     }
     if (c.requestBody !== null && c.requestBody !== undefined) {
       for (const leaf of walkScalars(c.requestBody)) {
-        if (isRedacted(leaf.value)) continue;
         consumers.push({ op, location: "requestBody", jsonPath: leaf.path, value: leaf.value, ts: c.requestTimestamp, sessionId: c.sessionId, correlationId: c.correlationId });
       }
     }
     for (const [name, value] of Object.entries(c.requestHeaders)) {
-      if (STD_REQ_HEADERS.has(name.toLowerCase()) || isRedacted(value)) continue;
+      if (STD_REQ_HEADERS.has(name.toLowerCase())) continue;
       consumers.push({ op, location: "requestHeader", jsonPath: name, value, ts: c.requestTimestamp, sessionId: c.sessionId, correlationId: c.correlationId });
     }
   }

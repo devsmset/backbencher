@@ -50,13 +50,11 @@ export function pairCalls(session: SessionData): PairedCall[] {
       requestHeaders: req.headers,
       requestContentType: req.headers["content-type"],
       requestBody: parseBody(req.postData),
-      requestBodyTruncated: req.postDataTruncated,
       status: res ? res.status : null,
       responseHeaders: res ? res.headers : {},
       responseContentType: res ? res.headers["content-type"] : undefined,
       responseBody: res ? res.body : null,
       responseBodyKind: res ? res.bodyKind : null,
-      responseBodyTruncated: res ? res.bodyTruncated : false,
       requestTimestamp: req.timestamp,
       responseTimestamp: res ? res.timestamp : null,
     });

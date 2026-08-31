@@ -25,13 +25,11 @@ export interface PairedCall {
   requestHeaders: Record<string, string>;
   requestContentType: string | undefined;
   requestBody: unknown;
-  requestBodyTruncated: boolean;
   status: number | null;
   responseHeaders: Record<string, string>;
   responseContentType: string | undefined;
   responseBody: unknown;
   responseBodyKind: string | null;
-  responseBodyTruncated: boolean;
   requestTimestamp: number;
   responseTimestamp: number | null;
 }

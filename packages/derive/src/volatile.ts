@@ -26,7 +26,7 @@ function leafMap(body: unknown): Map<string, string> {
 export function detectVolatileFields(calls: PairedCall[]): string[] {
   const shapes = new Map<string, PairedCall[]>();
   for (const c of calls) {
-    if (c.status === null || c.responseBodyTruncated) continue;
+    if (c.status === null) continue;
     if (c.responseBody === null || typeof c.responseBody !== "object") continue;
     const key = requestShapeKey(c);
     const arr = shapes.get(key);

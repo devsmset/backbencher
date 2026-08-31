@@ -90,6 +90,17 @@ export function dataflowFixture(): SessionData {
   ]);
 }
 
+// A legitimate identifier that happens to contain the substring "REDACTED". The old isRedacted()
+// guard dropped any such value, severing a real edge.
+export function literalRedactedFixture(): SessionData {
+  resetClock();
+  const sid = "REDACTED-SESSION-9f8e7d6c";
+  return makeSession("sess-literal-redacted", [
+    ...apiCall("lr1", { url: `${H}/auth/session`, body: { sid } }),
+    ...apiCall("lr2", { url: `${H}/api/things?sid=${sid}`, body: { ok: true } }),
+  ]);
+}
+
 export function volatileFixture(): SessionData {
   resetClock();
   return makeSession("sess-volatile", [
