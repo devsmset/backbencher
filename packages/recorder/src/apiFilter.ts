@@ -23,8 +23,13 @@ export function shouldDropCapturedResponse(
   cfg: ApiFilterConfig,
   url: string,
   headers: Record<string, string>,
+  resourceType: string,
 ): boolean {
   const contentType = headers["content-type"] ?? "";
+  // A top-level navigation that renders markup is a page, not an API call (ADR-0004). Scoped to
+  // `document` so an XHR answering with an HTML error page — how session expiry usually surfaces —
+  // is still recorded.
+  if (resourceType === "document" && matchesContentType("text/html", contentType)) return true;
   if (cfg.dropContentTypes.some((pattern) => matchesContentType(pattern, contentType))) {
     return true;
   }
@@ -53,6 +58,7 @@ export function makeApiFilter(cfg: ApiFilterConfig): ApiFilter {
       } catch {
         return false;
       }
+      if (ASSET_PATH_RE.test(u.pathname)) return false;
       if (cfg.hostAllowlist.length > 0 && !cfg.hostAllowlist.some((h) => hostMatches(h, u.hostname))) {
         return false;
       }

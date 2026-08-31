@@ -8,7 +8,7 @@
       "pathAllowPatterns": ["/api/", "/idm-service/", "/bo/"],
       "resourceTypes": ["xhr", "fetch"],
       "dropContentTypes": ["image/", "font/", "text/css", "text/javascript"],
-      "dropPathPatterns": ["/analytics", "/telemetry", "/sockjs", "\\.js$", "\\.css$"],
+      "dropPathPatterns": ["/analytics", "/telemetry", "/sockjs", "/assets/", "\\.js$", "\\.css$"],
       "dropMethods": ["OPTIONS"]
     },
     "inputDebounceMs": 1000,

@@ -154,7 +154,7 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
       // Keep the sync headers already captured above.
     }
 
-    if (shouldDropCapturedResponse(rec.apiFilter, response.url(), headers)) return;
+    if (shouldDropCapturedResponse(rec.apiFilter, response.url(), headers, request.resourceType())) return;
 
     const capture = await captureBody(response);
 
