@@ -1,4 +1,3 @@
-import { type RedactionConfig, redactJsonBody } from "@backbencher/shared";
 import type { Response } from "playwright";
 
 // Response body handling (architecture §3.4). Read eagerly inside the response handler —
@@ -11,11 +10,7 @@ export interface BodyCapture {
   bodyTruncated: boolean;
 }
 
-export async function captureBody(
-  response: Response,
-  cap: number,
-  cfg: RedactionConfig,
-): Promise<BodyCapture> {
+export async function captureBody(response: Response): Promise<BodyCapture> {
   const ct = (response.headers()["content-type"] ?? "").toLowerCase();
   let buf: Buffer;
   try {
@@ -28,20 +23,14 @@ export async function captureBody(
   if (!ct.includes("json") && !ct.startsWith("text/")) {
     return { bodyKind: "binary", body: null, bodyBytes: buf.length, bodyTruncated: false };
   }
-  const truncated = buf.length > cap;
-  const text = buf.subarray(0, cap).toString("utf8");
-  if (ct.includes("json") && !truncated) {
+  const text = buf.toString("utf8");
+  if (ct.includes("json")) {
     try {
       const parsed: unknown = JSON.parse(text);
-      return {
-        bodyKind: "json",
-        body: redactJsonBody(parsed, cfg),
-        bodyBytes: buf.length,
-        bodyTruncated: false,
-      };
+      return { bodyKind: "json", body: parsed, bodyBytes: buf.length, bodyTruncated: false };
     } catch {
-      // fall through to text
+      // malformed JSON — keep the raw text rather than losing the body
     }
   }
-  return { bodyKind: "text", body: text, bodyBytes: buf.length, bodyTruncated: truncated };
+  return { bodyKind: "text", body: text, bodyBytes: buf.length, bodyTruncated: false };
 }

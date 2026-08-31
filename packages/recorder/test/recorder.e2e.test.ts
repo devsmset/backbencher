@@ -8,8 +8,8 @@ import { startFixture } from "../fixtures/app.js";
 import { startRecording } from "../src/recorder.js";
 
 // Real e2e: Playwright drives the fixture app while the recorder captures. Verifies events are
-// schema-valid and that a typed password never appears anywhere in data/ (both browser-side UI
-// redaction and network-body redaction). Skips gracefully if no Chromium is installed.
+// schema-valid and that a typed password and a server-issued token are stored verbatim.
+// Skips gracefully if no Chromium is installed.
 
 const hasBrowser = (() => {
   try {
@@ -19,7 +19,7 @@ const hasBrowser = (() => {
   }
 })();
 
-const CANARY = "hunter2-canary-PASSWORD-do-not-leak";
+const CANARY = "hunter2-canary-PASSWORD-stored-verbatim";
 
 const suite = hasBrowser ? describe : describe.skip;
 
@@ -61,9 +61,9 @@ suite("recorder e2e", () => {
     expect(events.some((e) => e.type === "api_request" && e.url.includes("/api/login"))).toBe(true);
     expect(events.some((e) => e.type === "api_response")).toBe(true);
 
-    for (const f of ["events.ndjson", "meta.json", "summary.json"]) {
-      const content = readFileSync(join(result.sessionDir, f), "utf8");
-      expect(content).not.toContain(CANARY);
-    }
+    const eventsText = readFileSync(result.eventsPath, "utf8");
+    expect(eventsText).toContain(CANARY);
+    expect(eventsText).toContain("server-issued-token");
+    expect(eventsText).not.toContain("***REDACTED***");
   }, 60000);
 });

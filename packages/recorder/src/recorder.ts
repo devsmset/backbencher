@@ -16,9 +16,6 @@ import {
   dataDir,
   loadConfig,
   newId,
-  redactBodyText,
-  redactHeaders,
-  redactUrl,
 } from "@backbencher/shared";
 import { type Browser, type BrowserContext, type Page, type Request, type Response, chromium } from "playwright";
 import { makeApiFilter, shouldDropCapturedResponse } from "./apiFilter.js";
@@ -73,7 +70,6 @@ const delay = (ms: number): Promise<null> =>
 export async function startRecording(opts: StartRecordingOptions): Promise<RecorderHandle> {
   const config = opts.config ?? loadConfig();
   const rec = config.recorder;
-  const redaction = config.redaction;
 
   const sessionId = newId();
   const sessionDir = join(dataDir(), "sessions", sessionId);
@@ -111,15 +107,10 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
     inflight.set(request, correlationId);
 
     let postData: string | null = null;
-    let postDataTruncated = false;
     try {
-      postData = redactBodyText(request.postData() ?? null, redaction);
+      postData = request.postData() ?? null;
     } catch {
       postData = null;
-    }
-    if (postData !== null && Buffer.byteLength(postData, "utf8") > rec.bodyCapBytes) {
-      postData = postData.slice(0, rec.bodyCapBytes);
-      postDataTruncated = true;
     }
 
     const event: ApiRequestEvent = {
@@ -127,19 +118,18 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
       correlationId,
       timestamp,
       method,
-      url: redactUrl(url, redaction),
+      url,
       resourceType: mapResourceType(resourceType),
-      headers: redactHeaders(request.headers(), redaction),
+      headers: request.headers(),
       headersSource: "sync",
       postData,
-      postDataTruncated,
+      postDataTruncated: false,
     };
 
-    // Upgrade to the fuller header set if allHeaders() resolves within 5s (§3.1 bug 4).
     Promise.race([request.allHeaders(), delay(5000)])
       .then((headers) => {
         if (headers) {
-          event.headers = redactHeaders(headers, redaction);
+          event.headers = headers;
           event.headersSource = "all";
         }
         writeQueue.push(Object.freeze(event));
@@ -153,14 +143,12 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
     if (!correlationId) return;
     inflight.delete(request);
 
-    // Upgrade to the fuller header set via allHeaders() (raw HTTP headers, incl. ones
-    // CORS-safelisting hides from headers()), mirroring the request-side upgrade above.
-    let headers = redactHeaders(response.headers(), redaction);
+    let headers = response.headers();
     let headersSource: "sync" | "all" = "sync";
     try {
       const allHeaders = await Promise.race([response.allHeaders(), delay(5000)]);
       if (allHeaders) {
-        headers = redactHeaders(allHeaders, redaction);
+        headers = allHeaders;
         headersSource = "all";
       }
     } catch {
@@ -169,7 +157,7 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
 
     if (shouldDropCapturedResponse(rec.apiFilter, response.url(), headers)) return;
 
-    const capture = await captureBody(response, rec.bodyCapBytes, redaction);
+    const capture = await captureBody(response);
 
     const event: ApiResponseEvent = {
       type: "api_response",
