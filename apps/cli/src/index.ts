@@ -15,10 +15,14 @@ const HELP = `bb — backbencher CLI (v${VERSION})
 Usage: bb <command> [options]
 
 Commands:
-  record [--url <u>] [--profile <p>] [--session-name <n>] [--goal <g>]  Record a browser session
+  record [--url <u>] [--profile <p>] [--name <n>] [--goal <g>]  Record a browser session
+                                                                (name and goal are required; you are
+                                                                 prompted for them when you stop)
   derive [--session <id> | --all] [--probe --env <n>]       Run the derivation pipeline
+  embed [--rebuild]                                         Embed the catalog for retrieval
+                                                            (also a smoke test of llm.tasks.embed)
   serve  [--port 4000]                                      Start portal-api + portal-web
-  agent generate --scenario <id>                            Generate a TestSpec via the QA agent
+  agent generate --composition <id>                         Generate a TestSpec via the QA agent
   test compile --spec <file|dir>                            Compile TestSpec(s) to Playwright
   test run [--env <name>] [--grep <pattern>]                Run compiled tests
   security authz|bola [--env <name>]                        Generate authz / BOLA security specs
@@ -44,13 +48,11 @@ async function cmdRecord(argv: string[]): Promise<void> {
     return;
   }
 
-  const sessionName = getFlag(argv, "--session-name");
   const authProfile = getFlag(argv, "--profile");
   const handle = await startRecording({
     url,
     config,
     headless: false,
-    ...(sessionName ? { sessionName } : {}),
     ...(authProfile ? { authProfile } : {}),
   });
 
@@ -60,10 +62,34 @@ async function cmdRecord(argv: string[]): Promise<void> {
   );
 
   const rl = createInterface({ input: process.stdin, output: process.stdout });
+  const ask = (prompt: string): Promise<string> =>
+    new Promise((resolve) => rl.question(prompt, (answer) => resolve(answer.trim())));
+
+  let finishing = false;
   const finish = async (): Promise<void> => {
+    if (finishing) return;
+    finishing = true;
+
+    // The analyst's own words are the highest-signal text in the corpus, and cannot be
+    // reconstructed later — so a session is not saved until both are given.
+    let name = getFlag(argv, "--name") ?? getFlag(argv, "--session-name") ?? "";
+    let goal = getFlag(argv, "--goal") ?? "";
+    process.stdout.write("\n");
+    while (!name) {
+      name = await ask("Session name (e.g. \"Create ticket from homepage\"), or 'discard': ");
+      if (name.toLowerCase() === "discard") {
+        rl.close();
+        await handle.discard();
+        process.stdout.write("🗑️  Discarded — nothing saved.\n");
+        process.exit(0);
+      }
+    }
+    while (!goal) {
+      goal = await ask('Goal — what were you doing, in your words? ');
+    }
     rl.close();
-    const goal = getFlag(argv, "--goal");
-    const result = await handle.stop(goal ? { goal } : undefined);
+
+    const result = await handle.stop({ name, goal });
     const counts = Object.entries(result.summary.eventCounts)
       .map(([k, v]) => `${k}=${v}`)
       .join(", ");
@@ -76,6 +102,28 @@ async function cmdRecord(argv: string[]): Promise<void> {
 
   rl.on("line", () => void finish());
   process.on("SIGINT", () => void finish());
+}
+
+async function cmdEmbed(argv: string[]): Promise<void> {
+  const { openStore } = await import("@backbencher/store");
+  const { createEmbedder, warmEmbeddings } = await import("@backbencher/agent");
+  const config = loadConfig();
+  const store = openStore();
+  if (argv.includes("--rebuild")) store.embeddings.clear();
+
+  try {
+    const embedder = createEmbedder(config);
+    const res = await warmEmbeddings(store, embedder);
+    process.stdout.write(
+      `✅ Embeddings up to date with ${embedder.model}\n` +
+        `   ready operations=${res.operations}, exemplars=${res.exemplars}, newly embedded=${res.embedded}\n`,
+    );
+  } catch (e) {
+    process.stderr.write(`${(e as Error).message}\n`);
+    process.exitCode = 1;
+  } finally {
+    store.close();
+  }
 }
 
 async function cmdDerive(argv: string[]): Promise<void> {
@@ -103,7 +151,7 @@ async function cmdDerive(argv: string[]): Promise<void> {
     if (!env) {
       process.stderr.write("--probe requires a configured environment (bb.config.jsonc / --env)\n");
     } else {
-      const safe = new Set(store.annotations.list().filter((a) => a.tags.includes("probe-safe")).map((a) => a.operationId));
+      const safe = new Set(store.testingAnnotations.list().filter((a) => a.tags.includes("probe-safe")).map((a) => a.operationId));
       const http = async ({ url }: { method: string; url: string }) => {
         const res = await fetch(url);
         let body: unknown = null;
@@ -158,13 +206,13 @@ async function cmdExport(argv: string[]): Promise<void> {
 
 async function cmdAgent(argv: string[]): Promise<void> {
   if (argv[1] !== "generate") {
-    process.stderr.write("usage: bb agent generate --scenario <id> [--model <m>] [--provider anthropic|vertex]\n");
+    process.stderr.write("usage: bb agent generate --composition <id> [--model <m>] [--provider anthropic|vertex]\n");
     process.exitCode = 1;
     return;
   }
-  const scenarioId = getFlag(argv, "--scenario");
-  if (!scenarioId) {
-    process.stderr.write("agent generate requires --scenario <id>\n");
+  const compositionId = getFlag(argv, "--composition");
+  if (!compositionId) {
+    process.stderr.write("agent generate requires --composition <id>\n");
     process.exitCode = 1;
     return;
   }
@@ -174,11 +222,11 @@ async function cmdAgent(argv: string[]): Promise<void> {
   const model = getFlag(argv, "--model");
   const providerFlag = getFlag(argv, "--provider");
   const provider = providerFlag === "vertex" || providerFlag === "anthropic" ? providerFlag : config.agent.provider;
-  const agentCfg = { ...config.agent, provider, ...(model ? { model } : {}) };
+  const cfg = { ...config, agent: { ...config.agent, provider } };
 
   let llm: import("@backbencher/agent").LlmComplete;
   try {
-    llm = createLlm(agentCfg);
+    llm = createLlm(cfg, "generateSpec", model);
   } catch (e) {
     process.stderr.write(`${(e as Error).message}\n`);
     process.exitCode = 1;
@@ -186,7 +234,7 @@ async function cmdAgent(argv: string[]): Promise<void> {
   }
 
   const store = openStore();
-  const res = await generateTestSpec(store, scenarioId, { llm, ...(model ? { model } : {}) });
+  const res = await generateTestSpec(store, compositionId, { llm, ...(model ? { model } : {}) });
   store.close();
   if (res.valid) {
     process.stdout.write(`\u2705 Generated spec ${res.specId} (${res.attempts} attempt(s))\n`);
@@ -301,7 +349,7 @@ async function cmdSecurity(argv: string[]): Promise<void> {
   for (const spec of specs) {
     store.specs.upsert({
       specId: spec.specId,
-      scenarioId: spec.scenarioId,
+      compositionId: spec.compositionId,
       yaml: specToYaml(spec),
       generatedBy: `${sub}-generator`,
       model: null,
@@ -333,6 +381,9 @@ async function main(): Promise<void> {
       break;
     case "derive":
       await cmdDerive(argv);
+      break;
+    case "embed":
+      await cmdEmbed(argv);
       break;
     case "serve":
       await cmdServe(argv);
