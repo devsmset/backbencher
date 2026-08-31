@@ -1,4 +1,12 @@
-import { AnalystGuideSchema, OperationAnnotationSchema, ScenarioSchema } from "./knowledge.js";
+import {
+  AnalystGuideSchema,
+  CatalogAnnotationSchema,
+  CompositionSchema,
+  ExemplarSchema,
+  RehearsalGoalSchema,
+  RehearsalResultSchema,
+  TestingAnnotationSchema,
+} from "./knowledge.js";
 import {
   CatalogDependencyEdgeSchema,
   DataflowEdgeSchema,
@@ -6,6 +14,7 @@ import {
   OperationDependencySchema,
   OperationSchema,
   PathTemplateSchema,
+  SessionGraphSchema,
 } from "./apimodel.js";
 import { KnowledgePackSchema } from "./pack.js";
 import {
@@ -34,12 +43,17 @@ export const schemaRegistry = {
   PathTemplate: PathTemplateSchema,
   Operation: OperationSchema,
   DataflowEdge: DataflowEdgeSchema,
+  SessionGraph: SessionGraphSchema,
   ObservedFlow: ObservedFlowSchema,
   CatalogDependencyEdge: CatalogDependencyEdgeSchema,
   OperationDependency: OperationDependencySchema,
-  OperationAnnotation: OperationAnnotationSchema,
+  CatalogAnnotation: CatalogAnnotationSchema,
+  TestingAnnotation: TestingAnnotationSchema,
   AnalystGuide: AnalystGuideSchema,
-  Scenario: ScenarioSchema,
+  Exemplar: ExemplarSchema,
+  Composition: CompositionSchema,
+  RehearsalGoal: RehearsalGoalSchema,
+  RehearsalResult: RehearsalResultSchema,
   KnowledgePack: KnowledgePackSchema,
   TestSpec: TestSpecSchema,
 } as const;

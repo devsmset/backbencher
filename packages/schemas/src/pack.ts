@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { DataflowEdgeSchema } from "./apimodel.js";
-import { ReviewState } from "./knowledge.js";
+import { CatalogReviewState } from "./knowledge.js";
 
 // Knowledge pack (architecture §2.4) — the agent's food. Versioned + content-hashed so
 // agent runs are reproducible.
@@ -19,11 +19,12 @@ export const KnowledgePackSchema = z.object({
       area: z.string().optional(),
       auth: z.string(),
       statuses: z.array(z.number()),
-      reviewState: ReviewState,
+      reviewState: CatalogReviewState,
     }),
   ),
   operations: z.record(z.unknown()), // operationId -> full merged detail doc, retrieved on demand
-  flows: z.array(z.unknown()), // approved Scenario objects
+  exemplars: z.array(z.unknown()), // Exemplar objects — how operations have been ordered in practice
+  compositions: z.array(z.unknown()), // approved Composition objects
   guides: z.array(z.unknown()), // AnalystGuide objects
   dataflow: z.array(DataflowEdgeSchema),
   authProfiles: z.array(z.object({ name: z.string(), description: z.string() })), // NO SECRETS

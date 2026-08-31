@@ -58,7 +58,7 @@ export type TestSpecStep = z.infer<typeof TestSpecStepSchema>;
 export const TestSpecSchema = z.object({
   version: z.literal(1),
   specId: z.string(),
-  scenarioId: z.string(),
+  compositionId: z.string(),
   title: z.string(),
   environment: z.string(),
   authProfile: z.string(),

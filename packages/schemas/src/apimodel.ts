@@ -56,6 +56,39 @@ export const DataflowEdgeSchema = z.object({
 });
 export type DataflowEdge = z.infer<typeof DataflowEdgeSchema>;
 
+// Session-scoped call graph (single session, call-level — not aggregated across sessions).
+// Powers the session detail page's dependency graph view.
+
+export const SessionGraphNodeSchema = z.object({
+  correlationId: z.string(),
+  operationId: z.string().nullable(), // null if templatization couldn't classify this call
+  method: z.string(),
+  host: z.string(),
+  pathname: z.string(),
+  status: z.number().int().nullable(),
+  requestTimestamp: z.number().int(),
+  responseTimestamp: z.number().int().nullable(),
+});
+export type SessionGraphNode = z.infer<typeof SessionGraphNodeSchema>;
+
+export const SessionCallEdgeSchema = z.object({
+  producerCorrelationId: z.string(),
+  producerLocation: z.enum(["responseBody", "responseHeader"]),
+  producerJsonPath: z.string(),
+  consumerCorrelationId: z.string(),
+  consumerLocation: z.enum(["path", "query", "requestBody", "requestHeader"]),
+  consumerJsonPath: z.string(),
+  value: z.string(),
+  confidence: z.enum(["strong", "weak"]),
+});
+export type SessionCallEdge = z.infer<typeof SessionCallEdgeSchema>;
+
+export const SessionGraphSchema = z.object({
+  nodes: z.array(SessionGraphNodeSchema),
+  edges: z.array(SessionCallEdgeSchema),
+});
+export type SessionGraph = z.infer<typeof SessionGraphSchema>;
+
 export const ObservedFlowSchema = z.object({
   // per-session call chain, pre-human
   flowId: z.string(),

@@ -56,15 +56,24 @@ describe("store", () => {
     store.saveDerivation({ operations: [op], dataflow: [], flows: [] });
     store.annotations.upsert({
       operationId: "op_abc",
-      reviewState: "approved",
       name: "Get X",
-      tags: ["billing"],
+      does: "Gets X",
       updatedBy: "alice",
       updatedAt: 1,
-      correctionOverrides: { ignoreFields: ["$.extra"] },
     });
-    const merged = mergeOperation(store.operations.get("op_abc") as Operation, store.annotations.get("op_abc"));
-    expect(merged.reviewState).toBe("approved");
+    store.testingAnnotations.upsert({
+      operationId: "op_abc",
+      tags: ["billing"],
+      correctionOverrides: { ignoreFields: ["$.extra"] },
+      updatedBy: "alice",
+      updatedAt: 1,
+    });
+    const merged = mergeOperation(
+      store.operations.get("op_abc") as Operation,
+      store.annotations.get("op_abc"),
+      store.testingAnnotations.get("op_abc"),
+    );
+    expect(merged.reviewState).toBe("ready");
     expect(merged.name).toBe("Get X");
     expect(merged.volatileResponseFields).toContain("$.extra");
     expect(merged.volatileResponseFields).toContain("$.ts");
@@ -81,11 +90,14 @@ describe("store", () => {
     store.sessions.upsertFromMeta({
       version: 3,
       sessionId: "s1",
+      name: "Login and land on homepage",
+      goal: "log in as an admin and reach the dashboard",
       startUrl: "https://x/",
       startedAt: 1,
       userAgent: "t",
       recorderVersion: "t",
     });
     expect(store.sessions.get("s1")?.sessionId).toBe("s1");
+    expect(store.sessions.get("s1")?.name).toBe("Login and land on homepage");
   });
 });

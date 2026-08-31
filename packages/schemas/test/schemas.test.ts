@@ -42,7 +42,7 @@ describe("testspec defaults", () => {
     const spec = TestSpecSchema.parse({
       version: 1,
       specId: "s1",
-      scenarioId: "sc1",
+      compositionId: "sc1",
       title: "smoke",
       environment: "staging",
       authProfile: "admin",
@@ -65,7 +65,7 @@ describe("testspec defaults", () => {
     const spec = TestSpecSchema.parse({
       version: 1,
       specId: "s2",
-      scenarioId: "sc1",
+      compositionId: "sc1",
       title: "negative",
       environment: "staging",
       authProfile: "viewer",
@@ -112,7 +112,8 @@ describe("derived + pack contracts", () => {
       contentHash: "deadbeef",
       catalog: [],
       operations: {},
-      flows: [],
+      exemplars: [],
+      compositions: [],
       guides: [],
       dataflow: [],
       authProfiles: [],

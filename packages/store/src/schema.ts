@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 // Drizzle schema (architecture §6.1). JSON-typed columns hold Zod-validated payloads as TEXT.
 
@@ -21,14 +21,6 @@ export const operations = sqliteTable("operations", {
   lastDerivedAt: integer("last_derived_at").notNull(),
 });
 
-export const operationAnnotations = sqliteTable("operation_annotations", {
-  operationId: text("operation_id").primaryKey(),
-  payload: text("payload").notNull(),
-  reviewState: text("review_state").notNull(),
-  updatedBy: text("updated_by").notNull(),
-  updatedAt: integer("updated_at").notNull(),
-});
-
 export const dataflowEdges = sqliteTable("dataflow_edges", {
   id: text("id").primaryKey(),
   producerOp: text("producer_op").notNull(),
@@ -41,14 +33,6 @@ export const observedFlows = sqliteTable("observed_flows", {
   flowId: text("flow_id").primaryKey(),
   sessionId: text("session_id").notNull(),
   payload: text("payload").notNull(),
-});
-
-export const scenarios = sqliteTable("scenarios", {
-  scenarioId: text("scenario_id").primaryKey(),
-  payload: text("payload").notNull(),
-  reviewState: text("review_state").notNull(),
-  updatedBy: text("updated_by").notNull(),
-  updatedAt: integer("updated_at").notNull(),
 });
 
 export const analystGuides = sqliteTable("analyst_guides", {
@@ -67,7 +51,7 @@ export const knowledgePacks = sqliteTable("knowledge_packs", {
 
 export const testSpecs = sqliteTable("test_specs", {
   specId: text("spec_id").primaryKey(),
-  scenarioId: text("scenario_id").notNull(),
+  compositionId: text("composition_id").notNull(),
   yaml: text("yaml").notNull(),
   generatedBy: text("generated_by"),
   model: text("model"),
@@ -103,3 +87,67 @@ export const dependencyFacts = sqliteTable("dependency_facts", {
   operationId: text("operation_id").primaryKey(),
   clientGenerated: text("client_generated").notNull(), // JSON string[] of request json paths
 });
+
+export const catalogAnnotations = sqliteTable("catalog_annotations", {
+  operationId: text("operation_id").primaryKey(),
+  payload: text("payload").notNull(),
+  reviewState: text("review_state").notNull(),
+  suggested: integer("suggested").notNull(),
+  updatedBy: text("updated_by").notNull(),
+  updatedAt: integer("updated_at").notNull(),
+});
+
+export const testingAnnotations = sqliteTable("testing_annotations", {
+  operationId: text("operation_id").primaryKey(),
+  payload: text("payload").notNull(),
+  updatedBy: text("updated_by").notNull(),
+  updatedAt: integer("updated_at").notNull(),
+});
+
+export const exemplars = sqliteTable("exemplars", {
+  exemplarId: text("exemplar_id").primaryKey(),
+  sessionId: text("session_id").notNull(),
+  payload: text("payload").notNull(),
+  updatedBy: text("updated_by").notNull(),
+  updatedAt: integer("updated_at").notNull(),
+});
+
+export const compositions = sqliteTable("compositions", {
+  compositionId: text("composition_id").primaryKey(),
+  goal: text("goal").notNull(),
+  status: text("status").notNull(),
+  payload: text("payload").notNull(),
+  createdAt: integer("created_at").notNull(),
+  updatedBy: text("updated_by").notNull(),
+  updatedAt: integer("updated_at").notNull(),
+});
+
+export const rehearsalGoals = sqliteTable("rehearsal_goals", {
+  goalId: text("goal_id").primaryKey(),
+  payload: text("payload").notNull(),
+  createdAt: integer("created_at").notNull(),
+});
+
+export const rehearsalResults = sqliteTable("rehearsal_results", {
+  resultId: text("result_id").primaryKey(),
+  goalId: text("goal_id").notNull(),
+  payload: text("payload").notNull(),
+  ranAt: integer("ran_at").notNull(),
+});
+
+// Retrieval vectors (ADR-0001). Brute-force cosine over a few thousand rows beats standing up a
+// vector store. `model` + `textHash` are part of the identity, so changing the embedding model or
+// editing an annotation misses the cache and re-embeds — no explicit invalidation hook needed.
+export const embeddings = sqliteTable(
+  "embeddings",
+  {
+    kind: text("kind").notNull(), // "operation" | "exemplar"
+    entityId: text("entity_id").notNull(),
+    model: text("model").notNull(),
+    textHash: text("text_hash").notNull(),
+    dim: integer("dim").notNull(),
+    vector: text("vector").notNull(), // JSON number[]
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (t) => ({ pk: primaryKey({ columns: [t.kind, t.entityId] }) }),
+);

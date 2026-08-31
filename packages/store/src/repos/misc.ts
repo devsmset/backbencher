@@ -27,7 +27,7 @@ export function sessionsRepo(db: Db) {
     upsertFromMeta(meta: RecordingMeta): void {
       const cols = {
         sessionId: meta.sessionId,
-        name: meta.sessionName ?? null,
+        name: meta.name,
         startedAt: meta.startedAt,
         endedAt: meta.endedAt ?? null,
         authProfile: meta.authProfile ?? null,

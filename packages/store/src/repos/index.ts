@@ -1,6 +1,14 @@
 import type { Db } from "../dbtypes.js";
 import { dataflowRepo, dependencyFactsRepo, flowsRepo, operationsRepo } from "./derived.js";
-import { annotationsRepo, guidesRepo, scenariosRepo } from "./knowledge.js";
+import { embeddingsRepo } from "./embeddings.js";
+import {
+  catalogAnnotationsRepo,
+  compositionsRepo,
+  exemplarsRepo,
+  guidesRepo,
+  rehearsalRepo,
+  testingAnnotationsRepo,
+} from "./knowledge.js";
 import { auditRepo, packsRepo, runsRepo, sessionsRepo, specsRepo } from "./misc.js";
 
 export interface Repos {
@@ -9,9 +17,13 @@ export interface Repos {
   dataflow: ReturnType<typeof dataflowRepo>;
   flows: ReturnType<typeof flowsRepo>;
   dependencyFacts: ReturnType<typeof dependencyFactsRepo>;
-  annotations: ReturnType<typeof annotationsRepo>;
-  scenarios: ReturnType<typeof scenariosRepo>;
+  annotations: ReturnType<typeof catalogAnnotationsRepo>;
+  testingAnnotations: ReturnType<typeof testingAnnotationsRepo>;
+  exemplars: ReturnType<typeof exemplarsRepo>;
+  compositions: ReturnType<typeof compositionsRepo>;
+  rehearsal: ReturnType<typeof rehearsalRepo>;
   guides: ReturnType<typeof guidesRepo>;
+  embeddings: ReturnType<typeof embeddingsRepo>;
   packs: ReturnType<typeof packsRepo>;
   specs: ReturnType<typeof specsRepo>;
   runs: ReturnType<typeof runsRepo>;
@@ -25,9 +37,13 @@ export function createRepos(db: Db): Repos {
     dataflow: dataflowRepo(db),
     flows: flowsRepo(db),
     dependencyFacts: dependencyFactsRepo(db),
-    annotations: annotationsRepo(db),
-    scenarios: scenariosRepo(db),
+    annotations: catalogAnnotationsRepo(db),
+    testingAnnotations: testingAnnotationsRepo(db),
+    exemplars: exemplarsRepo(db),
+    compositions: compositionsRepo(db),
+    rehearsal: rehearsalRepo(db),
     guides: guidesRepo(db),
+    embeddings: embeddingsRepo(db),
     packs: packsRepo(db),
     specs: specsRepo(db),
     runs: runsRepo(db),

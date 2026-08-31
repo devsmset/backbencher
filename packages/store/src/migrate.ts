@@ -104,6 +104,84 @@ CREATE TABLE IF NOT EXISTS dependency_facts (
 );
 `,
   },
+  {
+    id: "0002_embeddings",
+    sql: `
+CREATE TABLE IF NOT EXISTS embeddings (
+  kind TEXT NOT NULL,
+  entity_id TEXT NOT NULL,
+  model TEXT NOT NULL,
+  text_hash TEXT NOT NULL,
+  dim INTEGER NOT NULL,
+  vector TEXT NOT NULL,
+  updated_at INTEGER NOT NULL,
+  PRIMARY KEY (kind, entity_id)
+);
+CREATE INDEX IF NOT EXISTS idx_embeddings_kind ON embeddings (kind);
+`,
+  },
+  {
+    id: "0003_split_annotations_and_scenarios",
+    sql: `
+CREATE TABLE IF NOT EXISTS catalog_annotations (
+  operation_id TEXT PRIMARY KEY,
+  payload TEXT NOT NULL,
+  review_state TEXT NOT NULL,
+  suggested INTEGER NOT NULL DEFAULT 0,
+  updated_by TEXT NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS testing_annotations (
+  operation_id TEXT PRIMARY KEY,
+  payload TEXT NOT NULL,
+  updated_by TEXT NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS exemplars (
+  exemplar_id TEXT PRIMARY KEY,
+  session_id TEXT NOT NULL,
+  payload TEXT NOT NULL,
+  updated_by TEXT NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_exemplars_session ON exemplars (session_id);
+CREATE TABLE IF NOT EXISTS compositions (
+  composition_id TEXT PRIMARY KEY,
+  goal TEXT NOT NULL,
+  status TEXT NOT NULL,
+  payload TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_by TEXT NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_compositions_status ON compositions (status);
+CREATE TABLE IF NOT EXISTS rehearsal_goals (
+  goal_id TEXT PRIMARY KEY,
+  payload TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS rehearsal_results (
+  result_id TEXT PRIMARY KEY,
+  goal_id TEXT NOT NULL,
+  payload TEXT NOT NULL,
+  ran_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_rehearsal_results_goal ON rehearsal_results (goal_id);
+DROP TABLE IF EXISTS operation_annotations;
+DROP TABLE IF EXISTS scenarios;
+DROP TABLE IF EXISTS test_specs;
+CREATE TABLE IF NOT EXISTS test_specs (
+  spec_id TEXT PRIMARY KEY,
+  composition_id TEXT NOT NULL,
+  yaml TEXT NOT NULL,
+  generated_by TEXT,
+  model TEXT,
+  pack_id TEXT,
+  created_at INTEGER NOT NULL,
+  status TEXT NOT NULL
+);
+`,
+  },
 ];
 
 export function runMigrations(raw: Database.Database): void {

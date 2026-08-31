@@ -1,54 +1,56 @@
-import type { Operation, OperationAnnotation } from "@backbencher/schemas";
+import type { CatalogAnnotation, Operation, TestingAnnotation } from "@backbencher/schemas";
 
-// The merge rule (architecture §6.4): mergedOperation = derived ⊕ annotation.
-// Human name/does/paramDocs/testingGuidance are ADDITIVE; correctionOverrides
-// REPLACE the corresponding derived values. This is the single source of truth for "what the
-// agent sees" and is used by both the portal and the pack builder.
+// The merge rule: mergedOperation = derived ⊕ catalog annotation ⊕ testing annotation.
+// Catalog fields (name/does/area/sideEffect) are ADDITIVE and drive composition; testing fields are
+// ADDITIVE and drive test generation; correctionOverrides REPLACE the corresponding derived values.
+// This is the single source of truth for "what the agent sees".
 
 export interface MergedOperation extends Operation {
-  reviewState: OperationAnnotation["reviewState"];
+  reviewState: CatalogAnnotation["reviewState"];
+  suggested: boolean;
   tags: string[];
   name?: string;
   does?: string;
   productArea?: string;
-  sideEffect?: OperationAnnotation["sideEffect"];
+  sideEffect?: CatalogAnnotation["sideEffect"];
   paramDocs?: Record<string, string>;
   testingGuidance?: string;
 }
 
 export function mergeOperation(
   derived: Operation,
-  annotation?: OperationAnnotation | null,
+  catalog?: CatalogAnnotation | null,
+  testing?: TestingAnnotation | null,
 ): MergedOperation {
   const merged: MergedOperation = {
     ...derived,
-    reviewState: annotation?.reviewState ?? "unreviewed",
-    tags: annotation?.tags ?? [],
+    reviewState: catalog?.reviewState ?? "unannotated",
+    suggested: catalog?.suggested ?? false,
+    tags: testing?.tags ?? [],
   };
-  if (!annotation) return merged;
 
-  if (annotation.name !== undefined) merged.name = annotation.name;
-  if (annotation.does !== undefined) merged.does = annotation.does;
-  if (annotation.productArea !== undefined) merged.productArea = annotation.productArea;
-  if (annotation.sideEffect !== undefined) merged.sideEffect = annotation.sideEffect;
-  if (annotation.paramDocs !== undefined) merged.paramDocs = annotation.paramDocs;
-  if (annotation.testingGuidance !== undefined) merged.testingGuidance = annotation.testingGuidance;
+  if (catalog) {
+    if (catalog.name !== undefined) merged.name = catalog.name;
+    if (catalog.does !== undefined) merged.does = catalog.does;
+    if (catalog.productArea !== undefined) merged.productArea = catalog.productArea;
+    if (catalog.sideEffect !== undefined) merged.sideEffect = catalog.sideEffect;
+  }
 
-  const co = annotation.correctionOverrides;
+  if (!testing) return merged;
+  if (testing.paramDocs !== undefined) merged.paramDocs = testing.paramDocs;
+  if (testing.testingGuidance !== undefined) merged.testingGuidance = testing.testingGuidance;
+
+  const co = testing.correctionOverrides;
   if (co) {
     if (co.pathTemplate !== undefined) {
       merged.pathTemplate = { ...merged.pathTemplate, template: co.pathTemplate };
     }
     if (co.requiredQueryParams !== undefined) {
       const required = new Set(co.requiredQueryParams);
-      merged.queryParams = merged.queryParams.map((q) =>
-        required.has(q.name) ? { ...q, required: true } : q,
-      );
+      merged.queryParams = merged.queryParams.map((q) => (required.has(q.name) ? { ...q, required: true } : q));
     }
     if (co.ignoreFields !== undefined) {
-      merged.volatileResponseFields = [
-        ...new Set([...merged.volatileResponseFields, ...co.ignoreFields]),
-      ].sort();
+      merged.volatileResponseFields = [...new Set([...merged.volatileResponseFields, ...co.ignoreFields])].sort();
     }
   }
   return merged;
