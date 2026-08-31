@@ -34,7 +34,6 @@ export function apiCall(correlationId: string, spec: CallSpec): RecordingEvent[]
     headers: spec.reqHeaders ?? {},
     headersSource: "all",
     postData: spec.postData ?? null,
-    pageLabel: "main",
   };
   const res: RecordingEvent = {
     type: "api_response",

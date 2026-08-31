@@ -20,7 +20,6 @@ describe("recording contracts", () => {
     headers: { accept: "*/*" },
     headersSource: "all" as const,
     postData: null,
-    pageLabel: "main",
   };
 
   it("parses a valid api_request event", () => {
