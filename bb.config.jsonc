@@ -12,29 +12,7 @@
       "dropMethods": ["OPTIONS"]
     },
     "inputDebounceMs": 1000,
-    "bodyCapBytes": 262144,
     "blockServiceWorkers": true
-  },
-  "redaction": {
-    "headerDenylist": [
-      "authorization",
-      "cookie",
-      "set-cookie",
-      "x-csrf-token",
-      "proxy-authorization"
-    ],
-    "queryParamDenylist": [
-      "code",
-      "token",
-      "access_token",
-      "id_token",
-      "session",
-      "apikey",
-      "api_key"
-    ],
-    "bodyFieldDenylist": ["password", "secret", "token", "apiKey", "clientSecret"],
-    "placeholder": "***REDACTED***",
-    "keepAuthShape": true // record "Bearer ***" not "***" so auth KIND survives
   },
   // Deprecated: superseded by "llm" below. Still honoured when "llm.models" is empty.
   "agent": {

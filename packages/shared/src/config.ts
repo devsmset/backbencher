@@ -18,26 +18,11 @@ export const RecorderConfigSchema = z.object({
   tlsPermissive: z.boolean().default(false),
   apiFilter: ApiFilterConfigSchema.default({}),
   inputDebounceMs: z.number().int().nonnegative().default(1000),
-  bodyCapBytes: z.number().int().positive().default(262144),
   blockServiceWorkers: z.boolean().default(true),
 });
 export type RecorderConfig = z.infer<typeof RecorderConfigSchema>;
 
-export const RedactionConfigSchema = z.object({
-  headerDenylist: z
-    .array(z.string())
-    .default(["authorization", "cookie", "set-cookie", "x-csrf-token", "proxy-authorization"]),
-  queryParamDenylist: z
-    .array(z.string())
-    .default(["code", "token", "access_token", "id_token", "session", "apikey", "api_key"]),
-  bodyFieldDenylist: z
-    .array(z.string())
-    .default(["password", "secret", "token", "apiKey", "clientSecret"]),
-  placeholder: z.string().default("***REDACTED***"),
-  keepAuthShape: z.boolean().default(true),
-  uiRedactSelectors: z.array(z.string()).default([]),
-});
-export type RedactionConfig = z.infer<typeof RedactionConfigSchema>;
+
 
 export const EnvironmentConfigSchema = z.object({
   name: z.string(),
@@ -132,7 +117,6 @@ export type LlmConfig = z.infer<typeof LlmConfigSchema>;
 
 export const BbConfigSchema = z.object({
   recorder: RecorderConfigSchema.default({}),
-  redaction: RedactionConfigSchema.default({}),
   agent: AgentConfigSchema.default({}),
   llm: LlmConfigSchema.default({}),
   environments: z.array(EnvironmentConfigSchema).default([]),
