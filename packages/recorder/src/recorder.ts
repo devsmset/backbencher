@@ -67,6 +67,13 @@ function mapResourceType(rt: string): ApiRequestEvent["resourceType"] {
 const delay = (ms: number): Promise<null> =>
   new Promise((resolve) => setTimeout(() => resolve(null), ms));
 
+interface InflightEntry {
+  correlationId: string;
+  event: ApiRequestEvent;
+  /** Resolves when the allHeaders() upgrade has finished mutating `event`. */
+  headersUpgraded: Promise<void>;
+}
+
 export async function startRecording(opts: StartRecordingOptions): Promise<RecorderHandle> {
   const config = opts.config ?? loadConfig();
   const rec = config.recorder;
@@ -81,7 +88,7 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
 
   const writeQueue = new WriteQueue(eventsPath, log);
   const apiFilter = makeApiFilter(rec.apiFilter);
-  const inflight = new Map<Request, string>();
+  const inflight = new Map<Request, InflightEntry>();
 
   const browser: Browser = await chromium.launch({
     headless: opts.headless ?? false,
@@ -104,7 +111,6 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
 
     const correlationId = newId();
     const timestamp = Date.now();
-    inflight.set(request, correlationId);
 
     let postData: string | null = null;
     try {
@@ -125,23 +131,30 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
       postData,
     };
 
-    Promise.race([request.allHeaders(), delay(5000)])
+    // Upgrade to the fuller header set if allHeaders() resolves within 5s (§3.1 bug 4). The event is
+    // not written here — it is held until its response decides whether the pair is kept.
+    const headersUpgraded = Promise.race([request.allHeaders(), delay(5000)])
       .then((headers) => {
         if (headers) {
           event.headers = headers;
           event.headersSource = "all";
         }
-        writeQueue.push(Object.freeze(event));
       })
-      .catch(() => writeQueue.push(Object.freeze(event)));
+      .catch(() => undefined);
+
+    inflight.set(request, { correlationId, event, headersUpgraded });
   });
 
   context.on("response", async (response: Response) => {
     const request = response.request();
-    const correlationId = inflight.get(request);
-    if (!correlationId) return;
+    const entry = inflight.get(request);
+    if (!entry) return;
     inflight.delete(request);
 
+    await entry.headersUpgraded;
+
+    // Upgrade to the fuller header set via allHeaders() (raw HTTP headers, incl. ones
+    // CORS-safelisting hides from headers()), mirroring the request-side upgrade above.
     let headers = response.headers();
     let headersSource: "sync" | "all" = "sync";
     try {
@@ -154,38 +167,45 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
       // Keep the sync headers already captured above.
     }
 
-    if (shouldDropCapturedResponse(rec.apiFilter, response.url(), headers, request.resourceType())) return;
+    // Drop the pair whole: writing the request without its response leaves an orphan.
+    if (shouldDropCapturedResponse(rec.apiFilter, response.url(), headers, request.resourceType())) {
+      return;
+    }
 
     const capture = await captureBody(response);
 
-    const event: ApiResponseEvent = {
-      type: "api_response",
-      correlationId,
-      timestamp: Date.now(),
-      status: response.status(),
-      headers,
-      headersSource,
-      bodyKind: capture.bodyKind,
-      body: capture.body ?? null,
-      ...(capture.bodyBytes !== undefined ? { bodyBytes: capture.bodyBytes } : {}),
-    };
-    writeQueue.push(Object.freeze(event));
+    writeQueue.push(Object.freeze(entry.event));
+    writeQueue.push(
+      Object.freeze({
+        type: "api_response",
+        correlationId: entry.correlationId,
+        timestamp: Date.now(),
+        status: response.status(),
+        headers,
+        headersSource,
+        bodyKind: capture.bodyKind,
+        body: capture.body ?? null,
+        ...(capture.bodyBytes !== undefined ? { bodyBytes: capture.bodyBytes } : {}),
+      } satisfies ApiResponseEvent),
+    );
   });
 
   context.on("requestfailed", (request: Request) => {
-    const correlationId = inflight.get(request);
-    if (!correlationId) return;
+    const entry = inflight.get(request);
+    if (!entry) return;
     inflight.delete(request);
-    const event: ApiResponseEvent = {
-      type: "api_response",
-      correlationId,
-      timestamp: Date.now(),
-      status: 0, // requestfailed (§3.3)
-      headers: {},
-      bodyKind: "unavailable",
-      body: null,
-    };
-    writeQueue.push(Object.freeze(event));
+    writeQueue.push(Object.freeze(entry.event));
+    writeQueue.push(
+      Object.freeze({
+        type: "api_response",
+        correlationId: entry.correlationId,
+        timestamp: Date.now(),
+        status: 0, // requestfailed (§3.3)
+        headers: {},
+        bodyKind: "unavailable",
+        body: null,
+      } satisfies ApiResponseEvent),
+    );
   });
 
   // ---- main page ----
@@ -242,17 +262,18 @@ export async function startRecording(opts: StartRecordingOptions): Promise<Recor
       stopped = true;
 
       // Flush any still-pending requests so nothing is silently dropped (§3.3).
-      for (const [, correlationId] of inflight) {
+      for (const [, entry] of inflight) {
+        writeQueue.push(Object.freeze(entry.event));
         writeQueue.push(
           Object.freeze({
             type: "api_response",
-            correlationId,
+            correlationId: entry.correlationId,
             timestamp: Date.now(),
             status: -1,
             headers: {},
             bodyKind: "unavailable",
             body: null,
-          }),
+          } satisfies ApiResponseEvent),
         );
       }
       inflight.clear();
