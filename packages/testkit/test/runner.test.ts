@@ -8,7 +8,7 @@ const oneStep = (specId: string): TestSpec =>
   TestSpecSchema.parse({
     version: 1,
     specId,
-    scenarioId: "s",
+    compositionId: "s",
     title: "t",
     environment: "e",
     authProfile: "admin",

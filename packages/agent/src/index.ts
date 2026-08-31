@@ -1,16 +1,27 @@
 export { buildKnowledgePack, packDiff } from "./pack.js";
 export type { BuildPackOptions, BuildPackResult, PackDiff } from "./pack.js";
-export { assembleContext, validateSpec, generateTestSpec, createAnthropicLlm, createVertexLlm, createLlm } from "./generate.js";
+export { assembleContext, validateSpec, generateTestSpec, createLlm } from "./generate.js";
 export type { LlmComplete, GenerateOptions, GenerateResult } from "./generate.js";
 export { computeDependencyGraph } from "./dependencies.js";
 export {
   localEmbed,
+  localEmbedder,
+  createEmbedder,
   cosineSimilarity,
   topK,
   endpointRetrievalText,
-  scenarioRetrievalText,
+  exemplarRetrievalText,
+  isExampleReady,
+  retrievalCorpus,
   retrieveForGoal,
+  warmEmbeddings,
 } from "./embed.js";
-export type { Embed, RetrievableItem, RetrievalResult, RetrieveOptions } from "./embed.js";
+export type { Embed, Embedder, RetrievableItem, RetrievalResult, RetrieveOptions } from "./embed.js";
 export { proposeScenario } from "./compose.js";
 export type { ComposeOptions, ComposeResult } from "./compose.js";
+export { draftExemplarFromSession } from "./exemplar.js";
+export type { DraftExemplarOptions, DraftExemplarResult } from "./exemplar.js";
+export { suggestAnnotations } from "./suggest.js";
+export type { SuggestOptions, SuggestResult } from "./suggest.js";
+export { runRehearsal, summarize, latestResults } from "./rehearsal.js";
+export type { RehearsalRunOptions, RehearsalSummary } from "./rehearsal.js";

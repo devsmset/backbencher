@@ -32,7 +32,7 @@ export function generateAuthzMatrix(opts: AuthzMatrixOptions): TestSpec[] {
         TestSpecSchema.parse({
           version: 1,
           specId: `authz-${op.operationId}-${role}`,
-          scenarioId: `authz:${op.operationId}`,
+          compositionId: `authz:${op.operationId}`,
           title: `authz: ${op.method} ${op.pathTemplate.template} as "${role}" should be denied`,
           environment: opts.environment,
           authProfile: role,
@@ -75,7 +75,7 @@ export function generateBolaProbes(opts: BolaOptions): TestSpec[] {
         TestSpecSchema.parse({
           version: 1,
           specId: `bola-${op.operationId}-${attacker}`,
-          scenarioId: `bola:${op.operationId}`,
+          compositionId: `bola:${op.operationId}`,
           title: `BOLA/IDOR: "${attacker}" accessing a foreign ${idParam.name} should be denied`,
           environment: opts.environment,
           authProfile: attacker,

@@ -5,7 +5,7 @@ import { compileToPlaywright } from "../src/compiler.js";
 const spec: TestSpec = TestSpecSchema.parse({
   version: 1,
   specId: "spec-1",
-  scenarioId: "sc1",
+  compositionId: "sc1",
   title: "smoke",
   environment: "staging",
   authProfile: "admin",

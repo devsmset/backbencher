@@ -19,7 +19,7 @@ export interface CompileContext {
 export function compileToPlaywright(spec: TestSpec, ctx: CompileContext): string {
   const runtimeImport = ctx.runtimeImport ?? "@backbencher/testkit";
   const j = (v: unknown): string => JSON.stringify(v, null, 2);
-  return `// AUTO-GENERATED from TestSpec ${spec.specId} (scenario ${spec.scenarioId}). Do not edit.
+  return `// AUTO-GENERATED from TestSpec ${spec.specId} (composition ${spec.compositionId}). Do not edit.
 import { expect, test } from "@playwright/test";
 import { runTestSpec } from ${JSON.stringify(runtimeImport)};
 

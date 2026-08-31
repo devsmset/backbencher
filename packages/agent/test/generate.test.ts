@@ -1,4 +1,5 @@
 import { type Operation, TestSpecSchema } from "@backbencher/schemas";
+import { BbConfigSchema } from "@backbencher/shared";
 import { openStore } from "@backbencher/store";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { type LlmComplete, assembleContext, createLlm, generateTestSpec, validateSpec } from "../src/generate.js";
@@ -67,14 +68,19 @@ function seed() {
     dataflow: [],
     flows: [],
   });
-  store.scenarios.upsert({
-    scenarioId: "sc1",
-    name: "Lifecycle",
-    description: "create then read",
-    sourceFlowIds: [],
-    steps: [{ operationId: "op_create", intent: "create" }, { operationId: "op_get", intent: "get" }],
+  store.compositions.upsert({
+    compositionId: "sc1",
+    goal: "create then read a thing",
+    status: "approved",
+    steps: [
+      { operationId: "op_create", intent: "create", satisfies: [], autoAdded: false, fromExemplarIds: [] },
+      { operationId: "op_get", intent: "get", satisfies: [], autoAdded: false, fromExemplarIds: [] },
+    ],
+    unmetDependencies: [],
+    candidateGaps: [],
     testDecision: { inScope: true, strategy: "api_functional", rationale: "r", riskLevel: "low", environments: ["staging"] },
-    reviewState: "approved",
+    createdBy: "a",
+    createdAt: 1,
     updatedBy: "a",
     updatedAt: 1,
   });
@@ -114,7 +120,7 @@ describe("validateSpec", () => {
     const spec = TestSpecSchema.parse({
       version: 1,
       specId: "s",
-      scenarioId: "sc",
+      compositionId: "sc",
       title: "t",
       environment: "staging",
       authProfile: "admin",
@@ -132,17 +138,17 @@ describe("validateSpec", () => {
 describe("assembleContext strategy variants", () => {
   it("injects strategy-specific guidance into the prompt", () => {
     const store = seed();
-    const base = store.scenarios.get("sc1");
-    if (!base) throw new Error("seed scenario missing");
+    const base = store.compositions.get("sc1");
+    if (!base) throw new Error("seed composition missing");
 
-    store.scenarios.upsert({ ...base, scenarioId: "neg", testDecision: { ...base.testDecision, strategy: "api_negative" } });
-    expect(assembleContext(store, store.scenarios.get("neg") as typeof base).user).toContain("missing-required");
+    store.compositions.upsert({ ...base, compositionId: "neg", testDecision: { ...base.testDecision, strategy: "api_negative" } as NonNullable<typeof base.testDecision> });
+    expect(assembleContext(store, store.compositions.get("neg") as typeof base).user).toContain("missing-required");
 
-    store.scenarios.upsert({ ...base, scenarioId: "az", testDecision: { ...base.testDecision, strategy: "authz" } });
-    expect(assembleContext(store, store.scenarios.get("az") as typeof base).user.toLowerCase()).toContain("role");
+    store.compositions.upsert({ ...base, compositionId: "az", testDecision: { ...base.testDecision, strategy: "authz" } as NonNullable<typeof base.testDecision> });
+    expect(assembleContext(store, store.compositions.get("az") as typeof base).user.toLowerCase()).toContain("role");
 
-    store.scenarios.upsert({ ...base, scenarioId: "co", testDecision: { ...base.testDecision, strategy: "contract_only" } });
-    expect(assembleContext(store, store.scenarios.get("co") as typeof base).user).toContain("GET-only");
+    store.compositions.upsert({ ...base, compositionId: "co", testDecision: { ...base.testDecision, strategy: "contract_only" } as NonNullable<typeof base.testDecision> });
+    expect(assembleContext(store, store.compositions.get("co") as typeof base).user).toContain("GET-only");
   });
 });
 
@@ -171,12 +177,26 @@ describe("createLlm provider selection", () => {
   });
 
   it("throws a clear error when the anthropic key is missing", () => {
-    expect(() => createLlm({ provider: "anthropic", vertex: {} })).toThrow(/ANTHROPIC_API_KEY/);
+    const cfg = BbConfigSchema.parse({ agent: { provider: "anthropic" } });
+    expect(() => createLlm(cfg)).toThrow(/ANTHROPIC_API_KEY/);
   });
   it("throws when the vertex project id is missing", () => {
-    expect(() => createLlm({ provider: "vertex", vertex: {} })).toThrow(/project/i);
+    const cfg = BbConfigSchema.parse({ agent: { provider: "vertex" } });
+    expect(() => createLlm(cfg)).toThrow(/project/i);
   });
   it("builds a callable when the vertex project id is present (no network)", () => {
-    expect(typeof createLlm({ provider: "vertex", vertex: { projectId: "p", region: "us-east5" } })).toBe("function");
+    const cfg = BbConfigSchema.parse({
+      agent: { provider: "vertex", vertex: { projectId: "p", region: "us-east5" } },
+    });
+    expect(typeof createLlm(cfg)).toBe("function");
+  });
+  it("rejects a --model override that names no configured model", () => {
+    const cfg = BbConfigSchema.parse({
+      llm: {
+        models: { local: { provider: "openai-compatible", model: "gemma3:12b", baseUrl: "http://x/v1" } },
+        tasks: { default: "local" },
+      },
+    });
+    expect(() => createLlm(cfg, "compose", "nope")).toThrow(/Unknown model "nope"/);
   });
 });

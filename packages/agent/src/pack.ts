@@ -41,9 +41,10 @@ export function buildKnowledgePack(store: Store, opts: BuildPackOptions = {}): B
   const environments = opts.environments ?? loadConfig().environments;
 
   const annotations = new Map(store.annotations.list().map((a) => [a.operationId, a]));
+  const testingAnnotations = new Map(store.testingAnnotations.list().map((a) => [a.operationId, a]));
   const merged = store.operations
     .list()
-    .map((o) => mergeOperation(o, annotations.get(o.operationId) ?? null))
+    .map((o) => mergeOperation(o, annotations.get(o.operationId) ?? null, testingAnnotations.get(o.operationId) ?? null))
     .filter((m) => m.reviewState !== "ignored") // §6.4: ignored ops excluded entirely
     .sort((a, b) => a.operationId.localeCompare(b.operationId));
 
@@ -65,10 +66,10 @@ export function buildKnowledgePack(store: Store, opts: BuildPackOptions = {}): B
   const operations: Record<string, unknown> = {};
   for (const m of merged) operations[m.operationId] = m;
 
-  const flows = store.scenarios
-    .list()
-    .filter((s) => s.reviewState === "approved")
-    .sort((a, b) => a.scenarioId.localeCompare(b.scenarioId));
+  const exemplars = store.exemplars.list().sort((a, b) => a.exemplarId.localeCompare(b.exemplarId));
+  const compositions = store.compositions
+    .listByStatus("approved")
+    .sort((a, b) => a.compositionId.localeCompare(b.compositionId));
 
   const guides = store.guides.list().sort((a, b) => a.guideId.localeCompare(b.guideId));
 
@@ -94,7 +95,7 @@ export function buildKnowledgePack(store: Store, opts: BuildPackOptions = {}): B
     destructive: e.destructive,
   }));
 
-  const core = { catalog, operations, flows, guides, dataflow, authProfiles, environments: envs };
+  const core = { catalog, operations, exemplars, compositions, guides, dataflow, authProfiles, environments: envs };
   const contentHash = createHash("sha256").update(stableStringify(core)).digest("hex").slice(0, 16);
 
   const pack = KnowledgePackSchema.parse({
@@ -141,7 +142,15 @@ function renderCatalogMd(pack: KnowledgePack): string {
       `| ${row.method} | ${row.template} | ${row.name ?? ""} | ${row.area ?? ""} | ${row.auth} | ${row.statuses.join(", ")} | ${row.reviewState} |`,
     );
   }
-  lines.push("", `## Scenarios (${pack.flows.length})`, "", `## Guides (${pack.guides.length})`, "");
+  lines.push(
+    "",
+    `## Exemplars (${pack.exemplars.length})`,
+    "",
+    `## Compositions (${pack.compositions.length})`,
+    "",
+    `## Guides (${pack.guides.length})`,
+    "",
+  );
   return lines.join("\n");
 }
 

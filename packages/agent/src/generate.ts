@@ -1,5 +1,6 @@
-import { type Scenario, type TestSpec, TestSpecSchema } from "@backbencher/schemas";
-import { type AgentConfig, newId } from "@backbencher/shared";
+import { type LlmTask, createLlmRegistry } from "@backbencher/llm";
+import { type Composition, type TestSpec, TestSpecSchema } from "@backbencher/schemas";
+import { type BbConfig, newId } from "@backbencher/shared";
 import { type Store, mergeOperation } from "@backbencher/store";
 import { load as loadYaml } from "js-yaml";
 
@@ -23,7 +24,11 @@ function compactCatalog(store: Store): string {
   return store.operations
     .list()
     .map((o) => {
-      const merged = mergeOperation(o, store.annotations.get(o.operationId));
+      const merged = mergeOperation(
+        o,
+        store.annotations.get(o.operationId),
+        store.testingAnnotations.get(o.operationId),
+      );
       if (merged.reviewState === "ignored") return null;
       const statuses = Object.keys(merged.statusCodesObserved).join(",");
       return `${merged.method} ${merged.pathTemplate.template} [${merged.operationId}] auth=${merged.authObserved} statuses=${statuses} review=${merged.reviewState}`;
@@ -41,16 +46,16 @@ function strategyGuidance(strategy: string): string {
     case "contract_only":
       return "Emit GET-only steps that assert status and schema conformance. Do NOT create, update, or delete anything.";
     case "api_functional":
-      return "Generate a happy-path functional flow following the scenario steps, chaining ids via {{steps.*.extract.*}} and cleaning up any created resources.";
+      return "Generate a happy-path functional flow following the composition steps, chaining ids via {{steps.*.extract.*}} and cleaning up any created resources.";
     default:
       return "";
   }
 }
 
-export function assembleContext(store: Store, scenario: Scenario): { system: string; user: string } {
-  const stepOpIds = new Set(scenario.steps.map((s) => s.operationId));
+export function assembleContext(store: Store, composition: Composition): { system: string; user: string } {
+  const stepOpIds = new Set(composition.steps.map((s) => s.operationId));
 
-  // full merged detail for the scenario's operations + their 1-hop dataflow neighbors
+  // full merged detail for the composition's operations + their 1-hop dataflow neighbors
   const detailIds = new Set(stepOpIds);
   const edges = store.dataflow.all().filter((e) => stepOpIds.has(e.producer.operationId) || stepOpIds.has(e.consumer.operationId));
   for (const e of edges) {
@@ -60,7 +65,7 @@ export function assembleContext(store: Store, scenario: Scenario): { system: str
   const details = [...detailIds]
     .map((id) => {
       const op = store.operations.get(id);
-      return op ? mergeOperation(op, store.annotations.get(id)) : null;
+      return op ? mergeOperation(op, store.annotations.get(id), store.testingAnnotations.get(id)) : null;
     })
     .filter((o) => o !== null);
 
@@ -68,6 +73,7 @@ export function assembleContext(store: Store, scenario: Scenario): { system: str
     .list()
     .filter((g) => g.priority === "must_read" && (g.scope.operationIds.some((id) => stepOpIds.has(id)) || g.scope.productArea));
 
+  const strategy = composition.testDecision?.strategy ?? "api_functional";
   const user = [
     "## Catalog",
     compactCatalog(store),
@@ -75,18 +81,18 @@ export function assembleContext(store: Store, scenario: Scenario): { system: str
     "## Must-read guides",
     guides.map((g) => `### ${g.title}\n${g.body}`).join("\n\n") || "(none)",
     "",
-    "## Scenario",
-    JSON.stringify(scenario, null, 2),
+    "## Composition",
+    JSON.stringify(composition, null, 2),
     "",
-    "## Operation details (scenario ops + 1-hop dataflow neighbors)",
+    "## Operation details (composition ops + 1-hop dataflow neighbors)",
     JSON.stringify(details, null, 2),
     "",
     "## Dataflow edges among these operations",
     JSON.stringify(edges, null, 2),
     "",
-    `## Task: emit a TestSpec YAML for strategy=${scenario.testDecision.strategy}.`,
-    `## Strategy guidance (${scenario.testDecision.strategy})`,
-    strategyGuidance(scenario.testDecision.strategy),
+    `## Task: emit a TestSpec YAML for strategy=${strategy}.`,
+    `## Strategy guidance (${strategy})`,
+    strategyGuidance(strategy),
   ].join("\n");
 
   return { system: SYSTEM, user };
@@ -154,14 +160,14 @@ function stripFences(text: string): string {
   return text.replace(/^```(?:yaml|yml)?\s*/i, "").replace(/```\s*$/i, "").trim();
 }
 
-function normalizeSpecObject(obj: unknown, scenario: Scenario, specId: string): unknown {
+function normalizeSpecObject(obj: unknown, composition: Composition, specId: string): unknown {
   if (obj === null || typeof obj !== "object") return obj;
   const o = { ...(obj as Record<string, unknown>) };
   o.version ??= 1;
   if (!o.specId || o.specId === "") o.specId = specId;
-  o.scenarioId ??= scenario.scenarioId;
-  o.title ??= scenario.name;
-  o.environment ??= scenario.testDecision.environments[0] ?? "staging";
+  o.compositionId ??= composition.compositionId;
+  o.title ??= composition.goal;
+  o.environment ??= composition.testDecision?.environments[0] ?? "staging";
   o.authProfile ??= "default";
   o.tags ??= [];
   o.cleanup ??= [];
@@ -186,17 +192,20 @@ export interface GenerateResult {
 
 export async function generateTestSpec(
   store: Store,
-  scenarioId: string,
+  compositionId: string,
   opts: GenerateOptions,
 ): Promise<GenerateResult> {
-  const scenario = store.scenarios.get(scenarioId);
-  if (!scenario) throw new Error(`scenario ${scenarioId} not found`);
+  const composition = store.compositions.get(compositionId);
+  if (!composition) throw new Error(`composition ${compositionId} not found`);
+  if (composition.status !== "approved") {
+    throw new Error(`composition ${compositionId} is ${composition.status}; only approved compositions become tests`);
+  }
 
   const validOperationIds = new Set(store.operations.list().map((o) => o.operationId));
   const operationMethods: Record<string, string> = {};
   for (const o of store.operations.list()) operationMethods[o.operationId] = o.method;
 
-  const { system, user } = assembleContext(store, scenario);
+  const { system, user } = assembleContext(store, composition);
   const specId = newId();
   const maxRepairs = opts.maxRepairs ?? 1;
 
@@ -210,7 +219,7 @@ export async function generateTestSpec(
     attempts += 1;
     yaml = stripFences(await opts.llm(system, prompt));
     try {
-      const parsed = normalizeSpecObject(loadYaml(yaml), scenario, specId);
+      const parsed = normalizeSpecObject(loadYaml(yaml), composition, specId);
       spec = TestSpecSchema.parse(parsed);
       errors = validateSpec(spec, { validOperationIds, operationMethods });
     } catch (e) {
@@ -224,7 +233,7 @@ export async function generateTestSpec(
   const valid = errors.length === 0 && spec !== null;
   store.specs.upsert({
     specId,
-    scenarioId,
+    compositionId,
     yaml,
     generatedBy: "agent",
     model: opts.model ?? null,
@@ -236,81 +245,27 @@ export async function generateTestSpec(
   return { specId, yaml, spec, valid, errors, attempts };
 }
 
-export function createAnthropicLlm(opts: { apiKey: string; model?: string }): LlmComplete {
-  return async (system, user) => {
-    const { default: Anthropic } = await import("@anthropic-ai/sdk");
-    const client = new Anthropic({ apiKey: opts.apiKey });
-    const res = await client.messages.create({
-      model: opts.model ?? "claude-3-5-sonnet-latest",
-      max_tokens: 4096,
-      system,
-      messages: [{ role: "user", content: user }],
-    });
-    const block = res.content.find((b) => b.type === "text");
-    return block && block.type === "text" ? block.text : "";
-  };
-}
-
-/** Anthropic on Google Cloud Vertex AI. Auth via a service-account JSON (credentialsFile) or
- * Application Default Credentials (GOOGLE_APPLICATION_CREDENTIALS / gcloud). */
-export function createVertexLlm(opts: {
-  projectId: string;
-  region: string;
-  model?: string;
-  credentialsFile?: string;
-}): LlmComplete {
-  return async (system, user) => {
-    const { AnthropicVertex } = await import("@anthropic-ai/vertex-sdk");
-    const options: Record<string, unknown> = { projectId: opts.projectId, region: opts.region };
-    if (opts.credentialsFile) {
-      const { GoogleAuth } = await import("google-auth-library");
-      options.googleAuth = new GoogleAuth({
-        keyFile: opts.credentialsFile,
-        scopes: ["https://www.googleapis.com/auth/cloud-platform"],
-      });
-    }
-    const client = new AnthropicVertex(
-      options as unknown as ConstructorParameters<typeof AnthropicVertex>[0],
-    );
-    const res = await client.messages.create({
-      model: opts.model ?? "claude-3-5-sonnet-v2@20241022",
-      max_tokens: 4096,
-      system,
-      messages: [{ role: "user", content: user }],
-    });
-    const blocks = res.content as Array<{ type: string; text?: string }>;
-    const block = blocks.find((b) => b.type === "text");
-    return block?.text ?? "";
-  };
-}
-
 /**
- * Build an LlmComplete from agent config, selecting the provider and resolving credentials from
- * config or environment. Throws a clear error if required credentials are missing.
+ * Resolve the model routed to `task` into the plain text-in/text-out callable the generation and
+ * composition code takes. All provider selection, credentials, timeouts and backoff live in
+ * @backbencher/llm; this is only the adapter to `LlmComplete`.
+ *
+ * `modelName` overrides the route. When `llm.models` is configured it must name one of them; with
+ * no `llm.models` it is passed through as a raw model id on the legacy single-model path.
  */
-export function createLlm(cfg: AgentConfig): LlmComplete {
-  const model = cfg.model ?? process.env.BB_LLM_MODEL;
-  if (cfg.provider === "vertex") {
-    const projectId =
-      cfg.vertex.projectId ?? process.env.ANTHROPIC_VERTEX_PROJECT_ID ?? process.env.GOOGLE_CLOUD_PROJECT;
-    const region =
-      cfg.vertex.region ?? process.env.CLOUD_ML_REGION ?? process.env.ANTHROPIC_VERTEX_REGION ?? "us-east5";
-    const credentialsFile = cfg.vertex.credentialsFile ?? process.env.GOOGLE_APPLICATION_CREDENTIALS;
-    if (!projectId) {
-      throw new Error(
-        "Vertex provider requires a project id (agent.vertex.projectId or ANTHROPIC_VERTEX_PROJECT_ID)",
-      );
-    }
-    return createVertexLlm({
-      projectId,
-      region,
-      ...(model ? { model } : {}),
-      ...(credentialsFile ? { credentialsFile } : {}),
-    });
+export function createLlm(cfg: BbConfig, task: LlmTask = "generateSpec", modelName?: string): LlmComplete {
+  const effective = modelName ? withModelOverride(cfg, task, modelName) : cfg;
+  const provider = createLlmRegistry(effective).forTask(task);
+  return (system, user) => provider.complete({ system, user });
+}
+
+function withModelOverride(cfg: BbConfig, task: LlmTask, modelName: string): BbConfig {
+  const configured = Object.keys(cfg.llm.models);
+  if (configured.length === 0) {
+    return { ...cfg, agent: { ...cfg.agent, model: modelName } };
   }
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    throw new Error('Anthropic provider requires ANTHROPIC_API_KEY (or set agent.provider to "vertex")');
+  if (!cfg.llm.models[modelName]) {
+    throw new Error(`Unknown model "${modelName}". Configured models: ${configured.join(", ")}`);
   }
-  return createAnthropicLlm({ apiKey, ...(model ? { model } : {}) });
+  return { ...cfg, llm: { ...cfg.llm, tasks: { ...cfg.llm.tasks, [task]: modelName } } };
 }

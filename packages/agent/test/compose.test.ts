@@ -37,8 +37,6 @@ function seed() {
     does: "Authenticates the user and returns a bearer token",
     productArea: "Auth",
     sideEffect: "auth",
-    reviewState: "approved",
-    tags: [],
     updatedBy: "alice",
     updatedAt: 1,
   });
@@ -48,8 +46,6 @@ function seed() {
     does: "Creates a support ticket in the current org",
     productArea: "Ticketing",
     sideEffect: "create",
-    reviewState: "approved",
-    tags: [],
     updatedBy: "alice",
     updatedAt: 1,
   });
@@ -72,17 +68,16 @@ describe("proposeScenario", () => {
 
     const result = await proposeScenario(store, "create a ticket from scratch", { llm: fakeLlm, actor: "alice" });
 
-    expect(result.scenario.origin).toBe("composed");
-    expect(result.scenario.reviewState).toBe("unreviewed");
-    expect(result.scenario.unmetDependencies).toEqual([]);
+    expect(result.composition.status).toBe("draft");
+    expect(result.composition.unmetDependencies).toEqual([]);
 
-    const opIds = result.scenario.steps.map((s) => s.operationId);
+    const opIds = result.composition.steps.map((s) => s.operationId);
     expect(opIds.indexOf("op_login")).toBeGreaterThanOrEqual(0);
     expect(opIds.indexOf("op_login")).toBeLessThan(opIds.indexOf("op_create_ticket"));
 
-    const loginStep = result.scenario.steps.find((s) => s.operationId === "op_login");
+    const loginStep = result.composition.steps.find((s) => s.operationId === "op_login");
     expect(loginStep?.autoAdded).toBe(true);
-    const ticketStep = result.scenario.steps.find((s) => s.operationId === "op_create_ticket");
+    const ticketStep = result.composition.steps.find((s) => s.operationId === "op_create_ticket");
     expect(ticketStep?.autoAdded).toBe(false);
 
     store.close();
@@ -101,8 +96,6 @@ describe("proposeScenario", () => {
       does: "Creates a support ticket in the current org",
       productArea: "Ticketing",
       sideEffect: "create",
-      reviewState: "approved",
-      tags: [],
       updatedBy: "alice",
       updatedAt: 1,
     });
@@ -116,8 +109,8 @@ describe("proposeScenario", () => {
 
     const result = await proposeScenario(store, "create a ticket from scratch", { llm: fakeLlm, actor: "alice" });
 
-    expect(result.scenario.unmetDependencies.length).toBeGreaterThan(0);
-    expect(result.scenario.unmetDependencies[0]?.operationId).toBe("op_create_ticket");
+    expect(result.composition.unmetDependencies.length).toBeGreaterThan(0);
+    expect(result.composition.unmetDependencies[0]?.operationId).toBe("op_create_ticket");
 
     store.close();
   });

@@ -1,11 +1,11 @@
 import { createHash } from "node:crypto";
 import type { DependencyGraph } from "@backbencher/derive";
-import { type OperationDependency, type Scenario, ScenarioSchema } from "@backbencher/schemas";
+import { type Composition, CompositionSchema, type OperationDependency } from "@backbencher/schemas";
 import { newId } from "@backbencher/shared";
 import { type MergedOperation, type Store, mergeOperation } from "@backbencher/store";
 import { z } from "zod";
 import { computeDependencyGraph } from "./dependencies.js";
-import { type Embed, type RetrieveOptions, endpointRetrievalText, retrieveForGoal } from "./embed.js";
+import { type RetrieveOptions, endpointRetrievalText, retrieveForGoal } from "./embed.js";
 import type { LlmComplete } from "./generate.js";
 
 // The composition engine (realignment guide §6) — the heart of the vision. A free-text goal
@@ -205,11 +205,11 @@ export interface ComposeOptions {
   model?: string;
   actor: string;
   maxRepairs?: number;
-  retrieve?: RetrieveOptions & { embed?: Embed };
+  retrieve?: RetrieveOptions;
 }
 
 export interface ComposeResult {
-  scenario: Scenario;
+  composition: Composition;
   rawModelOutput: string;
   attempts: number;
 }
@@ -219,8 +219,7 @@ export async function proposeScenario(store: Store, goal: string, opts: ComposeO
   const retrieval = await retrieveForGoal(store, goal, opts.retrieve);
 
   const annotationsByOp = new Map(store.annotations.list().map((a) => [a.operationId, a]));
-  const seedIds = retrieval.endpoints.map((e) => e.operationId);
-  const closureIds = expandDependencyClosure(seedIds, graph);
+  const seedIds = retrieval.endpoints.map((e) => e.operationId);  const closureIds = expandDependencyClosure(seedIds, graph);
   const candidates = [...closureIds]
     .map((id) => store.operations.get(id))
     .filter((op): op is NonNullable<typeof op> => op !== null)
@@ -245,7 +244,7 @@ export async function proposeScenario(store: Store, goal: string, opts: ComposeO
 
   while (attempts <= maxRepairs) {
     attempts += 1;
-    ({ system, user } = buildPrompt(goal, candidates, graph, retrieval.scenarios, opNameById, repairErrors));
+    ({ system, user } = buildPrompt(goal, candidates, graph, retrieval.exemplars, opNameById, repairErrors));
     rawModelOutput = stripFences(await opts.llm(system, user));
 
     try {
@@ -270,41 +269,32 @@ export async function proposeScenario(store: Store, goal: string, opts: ComposeO
     repairErrors = reconciled.unmetDependencies.map((u) => `${u.operationId}: ${u.slot} — ${u.note}`);
   }
 
-  const exampleIdsUsed = retrieval.scenarios.map((s) => s.scenarioId);
-  const scenarioId = newId();
+  const exemplarIdsUsed = retrieval.exemplars.map((e) => e.exemplarId);
+  const compositionId = newId();
   const now = Date.now();
-  const scenario = ScenarioSchema.parse({
-    scenarioId,
-    name: goal.length > 60 ? `${goal.slice(0, 57)}...` : goal,
-    description: `Composed from goal: "${goal}"`,
-    origin: "composed",
+  const composition = CompositionSchema.parse({
+    compositionId,
     goal,
-    sourceFlowIds: [],
+    status: "draft",
     steps: reconciled.steps.map((s) => ({
       operationId: s.operationId,
       intent: s.intent,
       satisfies: s.satisfies,
       autoAdded: s.autoAdded,
-      fromExampleScenarioIds: s.autoAdded ? [] : exampleIdsUsed,
+      fromExemplarIds: s.autoAdded ? [] : exemplarIdsUsed,
     })),
     unmetDependencies: reconciled.unmetDependencies,
     candidateGaps: proposal?.candidateGaps ?? [],
     rationale: proposal?.rationale,
     modelInfo: { model: opts.model ?? "unknown", promptHash: promptHash(system, user) },
-    testDecision: {
-      inScope: true,
-      strategy: "api_functional",
-      rationale: proposal?.rationale ?? "",
-      riskLevel: "medium",
-      environments: [],
-    },
-    reviewState: "unreviewed",
+    createdBy: opts.actor,
+    createdAt: now,
     updatedBy: opts.actor,
     updatedAt: now,
   });
 
-  const saved = store.scenarios.upsert(scenario);
-  return { scenario: saved, rawModelOutput, attempts };
+  const saved = store.compositions.upsert(composition);
+  return { composition: saved, rawModelOutput, attempts };
 }
 
 // Re-exported so callers (e.g. the portal-api compose router) can format the retrieved pool

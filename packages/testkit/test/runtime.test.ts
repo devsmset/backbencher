@@ -25,7 +25,7 @@ const volatileFields = { op_create: ["$.createdAt"], op_get: ["$.createdAt"] };
 const spec: TestSpec = TestSpecSchema.parse({
   version: 1,
   specId: "spec-lifecycle",
-  scenarioId: "sc1",
+  compositionId: "sc1",
   title: "thing lifecycle",
   environment: "local",
   authProfile: "admin",
