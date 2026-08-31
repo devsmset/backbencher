@@ -8,7 +8,6 @@
 - TypeScript 5.7.2 - all `packages/*` and `apps/cli` (strict mode, ES2022 target)
 
 **Secondary:**
-- Plain Node.js (CommonJS-free, no build step) - legacy root-level scripts at `src/recorders/recorder.js` and `src/filters/filter-api.js`, run via the root `package.json` (`npm run record`, `npm run filter`). These predate the monorepo migration and are not part of the pnpm workspace.
 - JSX/TSX (React) - `packages/portal-web/src/`
 
 ## Runtime
@@ -29,7 +28,7 @@
 - tRPC 11.0.0 (`@trpc/server`, `@trpc/client`, `@trpc/react-query`) - typed RPC layer between `portal-api` and `portal-web`, mounted at `/trpc` (`packages/portal-api/src/routers.ts`)
 - React 18.3.1 + ReactDOM 18.3.1 - `packages/portal-web` SPA
 - Vite 6.0.7 (`@vitejs/plugin-react`) - portal-web dev server and bundler (`packages/portal-web/vite.config.ts`)
-- Playwright 1.57.0 - browser automation for both session recording (`packages/recorder`) and compiled-test execution (root `src/recorders/recorder.js`, `apps/cli` `test compile`/`test run` commands)
+- Playwright 1.57.0 - browser automation for session recording (`packages/recorder`), compiled-test execution (`apps/cli` `test compile`/`test run`), and the portal e2e script (`scripts/e2e-portal.mjs`)
 - Drizzle ORM 0.38.3 + better-sqlite3 11.7.0 - persistence layer (`packages/store/src/db.ts`)
 
 **Testing:**

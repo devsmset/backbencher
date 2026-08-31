@@ -225,7 +225,7 @@ CLI (`apps/cli`, binary `bb`) drives every stage above via lazy dynamic imports.
 - **Global state:** `activeRecordings` (module-level `Map`) in `packages/portal-api/src/routers.ts` is the only in-process mutable singleton found; everything else is either pure functions or reads/writes through `openStore()`.
 - **Dependency direction (enforced by convention, not tooling):** `schemas ← shared ← {recorder, derive, store} ← {portal-api, agent, testkit} ← cli`. `portal-web` depends only on `schemas` types and the `AppRouter` type export from `portal-api`; there is no CI-enforced boundary check (`scripts/depcheck.mjs` exists but checks dependency *usage*, not directional layering).
 - **Data directory is gitignored:** `data/backbencher.db`, `data/sessions/`, `data/knowledge-packs/` are runtime state, not committed source — never assume they are populated in a fresh checkout.
-- **Legacy code is inert:** `src/recorders/recorder.js` and `src/filters/filter-api.js` (plus the root `package.json` `record`/`filter` scripts) are dead v1 prototype code, fully superseded by `packages/recorder`/`packages/derive`. They are not imported by any workspace package.
+- **Legacy code has been removed:** the v1 prototype that lived at `src/recorders/recorder.js` and `src/filters/filter-api.js`, along with the root `package.json` `record`/`filter` scripts, has been deleted. `packages/recorder` and `packages/derive` fully supersede it.
 
 ## Anti-Patterns
 

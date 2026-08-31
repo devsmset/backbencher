@@ -1,82 +1,80 @@
-# Session Recorder + API Call Filter
+# Backbencher
 
-A minimal Playwright-based tool that:
-1. Opens a browser and records a manual session (UI interactions + API calls), saving it to a JSON file on completion.
-2. Filters a recorded session down to just its API calls (request + matching response), ordered by timestamp.
+Backbencher turns recorded product usage into an API catalog an analyst annotates once, then composes
+new API scenarios from that catalog in response to a plain-language goal, and compiles the approved
+ones into Playwright API tests.
 
-## 📁 Project Structure
+The point is that the knowledge accumulates. You annotate an endpoint once; every future composition
+can use it. There is no training step and no fine-tuning — the corpus grows, retrieval gets better,
+and every proposal remains traceable to the exact endpoints and examples that produced it.
+
+## How it works
 
 ```
-project_2/
-├── src/
-│   ├── recorders/
-│   │   └── recorder.js       # Records UI + API events, saves session JSON on ENTER
-│   └── filters/
-│       └── filter-api.js     # Extracts API calls from a recording, ordered by timestamp
-│
-├── recordings/                # Recorded sessions (JSON files)
-│   ├── recording-*.json            # Raw recordings (all events)
-│   └── *-api-calls.json            # Filtered output (API calls only)
-│
-├── package.json
-└── README.md
+record  →  derive  →  annotate  →  compose  →  generate  →  run
 ```
 
-## 🚀 Getting Started
+1. **Record** a Session by driving the product in a real browser. Only API traffic is captured.
+2. **Derive** an API catalog from every Session: path templates, request/response schemas, volatile
+   fields, and — most importantly — the dependency edges showing which endpoint produces a value
+   another endpoint consumes.
+3. **Annotate** each Operation in the portal with a name and a description. That is the whole
+   required human surface; a model can propose annotations for you to accept.
+4. **Compose** by typing a goal in plain language. Relevant Operations are retrieved, expanded along
+   their dependency closure, and a model selects and orders them. Unmet dependencies and missing
+   capabilities are surfaced, not guessed.
+5. **Generate** a TestSpec from an approved Composition, then **run** it as a Playwright API test.
+
+## Getting started
+
+Requires Node and pnpm.
 
 ```bash
-npm install
+pnpm install
+pnpm -r build
 ```
 
-## 1. Record a session
+Configure hosts to record, redaction rules, model routing, and target environments in
+[bb.config.jsonc](./bb.config.jsonc).
+
+Then either drive everything from the browser:
 
 ```bash
-npm run record
-# or with a custom URL
-node src/recorders/recorder.js https://your-app-url
+pnpm serve            # builds, then starts the portal on http://localhost:4100
 ```
 
-This opens a browser. Interact with the app manually (click, type, navigate). When done, press **ENTER** in the terminal to stop and save the session to `recordings/recording-<timestamp>.json`.
-
-## 2. Filter out the API calls
+…or use the CLI:
 
 ```bash
-npm run filter recordings/recording-<timestamp>.json
+bb record --url https://your-app        # opens a browser; you name the session on stop
+bb derive --all                         # build the catalog
+bb embed                                # embed the catalog for retrieval
+bb serve                                # annotate and compose in the portal
+bb agent generate --composition <id>    # approved Composition → TestSpec
+bb test run --env staging
 ```
 
-This reads the recording, keeps only the API request/response events, pairs each request with its response, sorts them chronologically by timestamp, and writes `recordings/recording-<timestamp>-api-calls.json`.
+`bb --help` lists everything. Sessions land in `data/sessions/`, and the database is
+`data/backbencher.db`; the whole `data/` directory is gitignored.
 
-## 📝 Output Formats
+## Development
 
-**Raw recording** (`recording-<timestamp>.json`):
-```json
-{
-  "meta": { "url": "...", "timestamp": 1766507394510, "userAgent": "..." },
-  "events": [
-    { "type": "navigation", "timestamp": 1766507394600, "url": "..." },
-    { "type": "api_request", "timestamp": 1766507394700, "method": "GET", "url": "..." },
-    { "type": "api_response", "timestamp": 1766507394800, "url": "...", "status": 200 },
-    { "type": "ui_event", "timestamp": 1766507395123, "action": "click", "locators": { "...": "..." } }
-  ]
-}
+```bash
+pnpm -r build
+pnpm -r typecheck                                    # portal-web is only checked here, not by its build
+pnpm -r --filter '!@backbencher/recorder' test       # recorder is a live-browser e2e
 ```
 
-**Filtered API calls** (`recording-<timestamp>-api-calls.json`):
-```json
-{
-  "meta": { "sourceFile": "recording-<timestamp>.json", "totalApiCalls": 2 },
-  "apiCalls": [
-    { "method": "GET", "url": "...", "requestTimestamp": 1766507394700, "status": 200, "responseTimestamp": 1766507394800 }
-  ]
-}
-```
+Packages resolve each other through compiled `dist/`, so rebuild a package before its dependents will
+see a change. See [AGENTS.md](./AGENTS.md) for the build order.
 
-## 🛠️ Technology Stack
+## Documentation
 
-- **Playwright** - Browser automation framework
-- **Node.js** - Runtime environment
+- [CONTEXT.md](./CONTEXT.md) — the domain glossary. Start here; the vocabulary is precise on purpose.
+- [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) — what each package does, and the invariants that are
+  easy to violate.
+- [docs/adr/](./docs/adr) — why the load-bearing decisions were made.
 
-## 📄 License
+## License
 
 ISC
-

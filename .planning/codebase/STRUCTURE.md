@@ -9,7 +9,7 @@ backbencher/
 ├── AGENTS.md                  # GSD agent instructions (not project source docs)
 ├── bb.config.jsonc             # runtime config: recorder filters, redaction, agent/LLM, environments
 ├── biome.json                  # lint/format config (Biome, single tool for the monorepo)
-├── package.json                 # workspace root; ⚠ still has legacy record/filter/serve scripts (dead)
+├── package.json                 # workspace root; private, holds shared devDeps and the `serve` script
 ├── pnpm-workspace.yaml           # workspace globs: packages/*, apps/*
 ├── pnpm-lock.yaml
 ├── tsconfig.base.json            # shared strict TS config, extended by every package
@@ -23,11 +23,10 @@ backbencher/
 ├── data/                         # gitignored runtime state — never assume populated in fresh checkout
 │   ├── knowledge-packs/<hash>/   # pack.json + catalog.md, one dir per content hash
 │   └── sessions/<sessionId>/     # meta.json, events.ndjson, summary.json per recorded session
-├── docs/                         # architecture/report docs (human-maintained, not auto-generated)
-│   ├── ARCHITECTURE.md           # current-state architecture (source of truth, dated per revision)
-│   ├── FURTHER_ARCHITECTURE.md   # original target-design doc (largely implemented now)
-│   ├── TECHNICAL_REPORT.md       # v1 prototype report (historical)
-│   └── backbencher-realignment-guide.md
+├── docs/                         # architecture/decision docs (human-maintained, not auto-generated)
+│   ├── ARCHITECTURE.md           # current-state architecture (source of truth)
+│   ├── adr/                      # architecture decision records, numbered
+│   └── agents/                   # agent-skill config: issue tracker, triage labels, domain docs
 ├── packages/
 │   ├── schemas/                  # @backbencher/schemas — Zod contracts, zero internal deps
 │   ├── shared/                   # @backbencher/shared — logger, config, redaction, ids
@@ -43,10 +42,7 @@ backbencher/
 │   ├── depcheck.mjs              # dependency-usage check across workspaces
 │   ├── e2e-portal.mjs            # end-to-end portal smoke script
 │   ├── kill-port.sh
-│   └── serve.sh                  # ⚠ referenced by legacy root `serve` script
-└── src/                           # ⚠ LEGACY v1 prototype — dead code, superseded by packages/recorder
-    ├── filters/filter-api.js      # old request/response pairing by URL+timestamp heuristic
-    └── recorders/recorder.js      # old plain-JS Playwright recorder
+│   └── serve.sh                  # builds all packages and starts the portal (root `pnpm serve`)
 ```
 
 ## Directory Purposes
@@ -106,14 +102,9 @@ backbencher/
 - Contains: `backbencher.db` (SQLite), `sessions/<id>/` (raw capture), `knowledge-packs/<hash>/` (agent output).
 - Generated: Yes. Committed: No.
 
-**`src/` (root-level, legacy):**
-- Purpose: dead v1 prototype code, fully superseded by `packages/recorder` + `packages/derive`.
-- Contains: `filters/filter-api.js`, `recorders/recorder.js` — plain JS, not imported by any workspace package.
-- Generated: No. Committed: Yes (historical, safe to delete per `docs/ARCHITECTURE.md` §10).
-
 **`docs/`:**
 - Purpose: human-maintained architecture/design documents; the primary ground-truth reference for the system's intent and current state.
-- Contains: `ARCHITECTURE.md` (current implementation), `FURTHER_ARCHITECTURE.md` (original target design), `TECHNICAL_REPORT.md` (v1 prototype writeup), `backbencher-realignment-guide.md`.
+- Contains: `ARCHITECTURE.md` (current implementation), `adr/` (numbered decision records), `agents/` (agent-skill config).
 
 ## Key File Locations
 
@@ -197,10 +188,6 @@ backbencher/
 **`packages/schemas/generated/`:**
 - Purpose: JSON Schema output generated from the Zod contracts for non-TS consumers (e.g. LLM prompts).
 - Generated: Yes (via `packages/schemas/scripts/`). Committed: check per-file; treat as derived, not hand-edited.
-
-**`src/` (root):**
-- Purpose: legacy v1 prototype, retained only for historical reference.
-- Generated: No. Committed: Yes, but inert — not part of any build/test target.
 
 ---
 

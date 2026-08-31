@@ -4,12 +4,6 @@
 
 ## Tech Debt
 
-**Legacy v1 prototype still in the tree (`src/`):**
-- Issue: `src/recorders/recorder.js` (724 lines, plain JS) and `src/filters/filter-api.js` are the pre-rewrite prototype, fully superseded by `packages/recorder` + `packages/derive`. They are dead code but still wired up: the workspace-root `package.json` still declares `"main": "index.js"` (no such file exists) and `record`/`filter` npm scripts that invoke these legacy files directly.
-- Files: `src/recorders/recorder.js`, `src/filters/filter-api.js`, `package.json` (`scripts.record`, `scripts.filter`, `main`)
-- Impact: Anyone running `npm run record` at the repo root launches the old prototype (TLS-permissive, hardcoded internal `DEFAULT_URL`, no redaction) instead of `bb record`. Confusing for new contributors; risk of accidental use of the insecure path. `docs/TECHNICAL_REPORT.md` documents this old implementation in full detail and can be mistaken for current-state docs if read without also reading `docs/ARCHITECTURE.md`.
-- Fix approach: Delete `src/`, remove the `record`/`filter` scripts and stale `main` field from the root `package.json`, and either delete or clearly re-header `docs/TECHNICAL_REPORT.md` as historical-only (it currently has no banner distinguishing it from current docs). `docs/ARCHITECTURE.md` §9/§11 already flags this as "safe to delete, not yet removed."
-
 **Portal API router surface is a single 530-line file:**
 - Issue: `packages/portal-api/src/routers.ts` (530 lines) implements all 13 tRPC routers (`sessions`, `derive`, `operations`, `flows`, `scenarios`, `guides`, `dataflow`, `pack`, `specs`, `agent`, `runs`, `security`, `drift`) in one module.
 - Files: `packages/portal-api/src/routers.ts`
@@ -21,12 +15,6 @@
 - Files: see `git status` output above
 - Impact: A "session graph" feature is mid-flight across derive + portal-web with no corresponding entry in `docs/ARCHITECTURE.md` yet — the architecture doc will drift out of sync with the codebase until this lands and docs are updated.
 - Fix approach: Land the session-graph feature behind a completed PR/commit, then update `docs/ARCHITECTURE.md` §2/§5/§6.3 to describe it.
-
-**Root `package.json` identity mismatch:**
-- Issue: The workspace-root `package.json` name is still `"project_2"` (v1.0.0) — a leftover from the original prototype — even though the repo is a full pnpm/turbo monorepo named `backbencher`.
-- Files: `package.json`
-- Impact: Cosmetic/confusing but visible in `pnpm list`, npm registry metadata if ever published, and any tooling that reads root package name.
-- Fix approach: Rename to something like `backbencher` or `@backbencher/monorepo`, `private: true`.
 
 **No dedicated unit tests for `packages/schemas`:**
 - Issue: `docs/ARCHITECTURE.md` §3 and §10 note "No dedicated schema unit tests; correctness is exercised indirectly via `agent`/`testkit` tests." The package has 6 source files (`recording.ts`, `apimodel.ts`, `knowledge.ts`, `pack.ts`, `testspec.ts`, `index.ts`) but only 1 test file.
@@ -53,18 +41,6 @@
 - Files: `packages/testkit/src/runtime.ts`
 - Trigger: A client-generated field nested inside a sub-object or array element in the request body will not be correctly re-minted, risking replay of a stale/hallucinated value instead of a fresh one.
 - Workaround: None currently; relies on most client-generated fields being top-level.
-
-**Legacy filter pairing bug (dead code, historical only):**
-- Symptoms: `src/filters/filter-api.js` pairs `api_request`/`api_response` by exact URL match + `timestamp >=`, which can mis-pair concurrent identical-URL requests (no persisted correlation id in that code path).
-- Files: `src/filters/filter-api.js`
-- Trigger: Two near-simultaneous requests to the same URL in a legacy recording.
-- Workaround: Not applicable to current runtime — `packages/derive/src/pairCalls.ts` uses a persisted `correlationId` and does not have this bug. Only relevant if the legacy script is still invoked (see Tech Debt above).
-
-**Recorder response-body truncation bug (dead code, historical only):**
-- Symptoms: `text.startsWith("{") || text.startsWith("[")` operator-precedence bug in the legacy recorder throws on `null`/empty `text`, silently swallowed by a surrounding try/catch, leaving `responseBody` as `null` when the intent was to attempt JSON parsing.
-- Files: `src/recorders/recorder.js`
-- Trigger: Any API response with an empty body captured by the legacy recorder.
-- Workaround: Not applicable to current runtime — `packages/recorder/src/bodyCapture.ts` classifies bodies explicitly (`json|text|binary|empty|unavailable`) and does not share this bug.
 
 ## Security Considerations
 
@@ -97,12 +73,6 @@
 - Files: `bb.config.jsonc`
 - Current mitigation: These are just config defaults, easily overridden per-deployment, and `data/` (recordings/DB) is gitignored so captured traffic itself isn't committed.
 - Recommendations: Ship a genuinely generic example config (e.g. `bb.config.example.jsonc`) and keep any lab-specific config as a local, gitignored override, to avoid leaking internal infrastructure naming in a repo that may be shared more broadly.
-
-**Legacy recorder still has TLS/CORS bypassed by design:**
-- Risk: `src/recorders/recorder.js` launches Chromium with `--ignore-certificate-errors`, `--disable-web-security`, and `ignoreHTTPSErrors: true`, and its `sanitizeValue()` password-redaction stub is a no-op that's never called — so any invocation of the legacy `npm run record` script captures passwords and other sensitive form values in cleartext.
-- Files: `src/recorders/recorder.js`
-- Current mitigation: `packages/shared/src/redaction.ts` implements real redaction for the current recorder (`packages/recorder`); the legacy script is unaffected by it.
-- Recommendations: Same as Tech Debt above — delete the legacy script and its npm scripts so this code path cannot be invoked at all.
 
 ## Performance Bottlenecks
 
