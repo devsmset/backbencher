@@ -35,3 +35,6 @@ recordings/
 # OS/editor
 .DS_Store
 
+
+# Subagent-driven development scratch
+.superpowers/
