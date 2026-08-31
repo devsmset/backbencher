@@ -14,6 +14,7 @@ export {
 export { detectVolatileFields } from "./volatile.js";
 export { buildDataflowGraph } from "./dataflow.js";
 export type { DataflowResult } from "./dataflow.js";
+export { buildSessionCallGraph } from "./sessionGraph.js";
 export { deriveDependencyGraph } from "./dependencies.js";
 export type { DependencyGraph } from "./dependencies.js";
 export { extractObservedFlow } from "./flows.js";

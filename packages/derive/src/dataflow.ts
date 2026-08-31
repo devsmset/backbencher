@@ -29,7 +29,7 @@ function isRedacted(v: string): boolean {
 }
 
 // Entropy gate (§5.5 step 4). Returns null to drop; otherwise whether the value is high-entropy.
-function entropy(value: string): { keep: boolean; ok: boolean } {
+export function entropy(value: string): { keep: boolean; ok: boolean } {
   if (value.length < 6) return { keep: false, ok: false };
   if (value === "true" || value === "false") return { keep: false, ok: false };
   if (/^\d+$/.test(value) && Number(value) < 10000) return { keep: false, ok: false };
@@ -43,12 +43,71 @@ interface Endpoint {
   location: string;
   jsonPath: string;
 }
-interface Producer extends Endpoint {
+export interface Producer extends Endpoint {
+  correlationId: string;
   value: string;
   ts: number;
   sessionId: string;
 }
-interface Consumer extends Producer {}
+export interface Consumer extends Producer {}
+
+// Shared producer/consumer extraction (§5.5 steps 1-3), reused by the cross-session
+// `buildDataflowGraph` and the single-session `buildSessionCallGraph`.
+export function collectProducers(calls: PairedCall[], callOp: Map<PairedCall, string>): Producer[] {
+  const producers: Producer[] = [];
+  for (const c of calls) {
+    const op = callOp.get(c);
+    if (!op) continue;
+    if (c.responseBody !== null && c.responseTimestamp !== null) {
+      for (const leaf of walkScalars(c.responseBody)) {
+        if (isRedacted(leaf.value)) continue;
+        producers.push({ op, location: "responseBody", jsonPath: leaf.path, value: leaf.value, ts: c.responseTimestamp, sessionId: c.sessionId, correlationId: c.correlationId });
+      }
+    }
+    if (c.responseTimestamp !== null) {
+      for (const [name, value] of Object.entries(c.responseHeaders)) {
+        if (STD_RES_HEADERS.has(name.toLowerCase()) || isRedacted(value)) continue;
+        producers.push({ op, location: "responseHeader", jsonPath: name, value, ts: c.responseTimestamp, sessionId: c.sessionId, correlationId: c.correlationId });
+      }
+    }
+  }
+  return producers;
+}
+
+export function collectConsumers(
+  calls: PairedCall[],
+  callOp: Map<PairedCall, string>,
+  operations: Map<string, OpAccum>,
+): Consumer[] {
+  const consumers: Consumer[] = [];
+  for (const c of calls) {
+    const op = callOp.get(c);
+    if (!op) continue;
+    const params = operations.get(op)?.params ?? [];
+    for (const p of params) {
+      const value = c.segments[p.position];
+      if (value && !isRedacted(value)) {
+        consumers.push({ op, location: "path", jsonPath: p.name, value, ts: c.requestTimestamp, sessionId: c.sessionId, correlationId: c.correlationId });
+      }
+    }
+    for (const [name, value] of c.query) {
+      if (!isRedacted(value)) {
+        consumers.push({ op, location: "query", jsonPath: name, value, ts: c.requestTimestamp, sessionId: c.sessionId, correlationId: c.correlationId });
+      }
+    }
+    if (c.requestBody !== null && c.requestBody !== undefined) {
+      for (const leaf of walkScalars(c.requestBody)) {
+        if (isRedacted(leaf.value)) continue;
+        consumers.push({ op, location: "requestBody", jsonPath: leaf.path, value: leaf.value, ts: c.requestTimestamp, sessionId: c.sessionId, correlationId: c.correlationId });
+      }
+    }
+    for (const [name, value] of Object.entries(c.requestHeaders)) {
+      if (STD_REQ_HEADERS.has(name.toLowerCase()) || isRedacted(value)) continue;
+      consumers.push({ op, location: "requestHeader", jsonPath: name, value, ts: c.requestTimestamp, sessionId: c.sessionId, correlationId: c.correlationId });
+    }
+  }
+  return consumers;
+}
 
 export interface DataflowResult {
   edges: DataflowEdge[];
@@ -60,51 +119,8 @@ export function buildDataflowGraph(
   callOp: Map<PairedCall, string>,
   operations: Map<string, OpAccum>,
 ): DataflowResult {
-  const producers: Producer[] = [];
-  const consumers: Consumer[] = [];
-
-  for (const c of calls) {
-    const op = callOp.get(c);
-    if (!op) continue;
-
-    // producers: response body + non-standard response headers
-    if (c.responseBody !== null && c.responseTimestamp !== null) {
-      for (const leaf of walkScalars(c.responseBody)) {
-        if (isRedacted(leaf.value)) continue;
-        producers.push({ op, location: "responseBody", jsonPath: leaf.path, value: leaf.value, ts: c.responseTimestamp, sessionId: c.sessionId });
-      }
-    }
-    if (c.responseTimestamp !== null) {
-      for (const [name, value] of Object.entries(c.responseHeaders)) {
-        if (STD_RES_HEADERS.has(name.toLowerCase()) || isRedacted(value)) continue;
-        producers.push({ op, location: "responseHeader", jsonPath: name, value, ts: c.responseTimestamp, sessionId: c.sessionId });
-      }
-    }
-
-    // consumers: path params, query, request body, non-standard request headers
-    const params = operations.get(op)?.params ?? [];
-    for (const p of params) {
-      const value = c.segments[p.position];
-      if (value && !isRedacted(value)) {
-        consumers.push({ op, location: "path", jsonPath: p.name, value, ts: c.requestTimestamp, sessionId: c.sessionId });
-      }
-    }
-    for (const [name, value] of c.query) {
-      if (!isRedacted(value)) {
-        consumers.push({ op, location: "query", jsonPath: name, value, ts: c.requestTimestamp, sessionId: c.sessionId });
-      }
-    }
-    if (c.requestBody !== null && c.requestBody !== undefined) {
-      for (const leaf of walkScalars(c.requestBody)) {
-        if (isRedacted(leaf.value)) continue;
-        consumers.push({ op, location: "requestBody", jsonPath: leaf.path, value: leaf.value, ts: c.requestTimestamp, sessionId: c.sessionId });
-      }
-    }
-    for (const [name, value] of Object.entries(c.requestHeaders)) {
-      if (STD_REQ_HEADERS.has(name.toLowerCase()) || isRedacted(value)) continue;
-      consumers.push({ op, location: "requestHeader", jsonPath: name, value, ts: c.requestTimestamp, sessionId: c.sessionId });
-    }
-  }
+  const producers = collectProducers(calls, callOp);
+  const consumers = collectConsumers(calls, callOp, operations);
 
   // index producers by session+value
   const prodIndex = new Map<string, Producer[]>();
