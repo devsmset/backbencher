@@ -29,9 +29,9 @@ describe("portal-api", () => {
     const caller = appRouter.createCaller({ store, actor: "tester", config: BbConfigSchema.parse({}) });
 
     expect(await caller.operations.list({})).toHaveLength(1);
-    await caller.operations.setReviewState({ operationId: "op_abc", reviewState: "approved" });
+    await caller.operations.annotate({ operationId: "op_abc", name: "Get X", does: "Gets X" });
     const got = await caller.operations.get({ operationId: "op_abc" });
-    expect(got?.operation.reviewState).toBe("approved");
+    expect(got?.operation.reviewState).toBe("ready");
 
     const pack = await caller.pack.build();
     expect(pack.contentHash).toBeTruthy();

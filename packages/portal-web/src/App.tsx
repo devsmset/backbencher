@@ -2,10 +2,10 @@ import { type ReactNode, useEffect, useState } from "react";
 import { Catalog } from "./screens/Catalog.js";
 import { Compose } from "./screens/Compose.js";
 import { Dashboard } from "./screens/Dashboard.js";
+import { Exemplars } from "./screens/Exemplars.js";
 import { Guides } from "./screens/Guides.js";
 import { OperationDetail } from "./screens/OperationDetail.js";
 import { Pack } from "./screens/Pack.js";
-import { Scenarios } from "./screens/Scenarios.js";
 import { SessionDetail, SessionsList } from "./screens/Sessions.js";
 import { Specs } from "./screens/Specs.js";
 
@@ -23,7 +23,7 @@ const NAV: [string, string][] = [
   ["#/dashboard", "Dashboard"],
   ["#/sessions", "Sessions"],
   ["#/catalog", "Catalog"],
-  ["#/scenarios", "Scenarios"],
+  ["#/exemplars", "Exemplars"],
   ["#/compose", "Compose"],
   ["#/guides", "Guides"],
   ["#/pack", "Pack"],
@@ -48,11 +48,8 @@ export function App() {
     case "op":
       screen = <OperationDetail operationId={parts[1] ?? ""} />;
       break;
-    case "scenarios":
-      screen = <Scenarios />;
-      break;
-    case "scenario":
-      screen = <Scenarios />;
+    case "exemplars":
+      screen = <Exemplars />;
       break;
     case "compose":
       screen = <Compose />;

@@ -24,8 +24,8 @@ export function Dashboard() {
               <span className="text-xs text-[--muted]">reviewed</span>
             </div>
             <div className="inline-flex min-w-44 flex-col gap-0.5 rounded-[10px] border border-[--line] bg-[--panel2] px-[18px] py-3">
-              <b className="text-[26px]">{d.coverage.operationsWithApprovedScenario}</b>
-              <span className="text-xs text-[--muted]">with approved scenario</span>
+              <b className="text-[26px]">{d.coverage.operationsWithApprovedComposition}</b>
+              <span className="text-xs text-[--muted]">with approved composition</span>
             </div>
           </div>
         )}

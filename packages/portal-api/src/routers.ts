@@ -2,17 +2,31 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   AnalystGuideSchema,
+  CatalogReviewState,
+  ExemplarSchema,
   KnowledgePackSchema,
-  ReviewState,
-  ScenarioSchema,
   SideEffect,
-  isAnnotationReady,
+  TestDecisionSchema,
+  isOperationReady,
 } from "@backbencher/schemas";
 import { dataDir, newId } from "@backbencher/shared";
 import { mergeOperation } from "@backbencher/store";
-import { loadAllSessions, loadSession, runDerivation } from "@backbencher/derive";
+import { buildSessionCallGraph, loadAllSessions, loadSession, pairCalls, runDerivation, templatizePaths } from "@backbencher/derive";
 import { type RecorderHandle, startRecording } from "@backbencher/recorder";
-import { buildKnowledgePack, computeDependencyGraph, createLlm, generateTestSpec, packDiff, proposeScenario } from "@backbencher/agent";
+import {
+  buildKnowledgePack,
+  computeDependencyGraph,
+  createEmbedder,
+  createLlm,
+  draftExemplarFromSession,
+  generateTestSpec,
+  latestResults,
+  packDiff,
+  proposeScenario,
+  runRehearsal,
+  summarize,
+  suggestAnnotations,
+} from "@backbencher/agent";
 import { loadSpecYaml, runSpecAgainstEnv, generateAuthzMatrix, generateBolaProbes, specToYaml } from "@backbencher/testkit";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -24,6 +38,17 @@ import { publicProcedure, router } from "./trpc.js";
 // In-memory registry of in-progress recordings, keyed by sessionId. A recording is a live
 // headed browser + Playwright listeners running in this server process (mirrors `bb record`).
 const activeRecordings = new Map<string, RecorderHandle>();
+
+const ASSET_PATH_RE = /\.(?:svg|woff2?|ttf|otf|eot|ico|png|jpe?g|gif|webp|avif)(?:$|[?#])/i;
+const DROPPED_CONTENT_PREFIXES = ["image/", "font/", "text/css", "text/javascript"];
+
+// Mirrors the frontend's isAssetLikeCall (Sessions.tsx) but for a PairedCall, not the raw
+// ndjson-derived row — kept separate since the two shapes differ.
+function isAssetLikeCall(c: { pathname: string; requestContentType: string | undefined; responseContentType: string | undefined }): boolean {
+  const contentType = (c.responseContentType ?? c.requestContentType ?? "").toLowerCase();
+  if (DROPPED_CONTENT_PREFIXES.some((prefix) => contentType.startsWith(prefix))) return true;
+  return ASSET_PATH_RE.test(c.pathname);
+}
 
 const sessionsRouter = router({
   list: publicProcedure.query(({ ctx }) => ctx.store.sessions.list()),
@@ -40,15 +65,35 @@ const sessionsRouter = router({
       const session = loadSession(dir);
       return { meta: session.meta, events: session.events };
     }),
+  graph: publicProcedure
+    .input(z.object({ sessionId: z.string() }))
+    .query(({ input }) => {
+      const dir = join(dataDir(), "sessions", input.sessionId);
+      if (!existsSync(dir)) return { nodes: [], edges: [] };
+      const session = loadSession(dir);
+      const calls = pairCalls(session).filter((c) => !isAssetLikeCall(c));
+      const { operations, callOp } = templatizePaths(calls);
+      const edges = buildSessionCallGraph(calls, callOp, operations);
+      const nodes = calls.map((c) => ({
+        correlationId: c.correlationId,
+        operationId: callOp.get(c) ?? null,
+        method: c.method,
+        host: c.host,
+        pathname: c.pathname,
+        status: c.status,
+        requestTimestamp: c.requestTimestamp,
+        responseTimestamp: c.responseTimestamp,
+      }));
+      return { nodes, edges };
+    }),
   activeRecordings: publicProcedure.query(() => [...activeRecordings.keys()]),
   startRecording: publicProcedure
-    .input(z.object({ url: z.string(), sessionName: z.string().optional(), authProfile: z.string().optional() }))
+    .input(z.object({ url: z.string(), authProfile: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const handle = await startRecording({
         url: input.url,
         config: ctx.config,
         headless: false,
-        ...(input.sessionName ? { sessionName: input.sessionName } : {}),
         ...(input.authProfile ? { authProfile: input.authProfile } : {}),
       });
       activeRecordings.set(handle.sessionId, handle);
@@ -56,14 +101,24 @@ const sessionsRouter = router({
       return { sessionId: handle.sessionId };
     }),
   stopRecording: publicProcedure
+    .input(z.object({ sessionId: z.string(), name: z.string().trim().min(1), goal: z.string().trim().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      const handle = activeRecordings.get(input.sessionId);
+      if (!handle) throw new TRPCError({ code: "NOT_FOUND", message: "no active recording with that sessionId" });
+      activeRecordings.delete(input.sessionId);
+      const result = await handle.stop({ name: input.name, goal: input.goal });
+      ctx.store.audit.append({ entityType: "session", entityId: input.sessionId, action: "record.stop", actor: ctx.actor, diff: { totalEvents: result.summary.totalEvents } });
+      return { sessionId: result.sessionId, sessionDir: result.sessionDir, summary: result.summary };
+    }),
+  discardRecording: publicProcedure
     .input(z.object({ sessionId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const handle = activeRecordings.get(input.sessionId);
       if (!handle) throw new TRPCError({ code: "NOT_FOUND", message: "no active recording with that sessionId" });
       activeRecordings.delete(input.sessionId);
-      const result = await handle.stop();
-      ctx.store.audit.append({ entityType: "session", entityId: input.sessionId, action: "record.stop", actor: ctx.actor, diff: { totalEvents: result.summary.totalEvents } });
-      return { sessionId: result.sessionId, sessionDir: result.sessionDir, summary: result.summary };
+      await handle.discard();
+      ctx.store.audit.append({ entityType: "session", entityId: input.sessionId, action: "record.discard", actor: ctx.actor });
+      return { ok: true };
     }),
 });
 
@@ -102,6 +157,10 @@ const AnnotatePatch = z.object({
   does: z.string().optional(),
   productArea: z.string().optional(),
   sideEffect: SideEffect.optional(),
+});
+
+const TestingAnnotatePatch = z.object({
+  operationId: z.string(),
   paramDocs: z.record(z.string()).optional(),
   testingGuidance: z.string().optional(),
   tags: z.array(z.string()).optional(),
@@ -116,7 +175,7 @@ const AnnotatePatch = z.object({
 
 const operationsRouter = router({
   list: publicProcedure
-    .input(z.object({ q: z.string().optional(), reviewState: ReviewState.optional(), area: z.string().optional() }).optional())
+    .input(z.object({ q: z.string().optional(), reviewState: CatalogReviewState.optional(), area: z.string().optional() }).optional())
     .query(({ ctx, input }) => {
       const annotations = new Map(ctx.store.annotations.list().map((a) => [a.operationId, a]));
       let ops = ctx.store.operations
@@ -132,28 +191,44 @@ const operationsRouter = router({
       const derived = ctx.store.operations.get(input.operationId);
       if (!derived) return null;
       return {
-        operation: mergeOperation(derived, ctx.store.annotations.get(input.operationId)),
+        operation: mergeOperation(
+          derived,
+          ctx.store.annotations.get(input.operationId),
+          ctx.store.testingAnnotations.get(input.operationId),
+        ),
         dataflow: ctx.store.dataflow.forOperation(input.operationId),
       };
     }),
   annotate: publicProcedure.input(AnnotatePatch).mutation(({ ctx, input }) => {
     const existing = ctx.store.annotations.get(input.operationId);
-    const base = existing ?? { operationId: input.operationId, reviewState: "unreviewed" as const, tags: [] };
     const { operationId, ...patch } = input;
     const saved = ctx.store.annotations.upsert({
-      ...base,
+      ...(existing ?? { operationId, suggested: false, reviewState: "unannotated" as const }),
       ...patch,
       operationId,
-      tags: patch.tags ?? base.tags,
-      reviewState: base.reviewState,
+      suggested: false, // a human touching the annotation is what un-suggests it
       updatedBy: ctx.actor,
       updatedAt: Date.now(),
     });
     ctx.store.audit.append({ entityType: "operation", entityId: operationId, action: "annotate", actor: ctx.actor, diff: patch });
     return saved;
   }),
+  annotateTesting: publicProcedure.input(TestingAnnotatePatch).mutation(({ ctx, input }) => {
+    const existing = ctx.store.testingAnnotations.get(input.operationId);
+    const { operationId, ...patch } = input;
+    const saved = ctx.store.testingAnnotations.upsert({
+      ...(existing ?? { operationId, tags: [] }),
+      ...patch,
+      operationId,
+      tags: patch.tags ?? existing?.tags ?? [],
+      updatedBy: ctx.actor,
+      updatedAt: Date.now(),
+    });
+    ctx.store.audit.append({ entityType: "operation", entityId: operationId, action: "annotateTesting", actor: ctx.actor, diff: patch });
+    return saved;
+  }),
   setReviewState: publicProcedure
-    .input(z.object({ operationId: z.string(), reviewState: ReviewState }))
+    .input(z.object({ operationId: z.string(), reviewState: CatalogReviewState }))
     .mutation(({ ctx, input }) => {
       const saved = ctx.store.annotations.setReviewState(input.operationId, input.reviewState, ctx.actor);
       ctx.store.audit.append({ entityType: "operation", entityId: input.operationId, action: "setReviewState", actor: ctx.actor, diff: { reviewState: input.reviewState } });
@@ -163,14 +238,13 @@ const operationsRouter = router({
     .input(z.object({ operationIds: z.array(z.string()).min(1), targetTemplate: z.string() }))
     .mutation(({ ctx, input }) => {
       for (const id of input.operationIds) {
-        const existing = ctx.store.annotations.get(id) ?? {
+        const existing = ctx.store.testingAnnotations.get(id) ?? {
           operationId: id,
-          reviewState: "unreviewed" as const,
           tags: [],
           updatedBy: ctx.actor,
           updatedAt: Date.now(),
         };
-        ctx.store.annotations.upsert({
+        ctx.store.testingAnnotations.upsert({
           ...existing,
           correctionOverrides: { ...(existing.correctionOverrides ?? {}), pathTemplate: input.targetTemplate },
           updatedBy: ctx.actor,
@@ -191,38 +265,69 @@ const flowsRouter = router({
     .query(({ ctx, input }) => ctx.store.flows.get(input.flowId)),
 });
 
-const scenariosRouter = router({
-  list: publicProcedure.query(({ ctx }) => ctx.store.scenarios.list()),
+const exemplarsRouter = router({
+  list: publicProcedure.query(({ ctx }) => ctx.store.exemplars.list()),
   get: publicProcedure
-    .input(z.object({ scenarioId: z.string() }))
-    .query(({ ctx, input }) => ctx.store.scenarios.get(input.scenarioId)),
-  fromFlow: publicProcedure
-    .input(z.object({ flowId: z.string() }))
-    .query(({ ctx, input }) => {
-      const flow = ctx.store.flows.get(input.flowId);
-      if (!flow) return null;
-      return {
-        scenarioId: "",
-        name: "",
-        description: "",
-        sourceFlowIds: [flow.flowId],
-        steps: flow.steps.map((s) => ({ operationId: s.operationId, intent: "" })),
-        testDecision: { inScope: true, strategy: "api_functional", rationale: "", riskLevel: "medium", environments: [] },
-        reviewState: "unreviewed",
-        updatedBy: ctx.actor,
-        updatedAt: Date.now(),
-      };
+    .input(z.object({ exemplarId: z.string() }))
+    .query(({ ctx, input }) => ctx.store.exemplars.get(input.exemplarId)),
+  getBySession: publicProcedure
+    .input(z.object({ sessionId: z.string() }))
+    .query(({ ctx, input }) => ctx.store.exemplars.getBySession(input.sessionId)),
+  /** Draft an Exemplar from a recorded session; not persisted until the analyst upserts it. */
+  fromSession: publicProcedure
+    .input(z.object({ sessionId: z.string(), model: z.string().optional() }))
+    .mutation(async ({ ctx, input }) => {
+      let llm: ReturnType<typeof createLlm> | undefined;
+      try {
+        llm = createLlm(ctx.config, "stepIntents", input.model);
+      } catch {
+        llm = undefined; // no model configured -> draft with empty intents for the analyst to fill in
+      }
+      return draftExemplarFromSession(ctx.store, input.sessionId, { ...(llm ? { llm } : {}), actor: ctx.actor });
     }),
-  upsert: publicProcedure.input(ScenarioSchema).mutation(({ ctx, input }) => {
-    const scenarioId = input.scenarioId || newId();
-    const saved = ctx.store.scenarios.upsert({ ...input, scenarioId, updatedBy: ctx.actor, updatedAt: Date.now() });
-    ctx.store.audit.append({ entityType: "scenario", entityId: scenarioId, action: "upsert", actor: ctx.actor });
+  upsert: publicProcedure.input(ExemplarSchema).mutation(({ ctx, input }) => {
+    const exemplarId = input.exemplarId || newId();
+    const saved = ctx.store.exemplars.upsert({ ...input, exemplarId, updatedBy: ctx.actor, updatedAt: Date.now() });
+    ctx.store.audit.append({ entityType: "exemplar", entityId: exemplarId, action: "upsert", actor: ctx.actor });
     return saved;
   }),
-  remove: publicProcedure.input(z.object({ scenarioId: z.string() })).mutation(({ ctx, input }) => {
-    ctx.store.scenarios.remove(input.scenarioId);
-    ctx.store.audit.append({ entityType: "scenario", entityId: input.scenarioId, action: "remove", actor: ctx.actor });
+  remove: publicProcedure.input(z.object({ exemplarId: z.string() })).mutation(({ ctx, input }) => {
+    ctx.store.exemplars.remove(input.exemplarId);
+    ctx.store.audit.append({ entityType: "exemplar", entityId: input.exemplarId, action: "remove", actor: ctx.actor });
     return { ok: true };
+  }),
+});
+
+const suggestRouter = router({
+  run: publicProcedure
+    .input(z.object({ model: z.string().optional(), force: z.boolean().optional(), batchSize: z.number().optional() }).optional())
+    .mutation(async ({ ctx, input }) => {
+      let llm: ReturnType<typeof createLlm>;
+      try {
+        llm = createLlm(ctx.config, "suggestAnnotation", input?.model);
+      } catch (e) {
+        throw new TRPCError({ code: "PRECONDITION_FAILED", message: (e as Error).message });
+      }
+      const result = await suggestAnnotations(ctx.store, {
+        llm,
+        actor: ctx.actor,
+        ...(input?.force !== undefined ? { force: input.force } : {}),
+        ...(input?.batchSize !== undefined ? { batchSize: input.batchSize } : {}),
+      });
+      ctx.store.audit.append({
+        entityType: "operation",
+        entityId: "bulk",
+        action: "suggest",
+        actor: ctx.actor,
+        diff: { considered: result.considered, suggested: result.suggested },
+      });
+      return { considered: result.considered, suggested: result.suggested };
+    }),
+  accept: publicProcedure.input(z.object({ operationId: z.string() })).mutation(({ ctx, input }) => {
+    const saved = ctx.store.annotations.accept(input.operationId, ctx.actor);
+    if (!saved) throw new TRPCError({ code: "NOT_FOUND", message: "no annotation to accept" });
+    ctx.store.audit.append({ entityType: "operation", entityId: input.operationId, action: "acceptSuggestion", actor: ctx.actor });
+    return saved;
   }),
 });
 
@@ -262,70 +367,73 @@ const dependenciesRouter = router({
 });
 
 // Free-text scenario composition (realignment guide §6). `propose` runs retrieval + dependency
-// closure + LLM select/order + deterministic validation and persists a draft (reviewState:
-// "unreviewed", origin: "composed"). A human must `approve` (or `reject`) before it flows into the
-// unchanged agent.generateTestSpec / testkit pipeline.
+// closure + LLM select/order + deterministic validation and persists a draft Composition (status:
+// "draft"). A human must `approve` (supplying the testDecision — ADR-0002 only sets it at
+// approval) or `reject` before it flows into the unchanged agent.generateTestSpec / testkit
+// pipeline.
 const composeRouter = router({
   propose: publicProcedure
     .input(z.object({ goal: z.string().min(1), model: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
-      const cfg = input.model ? { ...ctx.config.agent, model: input.model } : ctx.config.agent;
       let llm: ReturnType<typeof createLlm>;
+      let embedder: ReturnType<typeof createEmbedder>;
       try {
-        llm = createLlm(cfg);
+        llm = createLlm(ctx.config, "compose", input.model);
+        embedder = createEmbedder(ctx.config);
       } catch (e) {
         throw new TRPCError({ code: "PRECONDITION_FAILED", message: (e as Error).message });
       }
       const result = await proposeScenario(ctx.store, input.goal, {
         llm,
         actor: ctx.actor,
+        retrieve: { embedder },
         ...(input.model ? { model: input.model } : {}),
       });
       ctx.store.audit.append({
-        entityType: "scenario",
-        entityId: result.scenario.scenarioId,
+        entityType: "composition",
+        entityId: result.composition.compositionId,
         action: "compose.propose",
         actor: ctx.actor,
         diff: { goal: input.goal, attempts: result.attempts },
       });
-      return { scenario: result.scenario, attempts: result.attempts };
+      return { composition: result.composition, attempts: result.attempts };
     }),
-  drafts: publicProcedure.query(({ ctx }) =>
-    ctx.store.scenarios.list().filter((s) => s.origin === "composed" && s.reviewState === "unreviewed"),
-  ),
+  drafts: publicProcedure.query(({ ctx }) => ctx.store.compositions.listByStatus("draft")),
   approve: publicProcedure
     .input(
       z.object({
-        scenarioId: z.string(),
+        compositionId: z.string(),
         steps: z.array(z.object({ operationId: z.string(), intent: z.string() })).optional(),
+        testDecision: TestDecisionSchema,
       }),
     )
     .mutation(({ ctx, input }) => {
-      const existing = ctx.store.scenarios.get(input.scenarioId);
-      if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "scenario not found" });
+      const existing = ctx.store.compositions.get(input.compositionId);
+      if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "composition not found" });
       const steps = input.steps
-        ? input.steps.map((s) => ({ ...s, satisfies: [], autoAdded: false, fromExampleScenarioIds: [] }))
+        ? input.steps.map((s) => ({ ...s, satisfies: [], autoAdded: false, fromExemplarIds: [] }))
         : existing.steps;
-      const saved = ctx.store.scenarios.upsert({
+      const saved = ctx.store.compositions.upsert({
         ...existing,
         steps,
-        reviewState: "approved",
+        status: "approved",
+        testDecision: input.testDecision,
         updatedBy: ctx.actor,
         updatedAt: Date.now(),
       });
-      ctx.store.audit.append({ entityType: "scenario", entityId: input.scenarioId, action: "compose.approve", actor: ctx.actor });
+      ctx.store.audit.append({ entityType: "composition", entityId: input.compositionId, action: "compose.approve", actor: ctx.actor });
       return saved;
     }),
-  reject: publicProcedure.input(z.object({ scenarioId: z.string() })).mutation(({ ctx, input }) => {
-    const existing = ctx.store.scenarios.get(input.scenarioId);
-    if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "scenario not found" });
-    const saved = ctx.store.scenarios.upsert({
+  reject: publicProcedure.input(z.object({ compositionId: z.string() })).mutation(({ ctx, input }) => {
+    const existing = ctx.store.compositions.get(input.compositionId);
+    if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "composition not found" });
+    const saved = ctx.store.compositions.upsert({
       ...existing,
-      reviewState: "ignored",
+      status: "rejected",
       updatedBy: ctx.actor,
       updatedAt: Date.now(),
     });
-    ctx.store.audit.append({ entityType: "scenario", entityId: input.scenarioId, action: "compose.reject", actor: ctx.actor });
+    ctx.store.audit.append({ entityType: "composition", entityId: input.compositionId, action: "compose.reject", actor: ctx.actor });
     return saved;
   }),
 });
@@ -366,17 +474,16 @@ const specsRouter = router({
 
 const agentRouter = router({
   generate: publicProcedure
-    .input(z.object({ scenarioId: z.string(), model: z.string().optional() }))
+    .input(z.object({ compositionId: z.string(), model: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
-      const cfg = input.model ? { ...ctx.config.agent, model: input.model } : ctx.config.agent;
       let llm: ReturnType<typeof createLlm>;
       try {
-        llm = createLlm(cfg);
+        llm = createLlm(ctx.config, "generateSpec", input.model);
       } catch (e) {
         throw new TRPCError({ code: "PRECONDITION_FAILED", message: (e as Error).message });
       }
-      const res = await generateTestSpec(ctx.store, input.scenarioId, { llm, ...(input.model ? { model: input.model } : {}) });
-      ctx.store.audit.append({ entityType: "scenario", entityId: input.scenarioId, action: "agent.generate", actor: ctx.actor });
+      const res = await generateTestSpec(ctx.store, input.compositionId, { llm, ...(input.model ? { model: input.model } : {}) });
+      ctx.store.audit.append({ entityType: "composition", entityId: input.compositionId, action: "agent.generate", actor: ctx.actor });
       return { specId: res.specId, valid: res.valid, errors: res.errors, attempts: res.attempts };
     }),
 });
@@ -416,7 +523,7 @@ const securityRouter = router({
         : ctx.store.operations.list();
       const specs = generateAuthzMatrix({ operations: ops, roles, environment: input.environment });
       for (const spec of specs) {
-        ctx.store.specs.upsert({ specId: spec.specId, scenarioId: spec.scenarioId, yaml: specToYaml(spec), generatedBy: "authz-generator", model: null, packId: null, createdAt: Date.now(), status: "generated" });
+        ctx.store.specs.upsert({ specId: spec.specId, compositionId: spec.compositionId, yaml: specToYaml(spec), generatedBy: "authz-generator", model: null, packId: null, createdAt: Date.now(), status: "generated" });
       }
       ctx.store.audit.append({ entityType: "security", entityId: "authz", action: "generate", actor: ctx.actor, diff: { count: specs.length } });
       return { generated: specs.length, roles };
@@ -430,7 +537,7 @@ const securityRouter = router({
         : ctx.store.operations.list();
       const specs = generateBolaProbes({ operations: ops, roles, environment: input.environment });
       for (const spec of specs) {
-        ctx.store.specs.upsert({ specId: spec.specId, scenarioId: spec.scenarioId, yaml: specToYaml(spec), generatedBy: "bola-generator", model: null, packId: null, createdAt: Date.now(), status: "generated" });
+        ctx.store.specs.upsert({ specId: spec.specId, compositionId: spec.compositionId, yaml: specToYaml(spec), generatedBy: "bola-generator", model: null, packId: null, createdAt: Date.now(), status: "generated" });
       }
       ctx.store.audit.append({ entityType: "security", entityId: "bola", action: "generate", actor: ctx.actor, diff: { count: specs.length } });
       return { generated: specs.length, roles };
@@ -441,16 +548,18 @@ const driftRouter = router({
   report: publicProcedure.query(({ ctx }) => {
     const ops = ctx.store.operations.list();
     const annotations = new Map(ctx.store.annotations.list().map((a) => [a.operationId, a]));
-    const reviewed = [...annotations.values()].filter((a) => a.reviewState !== "unreviewed").length;
-    const allScenarios = ctx.store.scenarios.list();
-    const approved = allScenarios.filter((s) => s.reviewState === "approved");
+    const reviewed = [...annotations.values()].filter((a) => a.reviewState !== "unannotated").length;
+    const approvedCompositions = ctx.store.compositions.listByStatus("approved");
+    const exemplars = ctx.store.exemplars.list();
     const opIds = new Set(ops.map((o) => o.operationId));
-    const covered = new Set(approved.flatMap((s) => s.steps.map((st) => st.operationId)).filter((id) => opIds.has(id)));
+    const covered = new Set(
+      approvedCompositions.flatMap((c) => c.steps.map((st) => st.operationId)).filter((id) => opIds.has(id)),
+    );
 
     // Phase 7 metrics (realignment guide §9): three coverage lenses over the same catalog, each
     // independent of the others (an op can be dependency-resolvable but have zero example usage).
-    const readyOps = ops.filter((o) => isAnnotationReady(annotations.get(o.operationId) ?? null));
-    const exampledOpIds = new Set(allScenarios.flatMap((s) => s.steps.map((st) => st.operationId)));
+    const readyOps = ops.filter((o) => isOperationReady(annotations.get(o.operationId) ?? null));
+    const exampledOpIds = new Set(exemplars.flatMap((e) => e.steps.map((st) => st.operationId)));
     const readyAndExampled = readyOps.filter((o) => exampledOpIds.has(o.operationId));
 
     const graph = computeDependencyGraph(ctx.store);
@@ -468,7 +577,7 @@ const driftRouter = router({
       coverage: {
         totalOperations: ops.length,
         reviewedOperations: reviewed,
-        operationsWithApprovedScenario: covered.size,
+        operationsWithApprovedComposition: covered.size,
         annotationReadyOperations: readyOps.length,
         exampleCoveredOperations: readyAndExampled.length,
         dependencyResolvableOperations: resolvable.length,
@@ -477,12 +586,69 @@ const driftRouter = router({
   }),
 });
 
+const rehearsalRouter = router({
+  listGoals: publicProcedure.query(({ ctx }) => ctx.store.rehearsal.listGoals()),
+  addGoal: publicProcedure.input(z.object({ goal: z.string().min(1), note: z.string().optional() })).mutation(({ ctx, input }) => {
+    const saved = ctx.store.rehearsal.upsertGoal({
+      goalId: newId(),
+      goal: input.goal,
+      ...(input.note ? { note: input.note } : {}),
+      createdBy: ctx.actor,
+      createdAt: Date.now(),
+    });
+    ctx.store.audit.append({ entityType: "rehearsalGoal", entityId: saved.goalId, action: "add", actor: ctx.actor });
+    return saved;
+  }),
+  removeGoal: publicProcedure.input(z.object({ goalId: z.string() })).mutation(({ ctx, input }) => {
+    ctx.store.rehearsal.removeGoal(input.goalId);
+    ctx.store.audit.append({ entityType: "rehearsalGoal", entityId: input.goalId, action: "remove", actor: ctx.actor });
+    return { ok: true };
+  }),
+  run: publicProcedure
+    .input(z.object({ goalIds: z.array(z.string()).optional(), model: z.string().optional() }).optional())
+    .mutation(async ({ ctx, input }) => {
+      let llm: ReturnType<typeof createLlm>;
+      let embedder: ReturnType<typeof createEmbedder>;
+      try {
+        llm = createLlm(ctx.config, "compose", input?.model);
+        embedder = createEmbedder(ctx.config);
+      } catch (e) {
+        throw new TRPCError({ code: "PRECONDITION_FAILED", message: (e as Error).message });
+      }
+      const summary = await runRehearsal(ctx.store, {
+        llm,
+        actor: ctx.actor,
+        retrieve: { embedder },
+        ...(input?.goalIds ? { goalIds: input.goalIds } : {}),
+        ...(input?.model ? { model: input.model } : {}),
+      });
+      ctx.store.audit.append({ entityType: "rehearsal", entityId: "run", action: "run", actor: ctx.actor, diff: { count: summary.results.length } });
+      return summary;
+    }),
+  latest: publicProcedure.query(({ ctx }) => summarize(latestResults(ctx.store))),
+  judge: publicProcedure
+    .input(z.object({ resultId: z.string(), verdict: z.enum(["unjudged", "good", "wrong"]), note: z.string().optional() }))
+    .mutation(({ ctx, input }) => {
+      const results = ctx.store.rehearsal.listResults();
+      const existing = results.find((r) => r.resultId === input.resultId);
+      if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "rehearsal result not found" });
+      const saved = ctx.store.rehearsal.upsertResult({
+        ...existing,
+        humanVerdict: input.verdict,
+        ...(input.note ? { humanNote: input.note } : {}),
+      });
+      ctx.store.audit.append({ entityType: "rehearsalResult", entityId: input.resultId, action: "judge", actor: ctx.actor, diff: { verdict: input.verdict } });
+      return saved;
+    }),
+});
+
 export const appRouter = router({
   sessions: sessionsRouter,
   derive: deriveRouter,
   operations: operationsRouter,
   flows: flowsRouter,
-  scenarios: scenariosRouter,
+  exemplars: exemplarsRouter,
+  suggest: suggestRouter,
   guides: guidesRouter,
   dataflow: dataflowRouter,
   dependencies: dependenciesRouter,
@@ -493,6 +659,7 @@ export const appRouter = router({
   runs: runsRouter,
   security: securityRouter,
   drift: driftRouter,
+  rehearsal: rehearsalRouter,
 });
 
 export type AppRouter = typeof appRouter;

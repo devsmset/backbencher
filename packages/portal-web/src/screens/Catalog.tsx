@@ -1,21 +1,14 @@
-import type { ReviewState } from "@backbencher/schemas";
+import type { CatalogReviewState } from "@backbencher/schemas";
 import { useState } from "react";
 import { trpc } from "../trpc.js";
 import { Chip, Muted, Panel, QueryState } from "../ui.js";
 
-const REVIEW_STATES: ReviewState[] = [
-  "unreviewed",
-  "in_review",
-  "approved",
-  "deprecated",
-  "ignored",
-];
+const REVIEW_STATES: CatalogReviewState[] = ["unannotated", "ready", "ignored"];
 
-function reviewVariant(state: ReviewState): "derived" | "human" | "ok" | "warn" {
-  if (state === "approved") return "ok";
-  if (state === "ignored" || state === "deprecated") return "warn";
-  if (state === "unreviewed") return "derived";
-  return "human";
+function reviewVariant(state: CatalogReviewState): "derived" | "human" | "ok" | "warn" {
+  if (state === "ready") return "ok";
+  if (state === "ignored") return "warn";
+  return "derived";
 }
 
 function isReady(name: string | undefined, does: string | undefined): boolean {
@@ -24,7 +17,7 @@ function isReady(name: string | undefined, does: string | undefined): boolean {
 
 export function Catalog() {
   const [q, setQ] = useState("");
-  const [reviewState, setReviewState] = useState<ReviewState | "">("");
+  const [reviewState, setReviewState] = useState<CatalogReviewState | "">("");
   const ops = trpc.operations.list.useQuery({
     q: q || undefined,
     reviewState: reviewState || undefined,
@@ -36,7 +29,7 @@ export function Catalog() {
       actions={
         <>
           <input placeholder="filter template…" value={q} onChange={(e) => setQ(e.target.value)} />
-          <select value={reviewState} onChange={(e) => setReviewState(e.target.value as ReviewState | "")}>
+          <select value={reviewState} onChange={(e) => setReviewState(e.target.value as CatalogReviewState | "")}>
             <option value="">all states</option>
             {REVIEW_STATES.map((s) => (
               <option key={s} value={s}>

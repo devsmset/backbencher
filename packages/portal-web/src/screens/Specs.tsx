@@ -40,7 +40,7 @@ export function Specs() {
         <thead>
           <tr>
             <th className="border-b border-[--line] px-2.5 py-[7px] text-left text-xs font-semibold uppercase tracking-[0.4px] text-[--muted]">Spec</th>
-            <th className="border-b border-[--line] px-2.5 py-[7px] text-left text-xs font-semibold uppercase tracking-[0.4px] text-[--muted]">Scenario</th>
+            <th className="border-b border-[--line] px-2.5 py-[7px] text-left text-xs font-semibold uppercase tracking-[0.4px] text-[--muted]">Composition</th>
             <th className="border-b border-[--line] px-2.5 py-[7px] text-left text-xs font-semibold uppercase tracking-[0.4px] text-[--muted]">Status</th>
             <th className="border-b border-[--line] px-2.5 py-[7px] text-left text-xs font-semibold uppercase tracking-[0.4px] text-[--muted]">Run</th>
           </tr>
@@ -52,7 +52,7 @@ export function Specs() {
                 <code>{s.specId}</code>
               </td>
               <td className="border-b border-[--line] px-2.5 py-[7px] align-top">
-                <code>{s.scenarioId}</code>
+                <code>{s.compositionId}</code>
               </td>
               <td className="border-b border-[--line] px-2.5 py-[7px] align-top">
                 <Chip variant={s.status === "generated" ? "ok" : s.status === "invalid" ? "warn" : "derived"}>

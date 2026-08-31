@@ -74,14 +74,19 @@ describe("Phase 6 acceptance", () => {
       dataflow: [],
       flows: [],
     });
-    store.scenarios.upsert({
-      scenarioId: "sc1",
-      name: "Lifecycle",
-      description: "create then read",
-      sourceFlowIds: [],
-      steps: [{ operationId: "op_create", intent: "create" }, { operationId: "op_get", intent: "get" }],
+    store.compositions.upsert({
+      compositionId: "sc1",
+      goal: "create then read a thing",
+      status: "approved",
+      steps: [
+        { operationId: "op_create", intent: "create", satisfies: [], autoAdded: false, fromExemplarIds: [] },
+        { operationId: "op_get", intent: "get", satisfies: [], autoAdded: false, fromExemplarIds: [] },
+      ],
+      unmetDependencies: [],
+      candidateGaps: [],
       testDecision: { inScope: true, strategy: "api_functional", rationale: "r", riskLevel: "low", environments: ["local"] },
-      reviewState: "approved",
+      createdBy: "a",
+      createdAt: 1,
       updatedBy: "a",
       updatedAt: 1,
     });

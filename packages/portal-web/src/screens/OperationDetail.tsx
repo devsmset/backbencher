@@ -1,9 +1,9 @@
-import type { ReviewState, SideEffect } from "@backbencher/schemas";
+import type { CatalogReviewState, SideEffect } from "@backbencher/schemas";
 import { useEffect, useState } from "react";
 import { trpc } from "../trpc.js";
 import { Chip, Field, Muted, Panel, QueryState } from "../ui.js";
 
-const REVIEW_STATES: ReviewState[] = ["unreviewed", "in_review", "approved", "deprecated", "ignored"];
+const REVIEW_STATES: CatalogReviewState[] = ["unannotated", "ready", "ignored"];
 const SIDE_EFFECTS: SideEffect[] = ["read", "create", "update", "delete", "auth", "unknown"];
 
 export function OperationDetail({ operationId }: { operationId: string }) {
@@ -67,10 +67,10 @@ export function OperationDetail({ operationId }: { operationId: string }) {
         actions={
           <>
             <Chip variant={ready ? "ok" : "warn"}>{ready ? "ready" : "needs annotation"}</Chip>
-            <Chip variant={op.reviewState === "approved" ? "ok" : "derived"}>{op.reviewState}</Chip>
+            <Chip variant={op.reviewState === "ready" ? "ok" : "derived"}>{op.reviewState}</Chip>
             <select
               value={op.reviewState}
-              onChange={(e) => setReview.mutate({ operationId, reviewState: e.target.value as ReviewState })}
+              onChange={(e) => setReview.mutate({ operationId, reviewState: e.target.value as CatalogReviewState })}
             >
               {REVIEW_STATES.map((s) => (
                 <option key={s} value={s}>

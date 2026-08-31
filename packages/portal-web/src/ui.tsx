@@ -58,3 +58,75 @@ export function QueryState({ isLoading, error }: { isLoading: boolean; error: un
   if (error) return <div className="text-[#ff8787]">{String((error as Error)?.message ?? error)}</div>;
   return null;
 }
+
+function maybeParseJson(value: unknown): unknown {
+  if (typeof value !== "string") return value;
+  const trimmed = value.trim();
+  if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return value;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return value;
+  }
+}
+
+function renderJson(value: unknown, depth = 0): JSX.Element {
+  const parsed = maybeParseJson(value);
+  const pad = "  ".repeat(depth);
+  const nextPad = "  ".repeat(depth + 1);
+
+  if (parsed === null) return <span className="text-[#ff9f7a]">null</span>;
+  if (typeof parsed === "string") return <span className="text-[#8ce99a]">{JSON.stringify(parsed)}</span>;
+  if (typeof parsed === "number") return <span className="text-[#74c0fc]">{String(parsed)}</span>;
+  if (typeof parsed === "boolean") return <span className="text-[#ffd43b]">{String(parsed)}</span>;
+
+  if (Array.isArray(parsed)) {
+    if (parsed.length === 0) return <span>[]</span>;
+    return (
+      <>
+        <span>[</span>
+        {parsed.map((item, index) => (
+          <div key={`${depth}-${index}`}>
+            {nextPad}
+            {renderJson(item, depth + 1)}
+            {index < parsed.length - 1 ? <span>,</span> : null}
+          </div>
+        ))}
+        <div>
+          {pad}
+          <span>]</span>
+        </div>
+      </>
+    );
+  }
+
+  const entries = Object.entries(parsed as Record<string, unknown>);
+  if (entries.length === 0) return <span>{"{}"}</span>;
+  return (
+    <>
+      <span>{"{"}</span>
+      {entries.map(([key, entryValue], index) => (
+        <div key={`${depth}-${key}`}>
+          {nextPad}
+          <span className="text-[#c792ea]">{JSON.stringify(key)}</span>
+          <span>: </span>
+          {renderJson(entryValue, depth + 1)}
+          {index < entries.length - 1 ? <span>,</span> : null}
+        </div>
+      ))}
+      <div>
+        {pad}
+        <span>{"}"}</span>
+      </div>
+    </>
+  );
+}
+
+export function JsonBlock({ value }: { value: unknown }) {
+  return (
+    <div className="overflow-x-hidden whitespace-pre-wrap break-all rounded-[10px] border border-[--line] bg-[#0a1016] p-3 font-mono text-xs leading-[1.55] text-[#dbe5ef]">
+      {renderJson(value)}
+    </div>
+  );
+}
+

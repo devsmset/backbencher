@@ -1,82 +1,14 @@
 import { useEffect, useState } from "react";
 import { trpc } from "../trpc.js";
-import { Chip, Field, Muted, Panel, QueryState } from "../ui.js";
-
-function maybeParseJson(value: unknown): unknown {
-  if (typeof value !== "string") return value;
-  const trimmed = value.trim();
-  if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return value;
-  try {
-    return JSON.parse(trimmed);
-  } catch {
-    return value;
-  }
-}
-
-function renderJson(value: unknown, depth = 0): JSX.Element {
-  const parsed = maybeParseJson(value);
-  const pad = "  ".repeat(depth);
-  const nextPad = "  ".repeat(depth + 1);
-
-  if (parsed === null) return <span className="text-[#ff9f7a]">null</span>;
-  if (typeof parsed === "string") return <span className="text-[#8ce99a]">{JSON.stringify(parsed)}</span>;
-  if (typeof parsed === "number") return <span className="text-[#74c0fc]">{String(parsed)}</span>;
-  if (typeof parsed === "boolean") return <span className="text-[#ffd43b]">{String(parsed)}</span>;
-
-  if (Array.isArray(parsed)) {
-    if (parsed.length === 0) return <span>[]</span>;
-    return (
-      <>
-        <span>[</span>
-        {parsed.map((item, index) => (
-          <div key={`${depth}-${index}`}>
-            {nextPad}
-            {renderJson(item, depth + 1)}
-            {index < parsed.length - 1 ? <span>,</span> : null}
-          </div>
-        ))}
-        <div>
-          {pad}
-          <span>]</span>
-        </div>
-      </>
-    );
-  }
-
-  const entries = Object.entries(parsed as Record<string, unknown>);
-  if (entries.length === 0) return <span>{"{}"}</span>;
-  return (
-    <>
-      <span>{"{"}</span>
-      {entries.map(([key, entryValue], index) => (
-        <div key={`${depth}-${key}`}>
-          {nextPad}
-          <span className="text-[#c792ea]">{JSON.stringify(key)}</span>
-          <span>: </span>
-          {renderJson(entryValue, depth + 1)}
-          {index < entries.length - 1 ? <span>,</span> : null}
-        </div>
-      ))}
-      <div>
-        {pad}
-        <span>{"}"}</span>
-      </div>
-    </>
-  );
-}
-
-function JsonBlock({ value }: { value: unknown }) {
-  return (
-    <div className="overflow-x-hidden whitespace-pre-wrap break-all rounded-[10px] border border-[--line] bg-[#0a1016] p-3 font-mono text-xs leading-[1.55] text-[#dbe5ef]">
-      {renderJson(value)}
-    </div>
-  );
-}
+import { Chip, Field, JsonBlock, Muted, Panel, QueryState } from "../ui.js";
+import { SessionGraphView } from "./SessionGraph.js";
 
 function RecordingPanel() {
   const utils = trpc.useUtils();
   const active = trpc.sessions.activeRecordings.useQuery(undefined, { refetchInterval: 1500 });
   const [url, setUrl] = useState("");
+  const [name, setName] = useState("");
+  const [goal, setGoal] = useState("");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [lastSummary, setLastSummary] = useState<string | null>(null);
 
@@ -98,12 +30,23 @@ function RecordingPanel() {
   const stop = trpc.sessions.stopRecording.useMutation({
     onSuccess: (res) => {
       setSessionId(null);
+      setName("");
+      setGoal("");
       void utils.sessions.activeRecordings.invalidate();
       void utils.sessions.list.invalidate();
       const counts = Object.entries(res.summary.eventCounts)
         .map(([k, v]) => `${k}=${v}`)
         .join(", ");
       setLastSummary(`Saved ${res.summary.totalEvents} events (${counts}) — now click "Derive all sessions".`);
+    },
+  });
+  const discard = trpc.sessions.discardRecording.useMutation({
+    onSuccess: () => {
+      setSessionId(null);
+      setName("");
+      setGoal("");
+      void utils.sessions.activeRecordings.invalidate();
+      setLastSummary("Recording discarded — nothing saved.");
     },
   });
   const derive = trpc.derive.run.useMutation({
@@ -145,17 +88,32 @@ function RecordingPanel() {
         </div>
       ) : (
         <div className="flex flex-wrap items-end gap-3">
-          <Muted>
-            Recording {sessionId} is active. Use the opened browser window, then click Stop recording.
-          </Muted>
+          <Muted>Recording {sessionId} is active. Use the opened browser window, then name it below.</Muted>
+          <Field label="Session name">
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Create ticket from homepage" />
+          </Field>
+          <Field label="Goal — what were you doing, in your words?">
+            <input value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="create a ticket from scratch" />
+          </Field>
           <button
             className="rounded-lg border border-[--accent] bg-[--accent] px-2.5 py-1.5 font-semibold text-[#06121f]"
             type="button"
-            onClick={() => sessionId && stop.mutate({ sessionId })}
-            disabled={stop.isPending}
+            onClick={() =>
+              sessionId && stop.mutate({ sessionId, name: name.trim(), goal: goal.trim() })
+            }
+            disabled={stop.isPending || !name.trim() || !goal.trim()}
           >
-            {stop.isPending ? "Stopping…" : "Stop recording"}
+            {stop.isPending ? "Stopping…" : "Stop & save"}
           </button>
+          <button
+            className="rounded-lg border border-[--border] px-2.5 py-1.5"
+            type="button"
+            onClick={() => sessionId && discard.mutate({ sessionId })}
+            disabled={discard.isPending}
+          >
+            {discard.isPending ? "Discarding…" : "Discard"}
+          </button>
+          <Muted>A session is only saved once it has a name and a goal — they teach the composer.</Muted>
         </div>
       )}
       {(active.data?.length ?? 0) > 1 && (
@@ -248,6 +206,33 @@ interface ApiCallRow {
   bodyKind: string | null;
 }
 
+const ASSET_PATH_RE = /\.(?:svg|woff2?|ttf|otf|eot|ico|png|jpe?g|gif|webp|avif)(?:$|[?#])/i;
+const DROPPED_CONTENT_PREFIXES = ["image/", "font/", "text/css", "text/javascript"];
+
+function headerValue(headers: Record<string, string>, name: string): string {
+  const wanted = name.toLowerCase();
+  for (const [key, value] of Object.entries(headers)) {
+    if (key.toLowerCase() === wanted) return value;
+  }
+  return "";
+}
+
+function isAssetLikeCall(call: ApiCallRow): boolean {
+  const responseContentType = headerValue(call.resHeaders, "content-type").toLowerCase();
+  const requestContentType = headerValue(call.reqHeaders, "content-type").toLowerCase();
+  if (DROPPED_CONTENT_PREFIXES.some((prefix) => responseContentType.startsWith(prefix))) {
+    return true;
+  }
+  if (DROPPED_CONTENT_PREFIXES.some((prefix) => requestContentType.startsWith(prefix))) {
+    return true;
+  }
+  try {
+    return ASSET_PATH_RE.test(new URL(call.url).pathname);
+  } catch {
+    return ASSET_PATH_RE.test(call.url);
+  }
+}
+
 function buildApiCalls(events: unknown[]): ApiCallRow[] {
   const req = new Map<string, {
     correlationId: string;
@@ -295,7 +280,7 @@ function buildApiCalls(events: unknown[]): ApiCallRow[] {
       bodyKind: typeof e.bodyKind === "string" ? e.bodyKind : null,
     });
   }
-  return rows.sort((a, b) => a.ts - b.ts);
+  return rows.filter((row) => !isAssetLikeCall(row)).sort((a, b) => a.ts - b.ts);
 }
 
 export function SessionDetail({ sessionId }: { sessionId: string }) {
@@ -308,6 +293,10 @@ export function SessionDetail({ sessionId }: { sessionId: string }) {
         actions={<a href="#/sessions">← all sessions</a>}
       >
         <Muted>{timeline.data?.meta?.startUrl ?? ""}</Muted>
+      </Panel>
+
+      <Panel title="Dependency graph">
+        <SessionGraphView sessionId={sessionId} />
       </Panel>
 
       <Panel title="API calls">
