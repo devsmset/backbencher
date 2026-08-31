@@ -46,6 +46,7 @@ export const EnvironmentConfigSchema = z.object({
 });
 export type EnvironmentConfig = z.infer<typeof EnvironmentConfigSchema>;
 
+/** @deprecated Superseded by `llm.models` + `llm.tasks`; retained so existing configs keep working. */
 export const AgentConfigSchema = z.object({
   provider: z.enum(["anthropic", "vertex"]).default("anthropic"),
   model: z.string().optional(),
@@ -59,10 +60,81 @@ export const AgentConfigSchema = z.object({
 });
 export type AgentConfig = z.infer<typeof AgentConfigSchema>;
 
+/**
+ * A named model an analyst can route tasks to. The provider kind selects the adapter in
+ * `@backbencher/llm`; `openai-compatible` covers Ollama, vLLM, LM Studio, LiteLLM and OpenAI itself.
+ * API keys are named, never inlined — the value is read from the environment at call time.
+ */
+export const LlmModelConfigSchema = z.discriminatedUnion("provider", [
+  z.object({
+    provider: z.literal("anthropic"),
+    model: z.string(),
+    apiKeyEnv: z.string().default("ANTHROPIC_API_KEY"),
+    maxTokens: z.number().int().positive().default(4096),
+  }),
+  z.object({
+    provider: z.literal("anthropic-vertex"),
+    model: z.string(),
+    projectId: z.string().optional(),
+    region: z.string().optional(),
+    credentialsFile: z.string().optional(),
+    maxTokens: z.number().int().positive().default(4096),
+  }),
+  z.object({
+    provider: z.literal("google"),
+    model: z.string(),
+    apiKeyEnv: z.string().default("GOOGLE_API_KEY"),
+    baseUrl: z.string().default("https://generativelanguage.googleapis.com"),
+    maxTokens: z.number().int().positive().default(4096),
+  }),
+  z.object({
+    provider: z.literal("google-vertex"),
+    model: z.string(),
+    projectId: z.string().optional(),
+    region: z.string().default("us-central1"),
+    credentialsFile: z.string().optional(),
+    /** Vertex embedding models accept a task type, e.g. RETRIEVAL_DOCUMENT or RETRIEVAL_QUERY. */
+    taskType: z.string().optional(),
+    maxTokens: z.number().int().positive().default(4096),
+  }),
+  z.object({
+    provider: z.literal("openai-compatible"),
+    model: z.string(),
+    baseUrl: z.string(), // e.g. "http://localhost:11434/v1" for Ollama
+    apiKeyEnv: z.string().optional(),
+    maxTokens: z.number().int().positive().default(4096),
+  }),
+]);
+export type LlmModelConfig = z.infer<typeof LlmModelConfigSchema>;
+
+/**
+ * Task -> model-name routing. Only `default` is required: assign every task the same model when
+ * you have one, or split them when you have more (cheap local model for bulk annotation and
+ * embeddings, stronger model for composition).
+ */
+export const LlmTasksSchema = z.object({
+  default: z.string().default("default"),
+  compose: z.string().optional(),
+  generateSpec: z.string().optional(),
+  suggestAnnotation: z.string().optional(),
+  stepIntents: z.string().optional(),
+  embed: z.string().optional(),
+});
+export type LlmTasks = z.infer<typeof LlmTasksSchema>;
+
+export const LlmConfigSchema = z.object({
+  models: z.record(LlmModelConfigSchema).default({}),
+  tasks: LlmTasksSchema.default({}),
+  timeoutMs: z.number().int().positive().default(120_000),
+  maxRetries: z.number().int().nonnegative().default(3),
+});
+export type LlmConfig = z.infer<typeof LlmConfigSchema>;
+
 export const BbConfigSchema = z.object({
   recorder: RecorderConfigSchema.default({}),
   redaction: RedactionConfigSchema.default({}),
   agent: AgentConfigSchema.default({}),
+  llm: LlmConfigSchema.default({}),
   environments: z.array(EnvironmentConfigSchema).default([]),
 });
 export type BbConfig = z.infer<typeof BbConfigSchema>;
