@@ -42,7 +42,7 @@
 - Consumes: nothing.
 - Produces: `shouldDropCapturedResponse(cfg: ApiFilterConfig, url: string, headers: Record<string, string>, resourceType: string): boolean` — note the new fourth parameter. `makeApiFilter(cfg).matches(method, url, resourceType)` is unchanged in signature.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `packages/recorder/test/apiFilter.test.ts`:
 
@@ -121,7 +121,7 @@ describe("shouldDropCapturedResponse", () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 ```bash
 pnpm -r build && pnpm --filter @backbencher/recorder test apiFilter
@@ -130,7 +130,7 @@ pnpm -r build && pnpm --filter @backbencher/recorder test apiFilter
 Expected: FAIL. `shouldDropCapturedResponse` takes three arguments, so every call raises
 `Expected 3 arguments, but got 4`; the asset and `/assets/` cases in `matches` return `true`.
 
-- [ ] **Step 3: Implement the filter changes**
+- [x] **Step 3: Implement the filter changes**
 
 In `packages/recorder/src/apiFilter.ts`, replace `shouldDropCapturedResponse` with:
 
@@ -169,7 +169,7 @@ In `bb.config.jsonc`, add `/assets/` to `recorder.apiFilter.dropPathPatterns`:
       "dropPathPatterns": ["/analytics", "/telemetry", "/sockjs", "/assets/", "\\.js$", "\\.css$"],
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 ```bash
 pnpm -r build && pnpm --filter @backbencher/recorder test apiFilter
@@ -180,7 +180,7 @@ Expected: PASS, 11 tests. The recorder package will not compile yet if `recorder
 fails on that call, pass `request.resourceType()` as the fourth argument now and leave the rest of
 `recorder.ts` alone.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add packages/recorder/src/apiFilter.ts packages/recorder/test/apiFilter.test.ts bb.config.jsonc
@@ -199,7 +199,7 @@ git commit -m "recorder: reject assets at request time and html page navigations
 - Produces: no exported signature changes. `inflight` becomes `Map<Request, InflightEntry>`, an
   internal type: `{ correlationId: string; event: ApiRequestEvent; headersUpgraded: Promise<void> }`.
 
-- [ ] **Step 1: Replace the request handler**
+- [x] **Step 1: Replace the request handler**
 
 In `packages/recorder/src/recorder.ts`, declare the entry type above `startRecording`:
 
@@ -261,7 +261,7 @@ Replace the body of `context.on("request", ...)` after the `apiFilter.matches` g
 Note `postDataTruncated: false` is not in the current file — check before copying. If the current
 `ApiRequestEvent` literal has no `postDataTruncated`, omit that line; the v4 schema removed it.
 
-- [ ] **Step 2: Replace the response handler**
+- [x] **Step 2: Replace the response handler**
 
 ```ts
   context.on("response", async (response: Response) => {
@@ -310,7 +310,7 @@ Note `postDataTruncated: false` is not in the current file — check before copy
   });
 ```
 
-- [ ] **Step 3: Replace the requestfailed handler**
+- [x] **Step 3: Replace the requestfailed handler**
 
 A failed API call is an observation worth keeping, so the buffered request is written with its
 `status: 0` response.
@@ -335,7 +335,7 @@ A failed API call is an observation worth keeping, so the buffered request is wr
   });
 ```
 
-- [ ] **Step 4: Replace the stop() flush**
+- [x] **Step 4: Replace the stop() flush**
 
 In `stop()`, the still-pending flush must now write the buffered request first:
 
@@ -358,7 +358,7 @@ In `stop()`, the still-pending flush must now write the buffered request first:
       inflight.clear();
 ```
 
-- [ ] **Step 5: Build, typecheck, and run the suites**
+- [x] **Step 5: Build, typecheck, and run the suites**
 
 ```bash
 pnpm -r build && pnpm -r typecheck && pnpm --filter @backbencher/recorder test && pnpm -r --filter '!@backbencher/recorder' test
@@ -368,7 +368,7 @@ Expected: PASS. If `satisfies ApiResponseEvent` causes a type error because the 
 inferred too loosely, declare the object as `const event: ApiResponseEvent = {...}` and push it
 instead — match whichever form the surrounding file already uses.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add packages/recorder/src/recorder.ts
@@ -387,7 +387,7 @@ git commit -m "recorder: write request and response as an atomic pair"
 - Consumes: everything from Tasks 1 and 2.
 - Produces: nothing.
 
-- [ ] **Step 1: Serve an asset and a page from the fixture app**
+- [x] **Step 1: Serve an asset and a page from the fixture app**
 
 In `packages/recorder/fixtures/app.ts`, add two routes inside the request handler, before the 404
 fallback:
@@ -413,7 +413,7 @@ lines immediately after the `const j = await r.json();` line:
         await fetch('/api/page');
 ```
 
-- [ ] **Step 2: Assert atomicity and exclusion in the e2e**
+- [x] **Step 2: Assert atomicity and exclusion in the e2e**
 
 In `packages/recorder/test/recorder.e2e.test.ts`, add these assertions immediately after the existing
 `expect(eventsText).not.toContain("***REDACTED***");` line:
@@ -432,7 +432,7 @@ In `packages/recorder/test/recorder.e2e.test.ts`, add these assertions immediate
 
 `orphans.map(...)` rather than a bare length check so a failure names the offending URLs.
 
-- [ ] **Step 3: Run the e2e**
+- [x] **Step 3: Run the e2e**
 
 ```bash
 pnpm -r build && pnpm --filter @backbencher/recorder test
@@ -442,13 +442,13 @@ Expected: PASS. If no Chromium is installed the e2e suite skips, and the `apiFil
 `bodyCapture` unit suites still prove the filter rules — say so explicitly rather than claiming
 end-to-end verification that did not run.
 
-- [ ] **Step 4: Full verification**
+- [x] **Step 4: Full verification**
 
 ```bash
 pnpm -r build && pnpm -r typecheck && pnpm -r --filter '!@backbencher/recorder' test && pnpm --filter @backbencher/recorder test
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add packages/recorder/fixtures/app.ts packages/recorder/test/recorder.e2e.test.ts
