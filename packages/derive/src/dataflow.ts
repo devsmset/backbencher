@@ -24,6 +24,30 @@ const COMMON_WORDS = new Set([
   "default", "none", "test", "ui", "en", "json",
 ]);
 
+// Set-Cookie may repeat (one raw value per "\n"-joined instance); Cookie joins pairs with "; ".
+// Both carry multiple name=value pairs in one header, so they're decomposed rather than matched
+// as one opaque string — otherwise a cookie-carried auth token could never be linked to its reuse.
+function parseSetCookiePairs(raw: string): Array<{ name: string; value: string }> {
+  return raw
+    .split("\n")
+    .map((instance) => instance.split(";")[0] ?? "")
+    .flatMap((pair) => {
+      const eq = pair.indexOf("=");
+      if (eq === -1) return [];
+      const name = pair.slice(0, eq).trim();
+      return name ? [{ name, value: pair.slice(eq + 1).trim() }] : [];
+    });
+}
+
+function parseCookieHeaderPairs(raw: string): Array<{ name: string; value: string }> {
+  return raw.split(";").flatMap((pair) => {
+    const eq = pair.indexOf("=");
+    if (eq === -1) return [];
+    const name = pair.slice(0, eq).trim();
+    return name ? [{ name, value: pair.slice(eq + 1).trim() }] : [];
+  });
+}
+
 // Entropy gate (§5.5 step 4). Returns null to drop; otherwise whether the value is high-entropy.
 export function entropy(value: string): { keep: boolean; ok: boolean } {
   if (value.length < 6) return { keep: false, ok: false };
@@ -60,6 +84,12 @@ export function collectProducers(calls: PairedCall[], callOp: Map<PairedCall, st
       }
     }
     if (c.responseTimestamp !== null) {
+      const setCookie = c.responseHeaders["set-cookie"];
+      if (setCookie) {
+        for (const { name, value } of parseSetCookiePairs(setCookie)) {
+          producers.push({ op, location: "responseHeader", jsonPath: `Set-Cookie.${name}`, value, ts: c.responseTimestamp, sessionId: c.sessionId, correlationId: c.correlationId });
+        }
+      }
       for (const [name, value] of Object.entries(c.responseHeaders)) {
         if (STD_RES_HEADERS.has(name.toLowerCase())) continue;
         producers.push({ op, location: "responseHeader", jsonPath: name, value, ts: c.responseTimestamp, sessionId: c.sessionId, correlationId: c.correlationId });
@@ -91,6 +121,12 @@ export function collectConsumers(
     if (c.requestBody !== null && c.requestBody !== undefined) {
       for (const leaf of walkScalars(c.requestBody)) {
         consumers.push({ op, location: "requestBody", jsonPath: leaf.path, value: leaf.value, ts: c.requestTimestamp, sessionId: c.sessionId, correlationId: c.correlationId });
+      }
+    }
+    const cookie = c.requestHeaders["cookie"];
+    if (cookie) {
+      for (const { name, value } of parseCookieHeaderPairs(cookie)) {
+        consumers.push({ op, location: "requestHeader", jsonPath: `Cookie.${name}`, value, ts: c.requestTimestamp, sessionId: c.sessionId, correlationId: c.correlationId });
       }
     }
     for (const [name, value] of Object.entries(c.requestHeaders)) {

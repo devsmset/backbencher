@@ -18,8 +18,9 @@ import type {
 //
 // Note (guide §5.2, §10 gotcha #1): dataflow.ts deliberately treats `authorization` as a
 // "standard" request header and excludes it from consumer-edge detection (it would otherwise
-// flag on every single authenticated call). That means the auth-token dependency can rarely be
-// discovered as a catalogEdge. The `authObserved`+`authOperationIds` fallback below is the
+// flag on every single authenticated call). `Cookie`/`Set-Cookie` are decomposed into individual
+// name=value pairs instead, so a cookie-carried auth token (unlike a bearer header) can surface as
+// a catalogEdge. Either way, the `authObserved`+`authOperationIds` fallback below remains the
 // primary detection path for auth-token requirements, not a backstop.
 
 const AUTH_HEADER_NAMES = new Set(["authorization", "x-auth-token", "x-access-token"]);

@@ -147,3 +147,25 @@ export function authFixture(): SessionData {
     }),
   ]);
 }
+
+// Login sets a session cookie; a later call sends it back. Unlike authFixture's Authorization
+// header, Set-Cookie/Cookie are decomposed into name=value pairs (dataflow.ts), so this IS wired
+// up as a catalogEdge.
+export function cookieAuthFixture(): SessionData {
+  resetClock();
+  const token = "abcDEF123456ghiJKL789xyz";
+  return makeSession("sess-cookie-auth", [
+    ...apiCall("ca1", {
+      method: "POST",
+      url: `${H}/auth/login`,
+      postData: JSON.stringify({ user: "suite-admin" }),
+      resHeaders: { "set-cookie": `SESSION_TOKEN=${token}; Path=/; Secure; HttpOnly` },
+      body: { ok: true },
+    }),
+    ...apiCall("ca2", {
+      url: `${H}/api/tickets`,
+      reqHeaders: { cookie: `SESSION_TOKEN=${token}` },
+      body: { id: "t1" },
+    }),
+  ]);
+}

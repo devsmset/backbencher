@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dataflowFixture, literalRedactedFixture } from "../fixtures/sessions.js";
+import { cookieAuthFixture, dataflowFixture, literalRedactedFixture } from "../fixtures/sessions.js";
 import { runDerivation } from "../src/pipeline.js";
 
 describe("buildDataflowGraph", () => {
@@ -23,5 +23,16 @@ describe("buildDataflowGraph", () => {
     expect(edge).toBeDefined();
     expect(edge?.producer.location).toBe("responseBody");
     expect(edge?.consumer.location).toBe("query");
+  });
+
+  it("links a Set-Cookie value to its reuse in a later request's Cookie header", () => {
+    const result = runDerivation([cookieAuthFixture()]);
+    const edge = result.dataflow.find(
+      (e) => e.producer.jsonPath === "Set-Cookie.SESSION_TOKEN" && e.consumer.jsonPath === "Cookie.SESSION_TOKEN",
+    );
+    expect(edge).toBeDefined();
+    expect(edge?.producer.location).toBe("responseHeader");
+    expect(edge?.consumer.location).toBe("requestHeader");
+    expect(edge?.valueEntropyOk).toBe(true);
   });
 });
