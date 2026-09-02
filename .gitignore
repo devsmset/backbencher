@@ -38,3 +38,6 @@ recordings/
 
 # Subagent-driven development scratch
 .superpowers/
+
+# Isolated worktrees for feature work
+.worktrees/
