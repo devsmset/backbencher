@@ -22,7 +22,6 @@ import { Chip, JsonBlock, Muted, QueryState } from "../ui.js";
 
 const ROW_HEIGHT = 70;
 const NODE_WIDTH = 220;
-const TIMELINE_WIDTH = 1600;
 
 // Fullscreen modal keeps at least this much horizontal room per node so labels never overlap,
 // growing past the container's width once a session has enough calls to need it.
@@ -316,75 +315,5 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
         </div>
       </div>
     </div>
-  );
-}
-
-export function SessionGraphView({ sessionId }: { sessionId: string }) {
-  const graph = trpc.sessions.graph.useQuery({ sessionId });
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  const { nodes, edges } = useMemo(() => {
-    const graphNodes = graph.data?.nodes ?? [];
-    const graphEdges = graph.data?.edges ?? [];
-    if (graphNodes.length === 0) return { nodes: [] as Node[], edges: [] as Edge[] };
-
-    const minTs = Math.min(...graphNodes.map((n) => n.requestTimestamp));
-    const maxTs = Math.max(...graphNodes.map((n) => n.responseTimestamp ?? n.requestTimestamp));
-    const span = Math.max(1, maxTs - minTs);
-    const lanes = assignLanes(graphNodes);
-
-    const rfNodes: Node[] = graphNodes.map((n) => ({
-      id: n.correlationId,
-      type: "call",
-      position: { x: ((n.requestTimestamp - minTs) / span) * TIMELINE_WIDTH, y: (lanes.get(n.correlationId) ?? 0) * ROW_HEIGHT },
-      data: { node: n },
-    }));
-
-    const rfEdges: Edge[] = graphEdges.map((e, i) => ({
-      id: `${e.producerCorrelationId}-${e.consumerCorrelationId}-${i}`,
-      source: e.producerCorrelationId,
-      target: e.consumerCorrelationId,
-      label: `${e.producerJsonPath} → ${e.consumerJsonPath}`,
-      labelStyle: { fill: "#dbe5ef", fontSize: 10 },
-      labelBgStyle: { fill: "#0a1016" },
-      ...(e.confidence === "weak" ? { style: { strokeDasharray: "4 4" } } : {}),
-    }));
-
-    return { nodes: rfNodes, edges: rfEdges };
-  }, [graph.data]);
-
-  const selectedNode = graph.data?.nodes.find((n) => n.correlationId === selectedId) ?? null;
-
-  return (
-    <>
-      <QueryState isLoading={graph.isLoading} error={graph.error} />
-      {graph.data && graph.data.nodes.length === 0 && <Muted>No API calls to graph in this session.</Muted>}
-      {graph.data && graph.data.nodes.length > 0 && (
-        <div className="h-[420px] overflow-hidden rounded-md border border-[--line]">
-          <ReactFlowProvider>
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              nodeTypes={nodeTypes}
-              onNodeClick={(_, node) => setSelectedId(node.id)}
-              fitView
-              proOptions={{ hideAttribution: true }}
-            >
-              <Background />
-              <Controls />
-              <MiniMap />
-            </ReactFlow>
-          </ReactFlowProvider>
-        </div>
-      )}
-      {selectedNode && (
-        <div className="mt-3">
-          <div className="mb-1 text-xs text-[--muted]">
-            {selectedNode.method} {selectedNode.pathname}
-          </div>
-          <JsonBlock value={selectedNode} />
-        </div>
-      )}
-    </>
   );
 }

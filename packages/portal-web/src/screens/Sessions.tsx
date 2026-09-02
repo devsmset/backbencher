@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { trpc } from "../trpc.js";
 import { Chip, Field, JsonBlock, Muted, Panel, QueryState } from "../ui.js";
-import { SessionGraphView } from "./SessionGraph.js";
+import { SessionGraphModal } from "./SessionGraph.js";
 
 function RecordingPanel() {
   const utils = trpc.useUtils();
@@ -286,18 +286,28 @@ function buildApiCalls(events: unknown[]): ApiCallRow[] {
 export function SessionDetail({ sessionId }: { sessionId: string }) {
   const timeline = trpc.sessions.timeline.useQuery({ sessionId });
   const calls = buildApiCalls(timeline.data?.events ?? []);
+  const [graphOpen, setGraphOpen] = useState(false);
   return (
     <>
       <Panel
         title={`Session ${sessionId}`}
-        actions={<a href="#/sessions">← all sessions</a>}
+        actions={
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="rounded-lg border border-[--border] px-2.5 py-1.5"
+              onClick={() => setGraphOpen(true)}
+            >
+              View dependency graph
+            </button>
+            <a href="#/sessions">← all sessions</a>
+          </div>
+        }
       >
         <Muted>{timeline.data?.meta?.startUrl ?? ""}</Muted>
       </Panel>
 
-      <Panel title="Dependency graph">
-        <SessionGraphView sessionId={sessionId} />
-      </Panel>
+      {graphOpen && <SessionGraphModal sessionId={sessionId} onClose={() => setGraphOpen(false)} />}
 
       <Panel title="API calls">
         <QueryState isLoading={timeline.isLoading} error={timeline.error} />
