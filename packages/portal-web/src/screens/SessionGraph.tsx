@@ -220,6 +220,8 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const containerWidth = useContainerWidth(containerRef);
+  const pointerDownOnBackdrop = useRef(false);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -228,6 +230,10 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  useEffect(() => {
+    closeButtonRef.current?.focus();
+  }, []);
 
   const { nodes, edges } = useMemo(() => {
     const graphNodes = graph.data?.nodes ?? [];
@@ -273,14 +279,30 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
   const graphEdgesRaw = graph.data?.edges ?? [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Session ${sessionId} dependency graph`}
+      onMouseDown={(e) => {
+        pointerDownOnBackdrop.current = e.target === e.currentTarget;
+      }}
+      onClick={(e) => {
+        if (pointerDownOnBackdrop.current && e.target === e.currentTarget) onClose();
+      }}
+    >
       <div
         className="flex h-full w-full flex-col overflow-hidden rounded-xl border border-[--line] bg-[--panel]"
         onClick={(e) => e.stopPropagation()}
       >
         <header className="flex items-center justify-between border-b border-[--line] bg-[--panel2] px-4 py-2.5">
           <h3 className="m-0 text-sm">Session {sessionId} — dependency graph</h3>
-          <button type="button" className="rounded-md border border-[--border] px-2 py-1 text-xs" onClick={onClose}>
+          <button
+            type="button"
+            ref={closeButtonRef}
+            className="rounded-md border border-[--border] px-2 py-1 text-xs"
+            onClick={onClose}
+          >
             ✕ close
           </button>
         </header>
