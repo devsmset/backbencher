@@ -7,6 +7,7 @@ import ReactFlow, {
   Position,
   ReactFlowProvider,
   useNodesState,
+  useReactFlow,
   type Edge,
   type Node,
   type NodeProps,
@@ -102,6 +103,16 @@ function CallNode({ data }: NodeProps<{ node: GraphCallNode }>) {
 }
 
 const nodeTypes = { call: CallNode };
+
+// Re-fits the view whenever the graph pane's available width changes (divider drag or window
+// resize) — fitView otherwise only ever runs once, on mount. Must render inside <ReactFlow>.
+function FitViewOnResize({ containerWidth, rightPanelWidth }: { containerWidth: number; rightPanelWidth: number }) {
+  const { fitView } = useReactFlow();
+  useEffect(() => {
+    fitView();
+  }, [containerWidth, rightPanelWidth, fitView]);
+  return null;
+}
 
 function ConnectedEdges({
   edges,
@@ -239,6 +250,28 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
   const pointerDownOnBackdrop = useRef(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
+  const rowRef = useRef<HTMLDivElement>(null);
+  const [rightPanelWidth, setRightPanelWidth] = useState(420);
+  const draggingDivider = useRef(false);
+
+  useEffect(() => {
+    function onMove(e: PointerEvent) {
+      if (!draggingDivider.current || !rowRef.current) return;
+      const rect = rowRef.current.getBoundingClientRect();
+      const next = rect.right - e.clientX;
+      setRightPanelWidth(Math.min(rect.width * 0.6, Math.max(320, next)));
+    }
+    function onUp() {
+      draggingDivider.current = false;
+    }
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -347,8 +380,8 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
             ✕ close
           </button>
         </header>
-        <div className="flex min-h-0 flex-1">
-          <div ref={containerRef} className="relative min-h-0 flex-1 border-r border-[--line]">
+        <div ref={rowRef} className="flex min-h-0 flex-1">
+          <div ref={containerRef} className="relative min-h-0 flex-1">
             <QueryState isLoading={graph.isLoading} error={graph.error} />
             {graph.data && graph.data.nodes.length === 0 && <Muted>No API calls to graph in this session.</Muted>}
             {graph.data && graph.data.nodes.length > 0 && (
@@ -365,11 +398,18 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
                   <Background />
                   <Controls />
                   <MiniMap />
+                  <FitViewOnResize containerWidth={containerWidth} rightPanelWidth={rightPanelWidth} />
                 </ReactFlow>
               </ReactFlowProvider>
             )}
           </div>
-          <div className="w-[380px] overflow-y-auto p-4">
+          <div
+            className="w-1 shrink-0 cursor-col-resize border-x border-[--line] bg-[--panel2] hover:bg-[--accent]"
+            onPointerDown={() => {
+              draggingDivider.current = true;
+            }}
+          />
+          <div className="shrink-0 overflow-y-auto p-4" style={{ width: rightPanelWidth }}>
             {selectedNode ? (
               <NodeDetails node={selectedNode} edges={graphEdgesRaw} nodesById={nodesById} />
             ) : (
