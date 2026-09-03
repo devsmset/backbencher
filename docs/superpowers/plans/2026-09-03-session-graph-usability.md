@@ -29,7 +29,14 @@ suites; `packages/portal-web` has none (see Global Constraints).
   cli. Task 1 changes `packages/schemas` and `packages/portal-api`; **both must be rebuilt** before
   Task 2's `portal-web` typecheck will see the new fields (`portal-web` imports `SessionGraphNode`
   types from `@backbencher/schemas` and the `AppRouter` type from `@backbencher/portal-api`).
-- Do not touch `packages/derive`, `Sessions.tsx`, or `sessions.timeline` — unrelated to this work.
+- Do not touch `Sessions.tsx` or `sessions.timeline` — unrelated to this work.
+- `dataDir()` (from `@backbencher/shared`) is not mockable — it always resolves to the real
+  `<repoRoot>/data` by walking up from `process.cwd()`. Established convention: portal-api's test
+  suite never exercises `sessionsRouter` procedures that read from disk (`timeline`, `graph`) —
+  keep that convention. Task 1 does not add a portal-api test for the `graph` router's new field
+  mapping; it adds a `packages/derive` regression test instead (in-memory fixtures, no disk I/O),
+  and the router change itself is covered by build/typecheck only, the same way `apps/cli`'s
+  leaf-consumer changes are.
 - Keep the existing timestamp-proportional x-position calculation and `assignLanes` lane (row)
   assignment exactly as they are; the nudge pass in Task 3 is a step added *after* that
   calculation, not a replacement for it.
@@ -45,7 +52,7 @@ suites; `packages/portal-web` has none (see Global Constraints).
 - Modify: `packages/schemas/src/apimodel.ts`
 - Modify: `packages/portal-api/src/routers.ts`
 - Test: `packages/schemas/test/schemas.test.ts`
-- Test: `packages/portal-api/test/portal.test.ts`
+- Test (new file): `packages/derive/test/pairCalls.test.ts`
 
 **Interfaces:**
 - Produces: `SessionGraphNodeSchema` (and its inferred `SessionGraphNode` type) gains five fields:
@@ -165,37 +172,52 @@ Expected: `packages/schemas/generated/jsonschema/SessionGraph.schema.json` is re
 `grep -c responseBodyKind packages/schemas/generated/jsonschema/SessionGraph.schema.json` → at
 least `1`.
 
-- [ ] **Step 6: Write the failing portal-api test**
+- [ ] **Step 6: Add a derive-layer regression test for the fields the router will depend on**
 
-Add a new `it(...)` inside the existing `describe("portal-api", ...)` block in
-`packages/portal-api/test/portal.test.ts` (the `graph` procedure ignores `ctx.store`/`ctx.actor`
-entirely — it only reads `input.sessionId` off disk via `dataDir()`/`loadSession`/`pairCalls`, so
-reuse the same caller-construction pattern as the existing tests, pointed at the real fixture
-session already committed at `data/sessions/01M1C8JWJMA28A20XPAT55117D/`):
+`pairCalls()` (`packages/derive/src/pairCalls.ts`) already populates `requestHeaders`,
+`requestBody`, `responseHeaders`, `responseBody`, `responseBodyKind` on every `PairedCall` — this
+plan does not change that file. Since the `graph` router (Step 8 below) is about to start relying
+on those fields, and no test currently pins that behavior down, add one now as a regression guard.
+This test passes immediately (there is no red phase — the behavior under test already exists and
+is intentionally left unchanged); its purpose is to fail loudly in the future if `pairCalls`
+regresses, since the router now depends on it.
+
+Create `packages/derive/test/pairCalls.test.ts`:
 
 ```typescript
-  it("includes request/response headers and body on graph nodes", async () => {
-    const store = openStore(":memory:");
-    const caller = appRouter.createCaller({ store, actor: "tester", config: BbConfigSchema.parse({}) });
+import { describe, expect, it } from "vitest";
+import { apiCall, makeSession, resetClock } from "../fixtures/sessions.js";
+import { pairCalls } from "../src/pairCalls.js";
 
-    const graph = await caller.sessions.graph({ sessionId: "01M1C8JWJMA28A20XPAT55117D" });
+describe("pairCalls", () => {
+  it("carries request/response headers, body, and bodyKind onto the paired call", () => {
+    resetClock();
+    const session = makeSession("sess-headers", [
+      ...apiCall("c1", {
+        url: "https://app.example.net/bo/userProfile",
+        reqHeaders: { authorization: "Bearer t" },
+        postData: '{"q":1}',
+        resHeaders: { "content-type": "application/json" },
+        body: { ok: true },
+        bodyKind: "json",
+      }),
+    ]);
+    const [call] = pairCalls(session);
 
-    expect(graph.nodes.length).toBeGreaterThan(0);
-    const node = graph.nodes[0];
-    expect(node.requestHeaders).toBeTypeOf("object");
-    expect(node.responseHeaders).toBeTypeOf("object");
-    expect(node).toHaveProperty("requestBody");
-    expect(node).toHaveProperty("responseBody");
-    expect(node).toHaveProperty("responseBodyKind");
-    store.close();
+    expect(call.requestHeaders).toEqual({ authorization: "Bearer t" });
+    expect(call.requestBody).toEqual({ q: 1 });
+    expect(call.responseHeaders).toEqual({ "content-type": "application/json" });
+    expect(call.responseBody).toEqual({ ok: true });
+    expect(call.responseBodyKind).toBe("json");
   });
+});
 ```
 
-- [ ] **Step 7: Run test to verify it fails**
+- [ ] **Step 7: Run the derive test to confirm it passes**
 
-Run: `pnpm --filter @backbencher/portal-api test`
-Expected: FAIL — `node.requestHeaders` is `undefined` (`toBeTypeOf("object")` fails), because the
-router doesn't map these fields yet.
+Run: `pnpm --filter @backbencher/derive test`
+Expected: PASS, including this new test (no code change in this package — confirms the fields the
+router is about to consume already exist and are already populated).
 
 - [ ] **Step 8: Map the new fields in the `graph` router**
 
@@ -234,23 +256,23 @@ to:
       }));
 ```
 
-- [ ] **Step 9: Run the portal-api test to verify it passes**
+This is not covered by an automated test: `packages/portal-api`'s test suite deliberately never
+exercises `sessionsRouter` procedures that read from disk (`dataDir()` is not mockable — see
+Global Constraints), so this router change is verified by typecheck/build only, same as Step 9.
 
-Run: `pnpm --filter @backbencher/portal-api test`
-Expected: PASS (all tests in the file, including the pre-existing two).
-
-- [ ] **Step 10: Full-package verification**
+- [ ] **Step 9: Full-package verification**
 
 Run: `pnpm --filter @backbencher/schemas build && pnpm --filter @backbencher/schemas typecheck &&
+pnpm --filter @backbencher/derive build && pnpm --filter @backbencher/derive typecheck &&
 pnpm --filter @backbencher/portal-api build && pnpm --filter @backbencher/portal-api typecheck`
 Expected: all succeed with no errors. (This build is required for Task 2 to see the new fields.)
 
-- [ ] **Step 11: Commit**
+- [ ] **Step 10: Commit**
 
 ```bash
 git add packages/schemas/src/apimodel.ts packages/schemas/test/schemas.test.ts \
   packages/schemas/generated/jsonschema/SessionGraph.schema.json \
-  packages/portal-api/src/routers.ts packages/portal-api/test/portal.test.ts
+  packages/derive/test/pairCalls.test.ts packages/portal-api/src/routers.ts
 git commit -m "feat(schemas,portal-api): add request/response headers+body to session graph nodes"
 ```
 
