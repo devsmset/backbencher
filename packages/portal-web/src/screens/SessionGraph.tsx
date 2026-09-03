@@ -23,8 +23,9 @@ import { Chip, JsonBlock, Muted, QueryState } from "../ui.js";
 const ROW_HEIGHT = 70;
 const NODE_WIDTH = 220;
 
-// Fullscreen modal keeps at least this much horizontal room per node so labels never overlap,
-// growing past the container's width once a session has enough calls to need it.
+// Minimum x-gap enforced between consecutive same-lane nodes by the nudge pass in the layout
+// memo below. Also the per-node width added to `timelineWidth` once a session has enough calls
+// to need more room than the container provides.
 const MIN_NODE_SPACING = 260;
 
 function useContainerWidth(ref: RefObject<HTMLDivElement>): number {
@@ -269,6 +270,26 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
       },
       data: { node: n },
     }));
+
+    // x above is proportional to elapsed time alone, so a burst of calls in a short window can
+    // still land on top of each other within a lane. Push each node right of its same-lane
+    // predecessor by at least MIN_NODE_SPACING; isolated nodes are left untouched.
+    const byLane = new Map<number, Node[]>();
+    for (const node of rfNodes) {
+      const lane = node.position.y;
+      const arr = byLane.get(lane);
+      if (arr) arr.push(node);
+      else byLane.set(lane, [node]);
+    }
+    for (const laneNodes of byLane.values()) {
+      laneNodes.sort((a, b) => a.position.x - b.position.x);
+      for (let i = 1; i < laneNodes.length; i++) {
+        const cur = laneNodes[i]!;
+        const prev = laneNodes[i - 1]!;
+        if (!cur.position || !prev.position) continue;
+        cur.position.x = Math.max(cur.position.x, prev.position.x + MIN_NODE_SPACING);
+      }
+    }
 
     const rfEdges: Edge[] = graphEdges.map((e, i) => ({
       id: `${e.producerCorrelationId}-${e.consumerCorrelationId}-${i}`,
