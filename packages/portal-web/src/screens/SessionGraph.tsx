@@ -51,6 +51,11 @@ interface GraphCallNode {
   status: number | null;
   requestTimestamp: number;
   responseTimestamp: number | null;
+  requestHeaders?: Record<string, string>;
+  requestBody?: unknown;
+  responseHeaders?: Record<string, string>;
+  responseBody?: unknown;
+  responseBodyKind?: string | null;
 }
 
 // Greedy interval scheduling: each call occupies [requestTimestamp, responseTimestamp] and
@@ -199,7 +204,16 @@ function NodeDetails({
         <div className="mb-1 text-xs text-[--muted]">
           {node.method} {node.pathname}
         </div>
-        <JsonBlock value={node} />
+      </div>
+      <div>
+        <h4 className="mb-1.5 text-xs font-bold uppercase tracking-[0.4px] text-[--muted]">Request</h4>
+        <JsonBlock value={{ headers: node.requestHeaders, body: node.requestBody }} />
+      </div>
+      <div>
+        <h4 className="mb-1.5 text-xs font-bold uppercase tracking-[0.4px] text-[--muted]">Response</h4>
+        <JsonBlock
+          value={{ bodyKind: node.responseBodyKind, headers: node.responseHeaders, body: node.responseBody }}
+        />
       </div>
       <div>
         <h4 className="mb-1.5 text-xs font-bold uppercase tracking-[0.4px] text-[--muted]">Connected values</h4>
