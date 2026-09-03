@@ -51,11 +51,11 @@ interface GraphCallNode {
   status: number | null;
   requestTimestamp: number;
   responseTimestamp: number | null;
-  requestHeaders?: Record<string, string>;
+  requestHeaders: Record<string, string>;
   requestBody?: unknown;
-  responseHeaders?: Record<string, string>;
+  responseHeaders: Record<string, string>;
   responseBody?: unknown;
-  responseBodyKind?: string | null;
+  responseBodyKind: string | null;
 }
 
 // Greedy interval scheduling: each call occupies [requestTimestamp, responseTimestamp] and
