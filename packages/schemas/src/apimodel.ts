@@ -68,6 +68,11 @@ export const SessionGraphNodeSchema = z.object({
   status: z.number().int().nullable(),
   requestTimestamp: z.number().int(),
   responseTimestamp: z.number().int().nullable(),
+  requestHeaders: z.record(z.string()),
+  requestBody: z.unknown(),
+  responseHeaders: z.record(z.string()),
+  responseBody: z.unknown(),
+  responseBodyKind: z.string().nullable(),
 });
 export type SessionGraphNode = z.infer<typeof SessionGraphNodeSchema>;
 

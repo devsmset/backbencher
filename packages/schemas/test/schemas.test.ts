@@ -6,6 +6,7 @@ import {
   RecordingEventSchema,
   RecordingMetaSchema,
   TestSpecSchema,
+  SessionGraphNodeSchema,
   schemaRegistry,
 } from "../src/index.js";
 
@@ -140,5 +141,41 @@ describe("derived + pack contracts", () => {
 describe("schema registry", () => {
   it("exposes every top-level contract", () => {
     expect(Object.keys(schemaRegistry).length).toBeGreaterThanOrEqual(12);
+  });
+});
+
+describe("session graph node schema", () => {
+  it("parses a node with request/response headers and body", () => {
+    const node = {
+      correlationId: "01J000000000000000000REQ01",
+      operationId: "op_abc",
+      method: "GET",
+      host: "example.net",
+      pathname: "/bo/userProfile",
+      status: 200,
+      requestTimestamp: 1,
+      responseTimestamp: 2,
+      requestHeaders: { authorization: "Bearer t" },
+      requestBody: null,
+      responseHeaders: { "content-type": "application/json" },
+      responseBody: { ok: true },
+      responseBodyKind: "json",
+    };
+    expect(SessionGraphNodeSchema.parse(node)).toMatchObject({ responseBodyKind: "json" });
+  });
+
+  it("rejects a node missing the new required fields", () => {
+    expect(() =>
+      SessionGraphNodeSchema.parse({
+        correlationId: "c1",
+        operationId: null,
+        method: "GET",
+        host: "h",
+        pathname: "/x",
+        status: null,
+        requestTimestamp: 1,
+        responseTimestamp: null,
+      }),
+    ).toThrow();
   });
 });

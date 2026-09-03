@@ -49,6 +49,26 @@
                     "type": "null"
                   }
                 ]
+              },
+              "requestHeaders": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "requestBody": {},
+              "responseHeaders": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "responseBody": {},
+              "responseBodyKind": {
+                "type": [
+                  "string",
+                  "null"
+                ]
               }
             },
             "required": [
@@ -59,7 +79,10 @@
               "pathname",
               "status",
               "requestTimestamp",
-              "responseTimestamp"
+              "responseTimestamp",
+              "requestHeaders",
+              "responseHeaders",
+              "responseBodyKind"
             ],
             "additionalProperties": false
           }

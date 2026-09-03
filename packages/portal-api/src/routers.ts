@@ -83,6 +83,11 @@ const sessionsRouter = router({
         status: c.status,
         requestTimestamp: c.requestTimestamp,
         responseTimestamp: c.responseTimestamp,
+        requestHeaders: c.requestHeaders,
+        requestBody: c.requestBody,
+        responseHeaders: c.responseHeaders,
+        responseBody: c.responseBody,
+        responseBodyKind: c.responseBodyKind,
       }));
       return { nodes, edges };
     }),
