@@ -6,6 +6,7 @@ import ReactFlow, {
   MiniMap,
   Position,
   ReactFlowProvider,
+  useNodesState,
   type Edge,
   type Node,
   type NodeProps,
@@ -250,7 +251,7 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
     closeButtonRef.current?.focus();
   }, []);
 
-  const { nodes, edges } = useMemo(() => {
+  const { nodes: layoutNodes, edges } = useMemo(() => {
     const graphNodes = graph.data?.nodes ?? [];
     const graphEdges = graph.data?.edges ?? [];
     if (graphNodes.length === 0) return { nodes: [] as Node[], edges: [] as Edge[] };
@@ -304,6 +305,11 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
     return { nodes: rfNodes, edges: rfEdges };
   }, [graph.data, containerWidth]);
 
+  const [nodes, setNodes, onNodesChange] = useNodesState<{ node: GraphCallNode }>([]);
+  useEffect(() => {
+    setNodes(layoutNodes);
+  }, [layoutNodes, setNodes]);
+
   const nodesById = useMemo(() => {
     const map = new Map<string, GraphCallNode>();
     for (const n of graph.data?.nodes ?? []) map.set(n.correlationId, n);
@@ -351,6 +357,7 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
                   nodes={nodes}
                   edges={edges}
                   nodeTypes={nodeTypes}
+                  onNodesChange={onNodesChange}
                   onNodeClick={(_, node) => setSelectedId(node.id)}
                   fitView
                   proOptions={{ hideAttribution: true }}
