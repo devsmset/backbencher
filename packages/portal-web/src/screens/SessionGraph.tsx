@@ -252,7 +252,9 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
 
   const rowRef = useRef<HTMLDivElement>(null);
   const [rightPanelWidth, setRightPanelWidth] = useState(420);
+  const [isDraggingDivider, setIsDraggingDivider] = useState(false);
   const draggingDivider = useRef(false);
+  const previousLayoutInputs = useRef<{ graphData: typeof graph.data; windowWidth: number } | null>(null);
 
   useEffect(() => {
     function onMove(e: PointerEvent) {
@@ -261,14 +263,9 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
       const next = rect.right - e.clientX;
       setRightPanelWidth(Math.min(rect.width * 0.6, Math.max(320, next)));
     }
-    function onUp() {
-      draggingDivider.current = false;
-    }
     window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
     return () => {
       window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
     };
   }, []);
 
@@ -340,11 +337,16 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
 
   const [nodes, setNodes, onNodesChange] = useNodesState<{ node: GraphCallNode }>([]);
   useEffect(() => {
-    // layoutNodes is recomputed whenever containerWidth changes, which also happens while the
-    // divider is being live-dragged. Per spec, a divider drag must not clobber a node the user
-    // just dragged, but a real window resize (or a new session) must still reset to the fresh
-    // layout — so only preserve existing positions while draggingDivider.current is true.
-    if (draggingDivider.current) {
+    const windowWidth = window.innerWidth;
+    const previous = previousLayoutInputs.current;
+    const shouldReset = !previous || previous.graphData !== graph.data || previous.windowWidth !== windowWidth;
+
+    // layoutNodes is recomputed whenever containerWidth changes, including divider drags and real
+    // window resizes. Only a new graph payload or a real window width change should reset node
+    // positions; all other recomputes preserve any node positions the user has already adjusted.
+    if (shouldReset) {
+      setNodes(layoutNodes);
+    } else {
       setNodes((current) => {
         const existingById = new Map(current.map((n) => [n.id, n]));
         return layoutNodes.map((n) => {
@@ -352,10 +354,10 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
           return existing ? { ...n, position: existing.position } : n;
         });
       });
-    } else {
-      setNodes(layoutNodes);
     }
-  }, [layoutNodes, setNodes]);
+
+    previousLayoutInputs.current = { graphData: graph.data, windowWidth };
+  }, [graph.data, layoutNodes, setNodes]);
 
   const nodesById = useMemo(() => {
     const map = new Map<string, GraphCallNode>();
@@ -394,7 +396,7 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
             ✕ close
           </button>
         </header>
-        <div ref={rowRef} className="flex min-h-0 flex-1">
+        <div ref={rowRef} className={`flex min-h-0 flex-1${isDraggingDivider ? " select-none" : ""}`}>
           <div ref={containerRef} className="relative min-h-0 flex-1">
             <QueryState isLoading={graph.isLoading} error={graph.error} />
             {graph.data && graph.data.nodes.length === 0 && <Muted>No API calls to graph in this session.</Muted>}
@@ -419,8 +421,23 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
           </div>
           <div
             className="w-1 shrink-0 cursor-col-resize border-x border-[--line] bg-[--panel2] hover:bg-[--accent]"
-            onPointerDown={() => {
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.currentTarget.setPointerCapture(e.pointerId);
               draggingDivider.current = true;
+              setIsDraggingDivider(true);
+            }}
+            onPointerUp={() => {
+              draggingDivider.current = false;
+              setIsDraggingDivider(false);
+            }}
+            onPointerCancel={() => {
+              draggingDivider.current = false;
+              setIsDraggingDivider(false);
+            }}
+            onLostPointerCapture={() => {
+              draggingDivider.current = false;
+              setIsDraggingDivider(false);
             }}
           />
           <div className="shrink-0 overflow-y-auto p-4" style={{ width: rightPanelWidth }}>
