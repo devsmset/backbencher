@@ -340,7 +340,21 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
 
   const [nodes, setNodes, onNodesChange] = useNodesState<{ node: GraphCallNode }>([]);
   useEffect(() => {
-    setNodes(layoutNodes);
+    // layoutNodes is recomputed whenever containerWidth changes, which also happens while the
+    // divider is being live-dragged. Per spec, a divider drag must not clobber a node the user
+    // just dragged, but a real window resize (or a new session) must still reset to the fresh
+    // layout — so only preserve existing positions while draggingDivider.current is true.
+    if (draggingDivider.current) {
+      setNodes((current) => {
+        const existingById = new Map(current.map((n) => [n.id, n]));
+        return layoutNodes.map((n) => {
+          const existing = existingById.get(n.id);
+          return existing ? { ...n, position: existing.position } : n;
+        });
+      });
+    } else {
+      setNodes(layoutNodes);
+    }
   }, [layoutNodes, setNodes]);
 
   const nodesById = useMemo(() => {
