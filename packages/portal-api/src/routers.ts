@@ -11,7 +11,7 @@ import {
 } from "@backbencher/schemas";
 import { dataDir, newId } from "@backbencher/shared";
 import { mergeOperation } from "@backbencher/store";
-import { buildSessionCallGraph, loadAllSessions, loadSession, pairCalls, runDerivation, templatizePaths } from "@backbencher/derive";
+import { buildSessionCallGraph, loadSession, pairCalls, templatizePaths } from "@backbencher/derive";
 import { type RecorderHandle, startRecording } from "@backbencher/recorder";
 import {
   buildKnowledgePack,
@@ -30,6 +30,7 @@ import {
 import { loadSpecYaml, runSpecAgainstEnv, generateAuthzMatrix, generateBolaProbes, specToYaml } from "@backbencher/testkit";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { derivationState, runDerivationJob } from "./derivationJob.js";
 import { publicProcedure, router } from "./trpc.js";
 
 // tRPC routers (architecture §6.2). Derived reads are merged with annotations (§6.4); every
@@ -113,7 +114,8 @@ const sessionsRouter = router({
       activeRecordings.delete(input.sessionId);
       const result = await handle.stop({ name: input.name, goal: input.goal });
       ctx.store.audit.append({ entityType: "session", entityId: input.sessionId, action: "record.stop", actor: ctx.actor, diff: { totalEvents: result.summary.totalEvents } });
-      return { sessionId: result.sessionId, sessionDir: result.sessionDir, summary: result.summary };
+      runDerivationJob(ctx.store, ctx.actor);
+      return { sessionId: result.sessionId, sessionDir: result.sessionDir, summary: result.summary, derivation: "running" as const };
     }),
   discardRecording: publicProcedure
     .input(z.object({ sessionId: z.string() }))
@@ -128,32 +130,7 @@ const sessionsRouter = router({
 });
 
 const deriveRouter = router({
-  run: publicProcedure
-    .input(z.object({ sessionId: z.string().optional() }).optional())
-    .mutation(({ ctx, input }) => {
-      const sessions = input?.sessionId
-        ? [loadSession(join(dataDir(), "sessions", input.sessionId))]
-        : loadAllSessions();
-      if (sessions.length === 0) {
-        throw new TRPCError({ code: "PRECONDITION_FAILED", message: "no sessions found under data/sessions — record one first" });
-      }
-      const result = runDerivation(sessions);
-      for (const s of sessions) ctx.store.sessions.upsertFromMeta(s.meta);
-      ctx.store.saveDerivation(result);
-      ctx.store.audit.append({
-        entityType: "derivation",
-        entityId: input?.sessionId ?? "all",
-        action: "derive",
-        actor: ctx.actor,
-        diff: { sessions: sessions.length, operations: result.operations.length },
-      });
-      return {
-        sessionsProcessed: sessions.length,
-        operations: result.operations.length,
-        dataflowEdges: result.dataflow.length,
-        flows: result.flows.length,
-      };
-    }),
+  status: publicProcedure.query(() => derivationState()),
 });
 
 const AnnotatePatch = z.object({
