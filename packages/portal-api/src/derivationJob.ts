@@ -90,7 +90,11 @@ export function runDerivationJob(store: Store, actor: string, depsOverrides?: Pa
   const deps: DerivationJobDeps = { ...defaultDerivationJobDeps, ...depsOverrides };
   state = { status: "running", startedAt: Date.now() };
   let promise: Promise<void>;
-  promise = Promise.resolve()
+  // setImmediate, not a microtask: derivation is synchronous and CPU-bound, and a microtask would
+  // run before the calling mutation's own continuation — i.e. before its response is flushed.
+  promise = new Promise<void>((resolve) => {
+    setImmediate(resolve);
+  })
     .then(() => {
       let summary = deriveOnce(store, actor, deps);
       while (rerunQueued) {

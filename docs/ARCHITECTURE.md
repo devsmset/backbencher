@@ -219,6 +219,12 @@ Recording runs **inside the portal server process**, which is fine for one local
 first thing to revisit for a hosted deployment. Derivation is triggered in the background by
 `sessions.stopRecording`; `derive.run` no longer exists.
 
+"Background" here means *deferred*, not *concurrent*. The job is scheduled with `setImmediate` so the
+mutation's response flushes first, but the pass itself is synchronous CPU-bound work on the event
+loop: while it runs it blocks every other request, including the `derive.status` polls the UI uses to
+watch it. That is acceptable at the session-corpus sizes this tool is built for, and is a known
+limitation — real concurrency means a worker thread, which is not attempted here.
+
 ### 7.2 `packages/portal-web` — React + Vite, hash-routed
 
 Screens: Dashboard, Sessions (list, timeline, graph, start/stop recording), Catalog, OperationDetail

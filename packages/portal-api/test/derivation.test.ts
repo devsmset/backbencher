@@ -64,6 +64,32 @@ describe("derivation job", () => {
     }
   });
 
+  it("returns to the caller before the derivation body runs", async () => {
+    const store = openStore(":memory:");
+    const order: string[] = [];
+
+    // Mirrors what sessions.stopRecording does: kick the job off, then let its own async
+    // continuation (the mutation's return path, which is what flushes the response) run.
+    async function stopRecordingLike(): Promise<void> {
+      runDerivationJob(store, "alice", {
+        loadAllSessions: () => {
+          order.push("derivation");
+          return [];
+        },
+        logError: () => {},
+      });
+      await Promise.resolve();
+      order.push("response");
+    }
+
+    await stopRecordingLike();
+    expect(order).toEqual(["response"]);
+
+    await waitForDerivationIdle();
+    expect(order).toEqual(["response", "derivation"]);
+    store.close();
+  });
+
   it("collapses concurrent requests into a single follow-up run", async () => {
     const store = openStore(":memory:");
     runDerivationJob(store, "alice");
