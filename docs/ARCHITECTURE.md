@@ -160,10 +160,14 @@ Deterministic and LLM-free. `runDerivation(sessions)` in `pipeline.ts`:
     collapsed to `[*]`.
 11. **`probe.ts`** — optional and gated. Replays idempotent GETs twice against a live environment for
     a higher-confidence volatility mask, restricted to Operations tagged `probe-safe`.
+12. **`redundant.ts`** — finds Calls that re-produce values an earlier Call of the same Operation already
+    produced. Applied only to the per-Session artifacts, never to the Catalog.
+13. **`curatedEvents.ts`** — materialises `curated-events.ndjson` per Session and reads it back.
 
 `store.saveDerivation()` then transactionally full-replaces `operations`, `dataflowEdges`,
-`observedFlows`, and `dependencyFacts`. It never touches annotation, exemplar, composition, or guide
-tables.
+`observedFlows`, and `dependencyFacts`. It never touches annotation, composition, or guide
+tables. Operations, schemas, and dataflow come from raw events; `ObservedFlow` and `SessionCallEdge[]`
+come from curated Calls.
 
 This package has the strongest test coverage in the repo.
 
@@ -174,12 +178,12 @@ This package has the strongest test coverage in the repo.
 Drizzle over SQLite at `data/backbencher.db`. JSON columns hold Zod-validated payloads.
 
 Tables: `sessions`, `operations`, `dataflowEdges`, `observedFlows`, `dependencyFacts`,
-`catalogAnnotations`, `testingAnnotations`, `exemplars`, `compositions`, `rehearsalGoals`,
+`catalogAnnotations`, `testingAnnotations`, `compositions`, `rehearsalGoals`,
 `rehearsalResults`, `analystGuides`, `embeddings`, `knowledgePacks`, `testSpecs`, `testRuns`,
-`auditLog`.
+`auditLog`, `session_curation`, `session_call_edges`.
 
 Repositories on the store object: `sessions`, `operations`, `dataflow`, `flows`, `dependencyFacts`,
-`annotations` (catalog), `testingAnnotations`, `exemplars`, `compositions`, `rehearsal`, `guides`,
+`annotations` (catalog), `testingAnnotations`, `compositions`, `rehearsal`, `guides`,
 `embeddings`, `packs`, `specs`, `runs`, `audit`.
 
 `mergeOperation(derived, catalog?, testing?)` is the single merge-rule implementation. Catalog fields
@@ -213,7 +217,8 @@ environments), `security` (`authzMatrix`, `bolaProbes`), `drift.report`, and `re
 per ADR-0002 the testing decision is made at approval, not at proposal.
 
 Recording runs **inside the portal server process**, which is fine for one local analyst and is the
-first thing to revisit for a hosted deployment.
+first thing to revisit for a hosted deployment. Derivation is triggered in the background by
+`sessions.stopRecording`; `derive.run` no longer exists.
 
 ### 7.2 `packages/portal-web` — React + Vite, hash-routed
 

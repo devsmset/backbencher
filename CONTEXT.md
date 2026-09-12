@@ -16,6 +16,16 @@ _Avoid_: Recording, trace, scenario
 One observed request/response instance that occurred during a Session.
 _Avoid_: Event, API call, hit
 
+**Redundant Call**:
+A Call that produces no value an earlier Call to the same Operation in the same Session has not
+already produced.
+_Avoid_: Duplicate call, repeat, noise
+
+**Curated Session**:
+A Session reduced to the Calls that carry its meaning — the recording minus Redundant Calls and
+minus what the Analyst deleted by hand.
+_Avoid_: Cleaned session, filtered session, lean session
+
 **Analyst**:
 The person who records Sessions, annotates the Catalog, and approves Compositions.
 _Avoid_: Operator, user, tester
@@ -74,14 +84,14 @@ The analyst's plain-language statement of what a Session or Composition is for. 
 human, never by a model.
 _Avoid_: Intent, description, prompt
 
-**Exemplar**:
-A promoted Session that teaches the composer how Operations are ordered in practice. An Exemplar is
-never approved and never tested — it only teaches.
-_Avoid_: Scenario, example, template
+**Reference Session**:
+A Curated Session the Analyst has marked as teaching material for the composer. It is never approved
+and never tested — it only teaches.
+_Avoid_: Exemplar, scenario, example, template
 
-**Example-ready**:
-The state of an Exemplar whose Operations are all Ready, making it eligible to be shown to the
-composer. Derived, never set by hand.
+**Reference-ready**:
+The state of a Reference Session whose Operations are all Ready, making it eligible to be shown to
+the composer. Derived, never set by hand.
 _Avoid_: Published, enabled
 
 **Composition**:
