@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { RecordingEventSchema, RecordingMetaSchema } from "@backbencher/schemas";
 import { loadSession } from "./loadSessions.js";
@@ -19,18 +19,27 @@ export function writeCuratedEvents(
 ): number {
   const kept = session.events.filter((e) => !excluded.has(e.correlationId));
   const body = kept.length > 0 ? `${kept.map((e) => JSON.stringify(e)).join("\n")}\n` : "";
-  writeFileSync(join(dir, CURATED_EVENTS_FILE), body);
+  // Temp-then-rename: a crash mid-write must never leave a half-file at the real path.
+  const target = join(dir, CURATED_EVENTS_FILE);
+  const tmp = `${target}.tmp`;
+  writeFileSync(tmp, body);
+  renameSync(tmp, target);
   return kept.length;
 }
 
-/** Reads the Curated Session, falling back to the raw recording when it has not been derived. */
+/**
+ * Reads the Curated Session, falling back to the raw recording whenever the curated file is
+ * missing, truncated, or otherwise unreadable — curation is a cache, never the record.
+ */
 export function loadCuratedOrRawSession(dir: string): SessionData {
-  const curated = join(dir, CURATED_EVENTS_FILE);
-  if (!existsSync(curated)) return loadSession(dir);
-  const meta = RecordingMetaSchema.parse(JSON.parse(readFileSync(join(dir, "meta.json"), "utf8")));
-  const events = readFileSync(curated, "utf8")
-    .split("\n")
-    .filter((l) => l.trim().length > 0)
-    .map((l) => RecordingEventSchema.parse(JSON.parse(l)));
-  return { meta, events };
+  try {
+    const meta = RecordingMetaSchema.parse(JSON.parse(readFileSync(join(dir, "meta.json"), "utf8")));
+    const events = readFileSync(join(dir, CURATED_EVENTS_FILE), "utf8")
+      .split("\n")
+      .filter((l) => l.trim().length > 0)
+      .map((l) => RecordingEventSchema.parse(JSON.parse(l)));
+    return { meta, events };
+  } catch {
+    return loadSession(dir);
+  }
 }

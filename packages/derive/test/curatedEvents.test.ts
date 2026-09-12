@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -44,6 +44,20 @@ describe("writeCuratedEvents", () => {
     const session = seed();
     expect(writeCuratedEvents(dir, session, new Set())).toBe(4);
   });
+
+  it("leaves no partial file at the real path when the write fails mid-way", () => {
+    const session = seed();
+    writeCuratedEvents(dir, session, new Set(["k2"]));
+    const curated = join(dir, "curated-events.ndjson");
+    const intact = readFileSync(curated, "utf8");
+
+    // Make the staging write fail: if the writer went straight at the real path instead of a temp
+    // file, a failure part-way through would be visible there.
+    mkdirSync(`${curated}.tmp`);
+    expect(() => writeCuratedEvents(dir, session, new Set())).toThrow();
+
+    expect(readFileSync(curated, "utf8")).toBe(intact);
+  });
 });
 
 describe("loadCuratedOrRawSession", () => {
@@ -56,5 +70,22 @@ describe("loadCuratedOrRawSession", () => {
     const session = seed();
     writeCuratedEvents(dir, session, new Set(["k2"]));
     expect(loadCuratedOrRawSession(dir).events.map((e) => e.correlationId)).toEqual(["k1", "k1"]);
+  });
+
+  it("falls back to raw events when the curated file is truncated mid-line", () => {
+    const session = seed();
+    writeCuratedEvents(dir, session, new Set(["k2"]));
+    const curated = join(dir, "curated-events.ndjson");
+    writeFileSync(curated, `${readFileSync(curated, "utf8").slice(0, 30)}`);
+
+    expect(loadCuratedOrRawSession(dir).events).toHaveLength(4);
+  });
+
+  it("falls back to raw events when a curated line is valid JSON but not an event", () => {
+    const session = seed();
+    writeCuratedEvents(dir, session, new Set(["k2"]));
+    writeFileSync(join(dir, "curated-events.ndjson"), '{"type":"not_an_event"}\n');
+
+    expect(loadCuratedOrRawSession(dir).events).toHaveLength(4);
   });
 });
