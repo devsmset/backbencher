@@ -18,7 +18,7 @@ Commands:
   record [--url <u>] [--profile <p>] [--name <n>] [--goal <g>]  Record a browser session
                                                                 (name and goal are required; you are
                                                                  prompted for them when you stop)
-  derive [--session <id> | --all] [--probe --env <n>]       Run the derivation pipeline
+  derive [--probe --env <n>]                                Re-derive every session
   embed [--rebuild]                                         Embed the catalog for retrieval
                                                             (also a smoke test of llm.tasks.embed)
   serve  [--port 4000]                                      Start portal-api + portal-web
@@ -97,6 +97,8 @@ async function cmdRecord(argv: string[]): Promise<void> {
       `\n✅ Saved ${result.summary.totalEvents} events to ${result.sessionDir}\n` +
         `   ${counts}\n   warnings=${result.summary.warnings}\n`,
     );
+    process.stdout.write("⚙️  Deriving…\n");
+    await cmdDerive([]);
     process.exit(0);
   };
 
@@ -127,19 +129,20 @@ async function cmdEmbed(argv: string[]): Promise<void> {
 }
 
 async function cmdDerive(argv: string[]): Promise<void> {
-  const { loadAllSessions, loadSession, runDerivation } = await import("@backbencher/derive");
+  if (argv.includes("-h") || argv.includes("--help")) {
+    process.stdout.write(HELP);
+    return;
+  }
+  const { loadAllSessions, runDerivation, writeCuratedEvents } = await import("@backbencher/derive");
   const { openStore } = await import("@backbencher/store");
-  const sessionId = getFlag(argv, "--session");
-  const sessions = sessionId
-    ? [loadSession(join(dataDir(), "sessions", sessionId))]
-    : loadAllSessions();
+  const sessions = loadAllSessions();
   if (sessions.length === 0) {
     process.stderr.write("no sessions found under data/sessions (run `bb record` first)\n");
     process.exitCode = 1;
     return;
   }
-  const result = runDerivation(sessions);
   const store = openStore();
+  const result = runDerivation(sessions, { deletedCorrelationIds: store.sessionCuration.deletionMap() });
   for (const s of sessions) store.sessions.upsertFromMeta(s.meta);
 
   let operations = result.operations;
@@ -167,6 +170,11 @@ async function cmdDerive(argv: string[]): Promise<void> {
     }
   }
   store.saveDerivation({ ...result, operations });
+  for (const s of sessions) {
+    const excluded = new Set(result.autoFiltered[s.meta.sessionId] ?? []);
+    for (const id of store.sessionCuration.get(s.meta.sessionId)?.deletedCorrelationIds ?? []) excluded.add(id);
+    writeCuratedEvents(join(dataDir(), "sessions", s.meta.sessionId), s, excluded);
+  }
   store.close();
   process.stdout.write(
     `\u2705 Derived ${operations.length} operations, ${result.dataflow.length} dataflow edges, ` +
