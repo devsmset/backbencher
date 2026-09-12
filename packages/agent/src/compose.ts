@@ -281,7 +281,7 @@ export async function proposeScenario(store: Store, goal: string, opts: ComposeO
       intent: s.intent,
       satisfies: s.satisfies,
       autoAdded: s.autoAdded,
-      fromExemplarIds: s.autoAdded ? [] : exemplarIdsUsed,
+      fromSessionIds: s.autoAdded ? [] : exemplarIdsUsed,
     })),
     unmetDependencies: reconciled.unmetDependencies,
     candidateGaps: proposal?.candidateGaps ?? [],

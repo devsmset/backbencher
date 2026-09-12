@@ -60,7 +60,7 @@ describe("buildKnowledgePack", () => {
       compositionId: "comp1",
       goal: "go do the first thing",
       status: "approved",
-      steps: [{ operationId: "op_1", intent: "go", satisfies: [], autoAdded: false, fromExemplarIds: [] }],
+      steps: [{ operationId: "op_1", intent: "go", satisfies: [], autoAdded: false, fromSessionIds: [] }],
       unmetDependencies: [],
       candidateGaps: [],
       testDecision: {

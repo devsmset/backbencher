@@ -107,7 +107,7 @@ export const CompositionStepSchema = z.object({
   intent: z.string(), // the model's one-line why-this-step, in the goal's terms
   satisfies: z.array(z.string()).default([]), // downstream requires-slots this step feeds
   autoAdded: z.boolean().default(false), // inserted by dependency auto-completion, not the model
-  fromExemplarIds: z.array(z.string()).default([]), // provenance: where the model saw this used
+  fromSessionIds: z.array(z.string()).default([]), // provenance: which Reference Sessions showed this
 });
 
 export const TestDecisionSchema = z.object({

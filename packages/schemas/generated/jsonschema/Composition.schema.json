@@ -42,7 +42,7 @@
                 "type": "boolean",
                 "default": false
               },
-              "fromExemplarIds": {
+              "fromSessionIds": {
                 "type": "array",
                 "items": {
                   "type": "string"

@@ -12,7 +12,7 @@ interface DraftStep {
   intent: string;
   satisfies: string[];
   autoAdded: boolean;
-  fromExemplarIds: string[];
+  fromSessionIds: string[];
 }
 
 interface Draft {
@@ -181,7 +181,7 @@ export function Compose() {
                     <Muted>{i + 1}.</Muted>
                     <code>{s.operationId}</code>
                     {s.autoAdded && <Chip variant="warn">auto-added dependency</Chip>}
-                    {!s.autoAdded && s.fromExemplarIds.length > 0 && <Chip>seen in: {s.fromExemplarIds.join(", ")}</Chip>}
+                    {!s.autoAdded && s.fromSessionIds.length > 0 && <Chip>seen in: {s.fromSessionIds.join(", ")}</Chip>}
                     <input className="flex-1" value={s.intent} onChange={(e) => updateIntent(s.operationId, e.target.value)} />
                   </div>
                 ))}

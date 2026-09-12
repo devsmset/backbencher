@@ -530,7 +530,7 @@ const composeRouter = router({
       const existing = ctx.store.compositions.get(input.compositionId);
       if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "composition not found" });
       const steps = input.steps
-        ? input.steps.map((s) => ({ ...s, satisfies: [], autoAdded: false, fromExemplarIds: [] }))
+        ? input.steps.map((s) => ({ ...s, satisfies: [], autoAdded: false, fromSessionIds: [] }))
         : existing.steps;
       const saved = ctx.store.compositions.upsert({
         ...existing,

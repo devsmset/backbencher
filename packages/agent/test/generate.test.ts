@@ -73,8 +73,8 @@ function seed() {
     goal: "create then read a thing",
     status: "approved",
     steps: [
-      { operationId: "op_create", intent: "create", satisfies: [], autoAdded: false, fromExemplarIds: [] },
-      { operationId: "op_get", intent: "get", satisfies: [], autoAdded: false, fromExemplarIds: [] },
+      { operationId: "op_create", intent: "create", satisfies: [], autoAdded: false, fromSessionIds: [] },
+      { operationId: "op_get", intent: "get", satisfies: [], autoAdded: false, fromSessionIds: [] },
     ],
     unmetDependencies: [],
     candidateGaps: [],
