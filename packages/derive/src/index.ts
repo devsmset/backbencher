@@ -12,6 +12,7 @@ export {
   DEFAULT_BUILD_OPTIONS,
 } from "./inferSchemas.js";
 export { detectVolatileFields } from "./volatile.js";
+export { findRedundantCalls } from "./redundant.js";
 export { buildDataflowGraph } from "./dataflow.js";
 export type { DataflowResult } from "./dataflow.js";
 export { buildSessionCallGraph } from "./sessionGraph.js";
