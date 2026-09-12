@@ -1,5 +1,6 @@
 export * from "./types.js";
 export { loadSession, loadAllSessions } from "./loadSessions.js";
+export { CURATED_EVENTS_FILE, loadCuratedOrRawSession, writeCuratedEvents } from "./curatedEvents.js";
 export { pairCalls } from "./pairCalls.js";
 export { templatizePaths } from "./templatize.js";
 export type { OpAccum, OpParam, TemplatizeResult } from "./templatize.js";
