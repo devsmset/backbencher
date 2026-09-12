@@ -5,7 +5,7 @@ import { newId } from "@backbencher/shared";
 import { type MergedOperation, type Store, mergeOperation } from "@backbencher/store";
 import { z } from "zod";
 import { computeDependencyGraph } from "./dependencies.js";
-import { type RetrieveOptions, endpointRetrievalText, retrieveForGoal } from "./embed.js";
+import { type ReferenceSession, type RetrieveOptions, endpointRetrievalText, retrieveForGoal } from "./embed.js";
 import type { LlmComplete } from "./generate.js";
 
 // The composition engine (realignment guide §6) — the heart of the vision. A free-text goal
@@ -24,7 +24,9 @@ HARD RULES:
   instead of inventing an operationId.
 - You may use the DEPENDENCY FACTS to help order steps sensibly, but a machine validator will
   check and auto-complete dependencies after you — focus on picking the right endpoints for the
-  goal and a narrative order that reflects real product usage.`;
+  goal and a narrative order that reflects real product usage.
+- REFERENCE SESSIONS show how values have actually flowed between endpoints in practice; the
+  DEPENDENCY FACTS block remains the authoritative, machine-derived statement.`;
 
 const ComposeProposalSchema = z.object({
   steps: z.array(z.object({ operationId: z.string(), intent: z.string() })).min(1),
@@ -77,7 +79,7 @@ function buildPrompt(
   goal: string,
   candidates: MergedOperation[],
   graph: DependencyGraph,
-  exampleScenarios: Array<{ name: string; steps: Array<{ operationId: string }> }>,
+  referenceSessions: ReferenceSession[],
   opNameById: ReadonlyMap<string, string>,
   repairErrors?: string[],
 ): { system: string; user: string } {
@@ -94,11 +96,25 @@ function buildPrompt(
     )
     .join("\n");
 
-  const examples = exampleScenarios
-    .map(
-      (s: { name: string; steps: Array<{ operationId: string }> }) =>
-        `"${s.name}": [${s.steps.map((st) => opNameById.get(st.operationId) ?? st.operationId).join(", ")}]`,
-    )
+  const examples = referenceSessions
+    .map((s) => {
+      const opLabel = (operationId: string) => opNameById.get(operationId) ?? operationId;
+      const nameByCorrelation = new Map(s.steps.map((st) => [st.correlationId, opLabel(st.operationId)] as const));
+      const label = (correlationId: string) => nameByCorrelation.get(correlationId) ?? "(pruned call)";
+      const flowLines = [
+        ...new Set(
+          s.edges.map(
+            (e) =>
+              `${label(e.producerCorrelationId)}.${e.producerJsonPath} -> ${label(e.consumerCorrelationId)}.${e.consumerJsonPath}`,
+          ),
+        ),
+      ].sort();
+      return [
+        `"${s.name}" — goal: "${s.goal}"`,
+        `  steps: ${s.steps.map((st) => opLabel(st.operationId)).join(", ")}`,
+        ...(flowLines.length > 0 ? [`  dataflow: ${flowLines.join("; ")}`] : []),
+      ].join("\n");
+    })
     .join("\n");
 
   const user = [
@@ -107,7 +123,7 @@ function buildPrompt(
     "CANDIDATE ENDPOINTS (retrieved + dependency-closure):",
     candidates.map((op) => formatOperationForPrompt(op, graph.byOperation.get(op.operationId))).join("\n"),
     "",
-    "EXAMPLE SCENARIOS (how endpoints have been composed before):",
+    "REFERENCE SESSIONS (real recorded flows, curated by an analyst):",
     examples || "(none yet)",
     "",
     "DEPENDENCY FACTS (authoritative, machine-derived):",
@@ -244,7 +260,7 @@ export async function proposeScenario(store: Store, goal: string, opts: ComposeO
 
   while (attempts <= maxRepairs) {
     attempts += 1;
-    ({ system, user } = buildPrompt(goal, candidates, graph, retrieval.exemplars, opNameById, repairErrors));
+    ({ system, user } = buildPrompt(goal, candidates, graph, retrieval.referenceSessions, opNameById, repairErrors));
     rawModelOutput = stripFences(await opts.llm(system, user));
 
     try {
@@ -269,7 +285,7 @@ export async function proposeScenario(store: Store, goal: string, opts: ComposeO
     repairErrors = reconciled.unmetDependencies.map((u) => `${u.operationId}: ${u.slot} — ${u.note}`);
   }
 
-  const exemplarIdsUsed = retrieval.exemplars.map((e) => e.exemplarId);
+  const sessionIdsUsed = retrieval.referenceSessions.map((s) => s.sessionId);
   const compositionId = newId();
   const now = Date.now();
   const composition = CompositionSchema.parse({
@@ -281,7 +297,7 @@ export async function proposeScenario(store: Store, goal: string, opts: ComposeO
       intent: s.intent,
       satisfies: s.satisfies,
       autoAdded: s.autoAdded,
-      fromSessionIds: s.autoAdded ? [] : exemplarIdsUsed,
+      fromSessionIds: s.autoAdded ? [] : sessionIdsUsed,
     })),
     unmetDependencies: reconciled.unmetDependencies,
     candidateGaps: proposal?.candidateGaps ?? [],

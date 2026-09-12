@@ -1,5 +1,5 @@
 import { type LlmRegistry, createLlmRegistry } from "@backbencher/llm";
-import { type CatalogAnnotation, type Exemplar, isOperationReady } from "@backbencher/schemas";
+import { type CatalogAnnotation, type SessionCallEdge, isOperationReady } from "@backbencher/schemas";
 import type { BbConfig } from "@backbencher/shared";
 import type { EmbeddingKind, MergedOperation, Store } from "@backbencher/store";
 import { embeddingTextHash, mergeOperation } from "@backbencher/store";
@@ -156,35 +156,50 @@ export function endpointRetrievalText(op: MergedOperation): string {
   return `${op.name ?? ""}. ${op.does ?? ""}. [${op.productArea ?? ""}] ${op.method} ${op.pathTemplate.template}`;
 }
 
-/** "{name}. {goal}. steps: {endpoint names joined}" (guide §6.2). */
-export function exemplarRetrievalText(exemplar: Exemplar, opNameById: ReadonlyMap<string, string>): string {
-  const stepNames = exemplar.steps.map((s) => opNameById.get(s.operationId) ?? s.operationId).join(", ");
-  return `${exemplar.name}. ${exemplar.goal}. steps: ${stepNames}`;
+export interface ReferenceSession {
+  sessionId: string;
+  name: string;
+  goal: string;
+  steps: Array<{ operationId: string; correlationId: string }>;
+  edges: SessionCallEdge[];
 }
+
+/** "{name}. {goal}. steps: {endpoint names joined}" (guide §6.2). */
+export function sessionRetrievalText(
+  session: ReferenceSession,
+  opNameById: ReadonlyMap<string, string>,
+): string {
+  const stepNames = session.steps.map((s) => opNameById.get(s.operationId) ?? s.operationId).join(", ");
+  return `${session.name}. ${session.goal}. steps: ${stepNames}`;
+}
+
+export const exemplarRetrievalText = sessionRetrievalText;
 
 export interface RetrievalResult {
   endpoints: Array<MergedOperation & { score: number }>;
-  exemplars: Array<Exemplar & { score: number }>;
+  referenceSessions: Array<ReferenceSession & { score: number }>;
 }
 
 export interface RetrieveOptions {
   topEndpoints?: number;
-  topExemplars?: number;
+  topReferenceSessions?: number;
   embedder?: Embedder;
 }
 
 /**
- * An Exemplar only teaches once every Operation it uses is Ready — otherwise the composer sees a
+ * A Reference Session only teaches once every Operation it uses is Ready — otherwise the composer sees a
  * step it cannot name, let alone select (guide gotcha #6). Derived, never set by hand.
  */
-export function isExampleReady(exemplar: Exemplar, readyOpIds: ReadonlySet<string>): boolean {
-  return exemplar.steps.length > 0 && exemplar.steps.every((s) => readyOpIds.has(s.operationId));
+export function isReferenceReady(session: ReferenceSession, readyOpIds: ReadonlySet<string>): boolean {
+  return session.steps.length > 0 && session.steps.every((s) => readyOpIds.has(s.operationId));
 }
 
-/** The corpus that is retrievable today: `ready` operations, plus example-ready Exemplars. */
+export const isExampleReady = isReferenceReady;
+
+/** The corpus that is retrievable today: `ready` operations, plus reference-ready Sessions. */
 export function retrievalCorpus(store: Store): {
   endpoints: Array<MergedOperation & RetrievableItem>;
-  exemplars: Array<Exemplar & RetrievableItem>;
+  referenceSessions: Array<ReferenceSession & RetrievableItem>;
 } {
   const catalogByOp = new Map<string, CatalogAnnotation>(store.annotations.list().map((a) => [a.operationId, a]));
   const testingByOp = new Map(store.testingAnnotations.list().map((a) => [a.operationId, a]));
@@ -202,21 +217,37 @@ export function retrievalCorpus(store: Store): {
       id: op.operationId,
       text: endpointRetrievalText(op),
     })),
-    exemplars: store.exemplars
+    referenceSessions: store.sessionCuration
       .list()
-      .filter((e) => isExampleReady(e, readyOpIds))
-      .map((e) => ({
-        ...e,
-        kind: "exemplar" as const,
-        id: e.exemplarId,
-        text: exemplarRetrievalText(e, opNameById),
+      .filter((c) => c.useAsReference)
+      .map((c) => {
+        const row = store.sessions.get(c.sessionId);
+        const steps = store.flows
+          .listBySession(c.sessionId)
+          .flatMap((f) => f.steps)
+          .map((s) => ({ operationId: s.operationId, correlationId: s.correlationId }));
+        return {
+          sessionId: c.sessionId,
+          name: row?.meta.name ?? c.sessionId,
+          goal: row?.meta.goal ?? "",
+          steps,
+          edges: store.sessionGraphs.listBySession(c.sessionId),
+        };
+      })
+      .filter((s) => isReferenceReady(s, readyOpIds))
+      .sort((a, b) => a.sessionId.localeCompare(b.sessionId))
+      .map((s) => ({
+        ...s,
+        kind: "session" as const,
+        id: s.sessionId,
+        text: sessionRetrievalText(s, opNameById),
       })),
   };
 }
 
 /**
  * Retrieval for a free-text goal (guide §6.2 step 2, pre-dependency-closure): top-M `ready`
- * catalog endpoints as the candidate pool, top-K Exemplars as few-shot compositional examples.
+ * catalog endpoints as the candidate pool, top-K Reference Sessions as few-shot compositional examples.
  * Dependency-closure expansion of the endpoint pool happens downstream in compose.ts.
  */
 export async function retrieveForGoal(
@@ -227,24 +258,28 @@ export async function retrieveForGoal(
   const embedder = opts.embedder ?? localEmbedder;
   const corpus = retrievalCorpus(store);
 
-  const [endpoints, exemplars] = await Promise.all([
+  const [endpoints, referenceSessions] = await Promise.all([
     topK(store, goal, corpus.endpoints, opts.topEndpoints ?? 12, embedder),
-    topK(store, goal, corpus.exemplars, opts.topExemplars ?? 4, embedder),
+    topK(store, goal, corpus.referenceSessions, opts.topReferenceSessions ?? 4, embedder),
   ]);
-  return { endpoints, exemplars };
+  return { endpoints, referenceSessions };
 }
 
 /** Embed every retrievable item that is missing or stale, so the first compose isn't a cold start. */
 export async function warmEmbeddings(
   store: Store,
   embedder: Embedder,
-): Promise<{ operations: number; exemplars: number; embedded: number }> {
+): Promise<{ operations: number; referenceSessions: number; embedded: number }> {
   const corpus = retrievalCorpus(store);
-  const items = [...corpus.endpoints, ...corpus.exemplars];
+  const items = [...corpus.endpoints, ...corpus.referenceSessions];
   const stale = items.filter((i) => {
     const row = store.embeddings.get(i.kind, i.id);
     return !row || row.model !== embedder.model || row.textHash !== embeddingTextHash(i.text);
   }).length;
   await vectorsFor(store, items, embedder);
-  return { operations: corpus.endpoints.length, exemplars: corpus.exemplars.length, embedded: stale };
+  return {
+    operations: corpus.endpoints.length,
+    referenceSessions: corpus.referenceSessions.length,
+    embedded: stale,
+  };
 }

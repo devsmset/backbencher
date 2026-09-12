@@ -44,38 +44,51 @@ describe("retrieveForGoal", () => {
         op("op_list_users", "GET", "/api/users"),
       ],
       dataflow: [],
-      flows: [],
+      flows: [
+        {
+          flowId: "s_ticket:flow",
+          sessionId: "s_ticket",
+          steps: [{ operationId: "op_create_ticket", correlationId: "c_ticket" }],
+        },
+        {
+          flowId: "s_users:flow",
+          sessionId: "s_users",
+          steps: [{ operationId: "op_list_users", correlationId: "c_users" }],
+        },
+      ],
     });
     annotate(store, "op_create_ticket", "Create Ticket", "Creates a support ticket in the current org", "Ticketing");
     annotate(store, "op_get_ticket", "Get Ticket", "Fetches a single ticket by id", "Ticketing");
     annotate(store, "op_list_users", "List Users", "Lists all users in the org", "Users");
 
-    store.exemplars.upsert({
-      exemplarId: "sc_ticket",
+    store.sessions.upsertFromMeta({
+      version: 4,
       sessionId: "s_ticket",
+      startUrl: "https://app.example.net/",
+      startedAt: 1,
+      userAgent: "test",
+      recorderVersion: "test",
       name: "Create ticket from homepage",
       goal: "create a ticket from scratch",
-      steps: [{ operationId: "op_create_ticket", intent: "Create the ticket" }],
-      sourceFlowIds: [],
-      updatedBy: "alice",
-      updatedAt: 1,
     });
-    store.exemplars.upsert({
-      exemplarId: "sc_users",
+    store.sessionCuration.setUseAsReference("s_ticket", true, "alice");
+    store.sessions.upsertFromMeta({
+      version: 4,
       sessionId: "s_users",
+      startUrl: "https://app.example.net/",
+      startedAt: 2,
+      userAgent: "test",
+      recorderVersion: "test",
       name: "List all users",
       goal: "see who is in the org",
-      steps: [{ operationId: "op_list_users", intent: "List users" }],
-      sourceFlowIds: [],
-      updatedBy: "alice",
-      updatedAt: 1,
     });
+    store.sessionCuration.setUseAsReference("s_users", true, "alice");
 
-    const result = await retrieveForGoal(store, "create a ticket", { topEndpoints: 2, topExemplars: 1 });
+    const result = await retrieveForGoal(store, "create a ticket", { topEndpoints: 2, topReferenceSessions: 1 });
 
     expect(result.endpoints.map((e) => e.operationId)).toContain("op_create_ticket");
     expect(result.endpoints.map((e) => e.operationId)).not.toContain("op_list_users");
-    expect(result.exemplars[0]?.exemplarId).toBe("sc_ticket");
+    expect(result.referenceSessions[0]?.sessionId).toBe("s_ticket");
 
     store.close();
   });

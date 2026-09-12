@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm";
 import type { Db } from "../dbtypes.js";
 import { embeddings } from "../schema.js";
 
-export type EmbeddingKind = "operation" | "exemplar";
+export type EmbeddingKind = "operation" | "session";
 
 export interface EmbeddingRow {
   kind: EmbeddingKind;
