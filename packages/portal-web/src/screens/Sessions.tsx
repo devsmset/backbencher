@@ -37,7 +37,7 @@ function RecordingPanel() {
       const counts = Object.entries(res.summary.eventCounts)
         .map(([k, v]) => `${k}=${v}`)
         .join(", ");
-      setLastSummary(`Saved ${res.summary.totalEvents} events (${counts}) — now click "Derive all sessions".`);
+      setLastSummary(`Saved ${res.summary.totalEvents} events (${counts}) — deriving…`);
     },
   });
   const discard = trpc.sessions.discardRecording.useMutation({
@@ -49,29 +49,20 @@ function RecordingPanel() {
       setLastSummary("Recording discarded — nothing saved.");
     },
   });
-  const derive = trpc.derive.run.useMutation({
-    onSuccess: () => {
-      void utils.sessions.list.invalidate();
-      void utils.operations.list.invalidate();
-    },
-  });
+
+  const derivation = trpc.derive.status.useQuery(undefined, { refetchInterval: 1500 });
+
+  const derivationStatus = derivation.data?.status;
+  useEffect(() => {
+    if (derivationStatus !== "idle") return;
+    void utils.sessions.list.invalidate();
+    void utils.operations.list.invalidate();
+  }, [derivationStatus, utils]);
 
   const recording = sessionId !== null;
 
   return (
-    <Panel
-      title="Record & derive"
-      actions={
-        <button
-          className="rounded-lg border border-[--accent] bg-[--accent] px-2.5 py-1.5 font-semibold text-[#06121f]"
-          type="button"
-          onClick={() => derive.mutate()}
-          disabled={derive.isPending || recording}
-        >
-          {derive.isPending ? "Deriving…" : "Derive all sessions"}
-        </button>
-      }
-    >
+    <Panel title="Record">
       {!recording ? (
         <div className="flex flex-wrap items-end gap-3">
           <Field label="URL to record">
@@ -138,18 +129,9 @@ function RecordingPanel() {
           <div className="inline-block rounded-full border border-[#2b7a3a] bg-[#16351f] px-2 py-[1px] text-[11px] text-[#8ce99a]">{lastSummary}</div>
         </div>
       )}
-      {derive.data && (
-        <div className="mt-2.5">
-          <div className="inline-block rounded-full border border-[#2b7a3a] bg-[#16351f] px-2 py-[1px] text-[11px] text-[#8ce99a]">
-            Derived {derive.data.operations} operations, {derive.data.dataflowEdges} dataflow edges,{" "}
-            {derive.data.flows} flow(s) from {derive.data.sessionsProcessed} session(s)
-          </div>
-        </div>
-      )}
-      {derive.error && (
-        <div className="mt-2.5">
-          <div className="inline-block rounded-full border border-[#7a4a1a] bg-[#3a2412] px-2 py-[1px] text-[11px] text-[#ffc078]">{derive.error.message}</div>
-        </div>
+      {derivation.data?.status === "running" && <Muted>Deriving…</Muted>}
+      {derivation.data?.status === "failed" && (
+        <Muted>Derivation failed: {derivation.data.error}</Muted>
       )}
     </Panel>
   );
