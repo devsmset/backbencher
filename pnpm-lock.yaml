@@ -145,6 +145,9 @@ importers:
 
   packages/portal-web:
     dependencies:
+      '@backbencher/derive':
+        specifier: workspace:*
+        version: link:../derive
       '@backbencher/portal-api':
         specifier: workspace:*
         version: link:../portal-api

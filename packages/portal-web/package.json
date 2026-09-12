@@ -12,6 +12,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@backbencher/derive": "workspace:*",
     "@backbencher/portal-api": "workspace:*",
     "@backbencher/schemas": "workspace:*",
     "@tanstack/react-query": "^5.62.7",

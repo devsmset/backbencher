@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { findOrphanedConsumers } from "@backbencher/derive/orphans";
 import ReactFlow, {
   Background,
   Controls,
@@ -206,10 +207,12 @@ function NodeDetails({
   node,
   edges,
   nodesById,
+  onRequestDelete,
 }: {
   node: GraphCallNode;
   edges: SessionCallEdge[];
   nodesById: Map<string, GraphCallNode>;
+  onRequestDelete: (correlationId: string) => void;
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -231,6 +234,13 @@ function NodeDetails({
       <div>
         <h4 className="mb-1.5 text-xs font-bold uppercase tracking-[0.4px] text-[--muted]">Connected values</h4>
         <ConnectedEdges edges={edges} correlationId={node.correlationId} nodesById={nodesById} />
+        <button
+          type="button"
+          className="mt-3 rounded-lg border border-[--line] px-2.5 py-1.5 text-xs font-semibold"
+          onClick={() => onRequestDelete(node.correlationId)}
+        >
+          Delete call
+        </button>
       </div>
       {node.operationId && (
         <div>
@@ -242,9 +252,78 @@ function NodeDetails({
   );
 }
 
+function DeleteConfirm({
+  correlationId,
+  edges,
+  pending,
+  nodesById,
+  onCancel,
+  onConfirm,
+}: {
+  correlationId: string;
+  edges: SessionCallEdge[];
+  pending: Set<string>;
+  nodesById: Map<string, GraphCallNode>;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const orphans = findOrphanedConsumers(edges, new Set([...pending, correlationId]));
+  const related = edges.filter(
+    (e) => e.producerCorrelationId === correlationId || e.consumerCorrelationId === correlationId,
+  );
+  const label = (id: string) => {
+    const n = nodesById.get(id);
+    return n ? `${n.method} ${n.pathname}` : id;
+  };
+  return (
+    <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60">
+      <div className="w-[520px] rounded-xl border border-[--line] bg-[--panel] p-4">
+        <h4 className="mb-2 text-sm font-bold">Delete {label(correlationId)}?</h4>
+        {related.length === 0 ? (
+          <Muted>This call has no connected values.</Muted>
+        ) : (
+          <ul className="mb-3 flex flex-col gap-1 text-xs">
+            {related.map((e, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: derived list, no stable id
+              <li key={i}>
+                {e.producerCorrelationId === correlationId
+                  ? `produces ${e.producerJsonPath} → ${label(e.consumerCorrelationId)}`
+                  : `consumes ${e.consumerJsonPath} ← ${label(e.producerCorrelationId)}`}
+              </li>
+            ))}
+          </ul>
+        )}
+        {orphans.length > 0 && (
+          <p className="mb-3 text-xs text-[--bad]">
+            This call is the only remaining producer for:{" "}
+            {orphans.map((o) => `${o.consumerJsonPath} on ${label(o.consumerCorrelationId)}`).join(", ")}.
+            Delete those calls first, or keep this one.
+          </p>
+        )}
+        <div className="flex justify-end gap-2">
+          <button type="button" onClick={onCancel} className="rounded-lg border border-[--line] px-2.5 py-1.5 text-xs">
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={orphans.length > 0}
+            onClick={onConfirm}
+            className="rounded-lg border border-[--line] px-2.5 py-1.5 text-xs font-semibold disabled:opacity-40"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; onClose: () => void }) {
+  const utils = trpc.useUtils();
   const graph = trpc.sessions.graph.useQuery({ sessionId });
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [pendingDeletes, setPendingDeletes] = useState<Set<string>>(new Set());
+  const [confirming, setConfirming] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const containerWidth = useContainerWidth(containerRef);
   const pointerDownOnBackdrop = useRef(false);
@@ -255,6 +334,19 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
   const [isDraggingDivider, setIsDraggingDivider] = useState(false);
   const draggingDivider = useRef(false);
   const previousLayoutInputs = useRef<{ graphData: typeof graph.data; windowWidth: number } | null>(null);
+
+  const deleteCalls = trpc.sessions.deleteCalls.useMutation({
+    onSuccess: () => {
+      setPendingDeletes(new Set());
+      void utils.sessions.graph.invalidate({ sessionId });
+    },
+  });
+
+  function requestClose() {
+    if (pendingDeletes.size > 0 && !window.confirm(`Discard ${pendingDeletes.size} unsaved deletion(s)?`)) return;
+    setPendingDeletes(new Set());
+    onClose();
+  }
 
   useEffect(() => {
     function onMove(e: PointerEvent) {
@@ -271,28 +363,30 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") requestClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [pendingDeletes, onClose]);
 
   useEffect(() => {
     closeButtonRef.current?.focus();
   }, []);
 
   const { nodes: layoutNodes, edges } = useMemo(() => {
-    const graphNodes = graph.data?.nodes ?? [];
-    const graphEdges = graph.data?.edges ?? [];
-    if (graphNodes.length === 0) return { nodes: [] as Node[], edges: [] as Edge[] };
+    const visibleNodes = (graph.data?.nodes ?? []).filter((n) => !pendingDeletes.has(n.correlationId));
+    const graphEdgesRaw = (graph.data?.edges ?? []).filter(
+      (e) => !pendingDeletes.has(e.producerCorrelationId) && !pendingDeletes.has(e.consumerCorrelationId),
+    );
+    if (visibleNodes.length === 0) return { nodes: [] as Node[], edges: [] as Edge[] };
 
-    const minTs = Math.min(...graphNodes.map((n) => n.requestTimestamp));
-    const maxTs = Math.max(...graphNodes.map((n) => n.responseTimestamp ?? n.requestTimestamp));
+    const minTs = Math.min(...visibleNodes.map((n) => n.requestTimestamp));
+    const maxTs = Math.max(...visibleNodes.map((n) => n.responseTimestamp ?? n.requestTimestamp));
     const span = Math.max(1, maxTs - minTs);
-    const lanes = assignLanes(graphNodes);
-    const timelineWidth = Math.max(containerWidth, graphNodes.length * MIN_NODE_SPACING);
+    const lanes = assignLanes(visibleNodes);
+    const timelineWidth = Math.max(containerWidth, visibleNodes.length * MIN_NODE_SPACING);
 
-    const rfNodes: Node[] = graphNodes.map((n) => ({
+    const rfNodes: Node[] = visibleNodes.map((n) => ({
       id: n.correlationId,
       type: "call",
       position: {
@@ -322,7 +416,7 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
       }
     }
 
-    const rfEdges: Edge[] = graphEdges.map((e, i) => ({
+    const rfEdges: Edge[] = graphEdgesRaw.map((e, i) => ({
       id: `${e.producerCorrelationId}-${e.consumerCorrelationId}-${i}`,
       source: e.producerCorrelationId,
       target: e.consumerCorrelationId,
@@ -333,7 +427,7 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
     }));
 
     return { nodes: rfNodes, edges: rfEdges };
-  }, [graph.data, containerWidth]);
+  }, [graph.data, containerWidth, pendingDeletes]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState<{ node: GraphCallNode }>([]);
   useEffect(() => {
@@ -346,6 +440,8 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
     // positions; all other recomputes preserve any node positions the user has already adjusted.
     if (shouldReset) {
       setNodes(layoutNodes);
+      setPendingDeletes(new Set());
+      setConfirming(null);
     } else {
       setNodes((current) => {
         const existingById = new Map(current.map((n) => [n.id, n]));
@@ -361,12 +457,16 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
 
   const nodesById = useMemo(() => {
     const map = new Map<string, GraphCallNode>();
-    for (const n of graph.data?.nodes ?? []) map.set(n.correlationId, n);
+    for (const n of (graph.data?.nodes ?? []).filter((node) => !pendingDeletes.has(node.correlationId))) {
+      map.set(n.correlationId, n);
+    }
     return map;
-  }, [graph.data]);
+  }, [graph.data, pendingDeletes]);
 
   const selectedNode = selectedId ? nodesById.get(selectedId) ?? null : null;
-  const graphEdgesRaw = graph.data?.edges ?? [];
+  const graphEdgesRaw = (graph.data?.edges ?? []).filter(
+    (e) => !pendingDeletes.has(e.producerCorrelationId) && !pendingDeletes.has(e.consumerCorrelationId),
+  );
 
   return (
     <div
@@ -378,29 +478,47 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
         pointerDownOnBackdrop.current = e.target === e.currentTarget;
       }}
       onClick={(e) => {
-        if (pointerDownOnBackdrop.current && e.target === e.currentTarget) onClose();
+        if (pointerDownOnBackdrop.current && e.target === e.currentTarget) requestClose();
       }}
     >
       <div
-        className="flex h-full w-full flex-col overflow-hidden rounded-xl border border-[--line] bg-[--panel]"
+        className="relative flex h-full w-full flex-col overflow-hidden rounded-xl border border-[--line] bg-[--panel]"
         onClick={(e) => e.stopPropagation()}
       >
         <header className="flex items-center justify-between border-b border-[--line] bg-[--panel2] px-4 py-2.5">
           <h3 className="m-0 text-sm">Session {sessionId} — dependency graph</h3>
-          <button
-            type="button"
-            ref={closeButtonRef}
-            className="rounded-md border border-[--border] px-2 py-1 text-xs"
-            onClick={onClose}
-          >
-            ✕ close
-          </button>
+          <div className="flex items-center gap-2">
+            <div className="flex flex-col items-end">
+              <button
+                type="button"
+                className="rounded-md border border-[--line] px-2 py-1 text-xs font-semibold disabled:opacity-40"
+                disabled={pendingDeletes.size === 0 || deleteCalls.isPending}
+                onClick={() => deleteCalls.mutate({ sessionId, correlationIds: [...pendingDeletes] })}
+              >
+                Save ({pendingDeletes.size})
+              </button>
+              {deleteCalls.error?.message && <div className="mt-1 text-xs text-[--bad]">{deleteCalls.error.message}</div>}
+            </div>
+            <button
+              type="button"
+              ref={closeButtonRef}
+              className="rounded-md border border-[--border] px-2 py-1 text-xs"
+              onClick={requestClose}
+            >
+              ✕ close
+            </button>
+          </div>
         </header>
         <div ref={rowRef} className={`flex min-h-0 flex-1${isDraggingDivider ? " select-none" : ""}`}>
           <div ref={containerRef} className="relative min-h-0 flex-1">
             <QueryState isLoading={graph.isLoading} error={graph.error} />
-            {graph.data && graph.data.nodes.length === 0 && <Muted>No API calls to graph in this session.</Muted>}
-            {graph.data && graph.data.nodes.length > 0 && (
+            {graph.data?.derived === false && (
+              <Muted>Not derived yet. Derivation runs automatically when a recording stops; otherwise run `bb derive`.</Muted>
+            )}
+            {graph.data && graph.data.derived !== false && graph.data.nodes.length === 0 && (
+              <Muted>No API calls to graph in this session.</Muted>
+            )}
+            {graph.data && graph.data.derived !== false && graph.data.nodes.length > 0 && (
               <ReactFlowProvider>
                 <ReactFlow
                   nodes={nodes}
@@ -442,12 +560,30 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
           />
           <div className="shrink-0 overflow-y-auto p-4" style={{ width: rightPanelWidth }}>
             {selectedNode ? (
-              <NodeDetails node={selectedNode} edges={graphEdgesRaw} nodesById={nodesById} />
+              <NodeDetails
+                node={selectedNode}
+                edges={graphEdgesRaw}
+                nodesById={nodesById}
+                onRequestDelete={(correlationId) => setConfirming(correlationId)}
+              />
             ) : (
               <Muted>Select a call to see its details.</Muted>
             )}
           </div>
         </div>
+        {confirming !== null && (
+          <DeleteConfirm
+            correlationId={confirming}
+            edges={graph.data?.edges ?? []}
+            pending={pendingDeletes}
+            nodesById={nodesById}
+            onCancel={() => setConfirming(null)}
+            onConfirm={() => {
+              setPendingDeletes((prev) => new Set([...prev, confirming]));
+              setConfirming(null);
+            }}
+          />
+        )}
       </div>
     </div>
   );
