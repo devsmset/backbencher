@@ -61,6 +61,27 @@ repository, router, and screen. The curation this spec adds — the analyst deci
 belong — is the one job Exemplar promotion was doing, done better: against real Calls and a real
 dependency graph rather than an operationId list.
 
+### Deriving is a manual step, and deriving one Session corrupts the Catalog
+
+After stopping a recording the analyst must remember to click **Derive all sessions**; the UI
+literally tells them to. Nothing about a Session is usable until they do.
+
+The single-Session derive path that exists to avoid that full pass — `derive.run({ sessionId })` and
+`bb derive --session <id>` — is unsound, for three independent reasons:
+
+1. `templatizePaths` indexes response scalars "across the whole corpus", and `classifyAll` requires
+   **≥2 distinct values** at a segment position before it becomes a parameter. Given one Session,
+   a segment seen once stays static, yielding a different template and therefore a different
+   `operationId` — which is a SHA1 over method, host, and template. The same real endpoint acquires
+   different ids depending on which Session derived it, fragmenting the Catalog and orphaning the
+   `CatalogAnnotation`s keyed to the old id.
+2. `observedCount`, `statusCodesObserved`, `requestSchema`, `responseSchemas`,
+   `volatileResponseFields`, and `exampleCorrelationIds` are all aggregates over every Call of an
+   Operation across every Session. A single-Session pass cannot compute them.
+3. `saveDerivation` full-replaces `operations`, `dataflow_edges`, `observed_flows`, and
+   `dependency_facts`. So a single-Session derivation does not add that Session to the Catalog — it
+   **replaces the Catalog with only that Session's Operations**. This is a live bug today.
+
 ## Decision
 
 Curation happens on the Session. The Session itself becomes the composer's context. Exemplar is
@@ -70,6 +91,8 @@ Concretely:
 
 - Derivation gains a redundant-Call filter, and materialises a lean `curated-events.ndjson` per
   Session.
+- Derivation runs **automatically in the background when a recording stops**, always over every
+  Session. The **Derive all sessions** button and the single-Session derive path are deleted.
 - The analyst's manual deletions live in a new human-owned store table and survive re-derivation.
 - Each Session's call-level dependency graph becomes a persisted derivation output.
 - The analyst marks a Session **use as reference**; reference Sessions whose Operations are all
@@ -78,10 +101,25 @@ Concretely:
 - `Exemplar` — schema, table, repository, router, screen, and `draftExemplarFromSession` — is
   removed.
 
+### Why auto-derivation still derives every Session
+
+Stopping a recording must leave the analyst with an updated Catalog and a prunable Session, which is
+what a per-Session derivation appears to offer. It cannot, for the three reasons above. Running the
+existing full pass instead is correct and cheap to reason about: derivation is deterministic and
+idempotent, so every other Session's Operations, flows, graph, and curated file come out identical,
+and `session_curation` is never in the full-replace set, so no analyst's pruning is disturbed.
+
+The cost is that stop-recording work grows with the number of Sessions, since each run re-reads them
+all. That is acceptable for a local analyst tool at present scale. The remedy, if it ever bites, is
+incremental merge of the per-Operation aggregates — a separate project, explicitly not attempted
+here.
+
 ### Rejected alternatives
 
 - **Keep Exemplar, feed it from the curated Session.** Preserves a second copy of the same data and
   a second place for the analyst to curate, for no capability the Session cannot carry itself.
+- **Derive only the Session that was just recorded.** Fragments the Catalog and, with the current
+  full-replace `saveDerivation`, destroys it. Fixing it properly means incremental merge.
 - **Mutate `events.ndjson` in place.** Contradicts ADR-0006 (capture is verbatim) and makes curation
   unrecoverable. The raw recording is never written to after capture.
 - **Store manual deletions in the curated NDJSON alone.** Re-running derivation regenerates that
@@ -143,7 +181,10 @@ otherwise drop that Operation from the Catalog.
 ## Architecture
 
 ```
-events.ndjson (raw, verbatim, never written after capture)
+stop recording
+   │  writes events.ndjson + meta.json, then kicks off derivation in the background
+   ▼
+events.ndjson (raw, verbatim, never written after capture) — every Session, every run
    │
    ├─► pairCalls → templatizePaths → inferSchemas → buildDataflowGraph   ─►  Catalog
    │        (raw — exhaustive, unaffected by curation)                        dataflow_edges
@@ -283,9 +324,42 @@ the timeline view so the analyst sees the lean Session everywhere.
 
 ### 5. Portal API — `packages/portal-api/src/routers.ts`
 
-`derive.run` reads `session_curation` for the deletion map, passes it to `runDerivation`, saves the
-result, then calls `writeCuratedEvents` for each processed Session. Its response gains
-`callsFiltered` so the UI can report how much was removed.
+#### The derivation job
+
+A module-level helper replaces the `derive.run` mutation:
+
+```ts
+type DerivationState =
+  | { status: "idle"; lastFinishedAt?: number; lastResult?: DerivationSummary }
+  | { status: "running"; startedAt: number }
+  | { status: "failed"; failedAt: number; error: string };
+
+function runDerivationJob(ctx): void; // fire-and-forget; never throws to the caller
+```
+
+One run at a time. `runDerivationJob` reads `session_curation` for the deletion map, calls
+`runDerivation(loadAllSessions(), { deletedCorrelationIds })`, `upsertFromMeta`s every Session,
+`saveDerivation`s the result, writes `curated-events.ndjson` for each Session, and appends an audit
+entry (`entityType: "derivation"`, `entityId: "all"`). If a run is requested while one is in
+progress, a single follow-up run is queued — repeated requests collapse into that one, since the
+pass is over all Sessions regardless.
+
+A thrown error moves the state to `failed` with its message and leaves the previous derivation in
+place; `saveDerivation` is already a single transaction, so the store never holds a partial run.
+
+The state is in-process and is lost if the server restarts mid-run. The recovery path is `bb derive`.
+
+#### Router changes
+
+`sessions.stopRecording` stops the recording and writes the raw Session exactly as today, then calls
+`runDerivationJob` **without awaiting it** and returns immediately. Its response gains
+`derivation: "running"`.
+
+`derive.run` is deleted, along with its `sessionId` input. `deriveRouter` instead exposes:
+
+```ts
+status: publicProcedure.query(() => derivationState)
+```
 
 `sessions.graph` stops recomputing. It reads persisted artifacts:
 
@@ -294,8 +368,9 @@ result, then calls `writeCuratedEvents` for each processed Session. Its response
   filtering is applied, since the curated file is written from the same exclusion set the edges were
   built from
 
-If the Session has no derivation yet, it returns `{ nodes: [], edges: [], derived: false }` and the
-screen says to run derive first, rather than silently deriving on a page load.
+If the Session has no derivation yet, it returns `{ nodes: [], edges: [], derived: false }`. The
+screen then shows `Deriving…` or, if `derive.status` is idle, tells the analyst to run `bb derive`.
+Opening the graph never triggers a derivation itself.
 
 `sessions.timeline` switches from `loadSession` to `loadCuratedOrRawSession`.
 
@@ -350,6 +425,15 @@ Evaluating it against the whole pending deletion set — not one Call at a time 
 queue of deletions safe: deleting two Calls that each cover for the other is correctly rejected.
 
 ### 7. Portal web
+
+`Sessions.tsx` loses the **Derive all sessions** button and the `derive.run` mutation. The
+post-stop message changes from `Saved N events — now click "Derive all sessions"` to
+`Saved N events (…) — deriving…`. The panel title `Record & derive` becomes `Record`.
+
+A small derivation-status indicator, driven by `derive.status` polled on the same 1500 ms interval
+the active-recordings query already uses, reports `Deriving…` while a run is in progress and
+`Derivation failed: {error}` on failure. When the status transitions out of `running`, the screen
+invalidates `sessions.list` and `operations.list`.
 
 `SessionGraph.tsx` gains, in the node detail panel, a **Delete call** action:
 
@@ -422,14 +506,29 @@ machine-derived statement.
 `contentHash` changes for every existing pack; this is expected and needs no migration, since packs
 are content-addressed and rebuilt on demand.
 
+### 10. CLI — `apps/cli/src/index.ts`
+
+`bb derive` survives as the manual re-derive escape hatch, for use after editing `data/` by hand or
+recovering a store. It loses `--session`; `--all` becomes the only behaviour and the flag is dropped
+from the usage text. `--probe --env <n>` is unchanged. Like the portal job, it reads
+`session_curation` for the deletion map and writes each Session's `curated-events.ndjson`.
+
+`bb record` gains the same auto-derivation on stop that the portal has, so both entry points leave a
+recording immediately usable.
+
 ## Error handling
 
 | Situation | Behaviour |
 | --------- | --------- |
-| Graph opened for an underived Session | `derived: false`; screen prompts to run derive |
+| Graph opened while derivation is running | screen shows `Deriving…` and polls `derive.status` |
+| Graph opened for an underived Session, derivation idle | `derived: false`; screen says to run `bb derive` |
+| Derivation throws | state becomes `failed` with the message; previous derivation is left intact; surfaced in the UI |
+| Recording stopped while a derivation is running | one follow-up run is queued; further stops collapse into it |
+| Server restarts mid-derivation | state is lost and the Session reads as underived; `bb derive` recovers it |
 | `deleteCalls` with an unknown correlationId | `BAD_REQUEST` naming the ids |
 | `deleteCalls` that would orphan a consumer | `PRECONDITION_FAILED` listing orphaned consumer slots |
 | `deleteCalls` re-sending an already-deleted id | idempotent no-op |
+| `deleteCalls` while a derivation is running | rejected with `CONFLICT`; the client retries once the status clears |
 | Modal closed with unsaved pending deletions | warn before discarding |
 | `curated-events.ndjson` missing or unreadable | fall back to raw events |
 | Session with every Call deleted | allowed; produces an empty flow, and `isReferenceReady` is false, so it never teaches |
@@ -463,6 +562,10 @@ is a convenience.
 - `buildKnowledgePack` emits `referenceSessions`; `contentHash` is stable across repeated builds.
 
 **`packages/portal-api`**
+- `stopRecording` returns before derivation completes, and `derive.status` reports `running` then
+  `idle` with the Session's Operations present in the store.
+- A stop during a running derivation queues exactly one follow-up run, not two.
+- A derivation that throws leaves the previous Catalog intact and the status `failed`.
 - `deleteCalls` rewrites the curated file, updates curation, and recomputes flow and graph.
 - The guard rejects a sole-producer deletion.
 - Acceptance test updated for `fromSessionIds`.
@@ -472,6 +575,8 @@ UI behaviour is verified manually by the analyst; no browser automation is added
 ## Out of scope
 
 - Any change to Composition approval, TestSpec generation, or `packages/testkit`.
+- Incremental, per-Session derivation. Every run derives every Session.
+- Persisting derivation job state across a server restart.
 - Reinstating deleted Calls through the UI.
 - Per-Call editing of request or response content. Curation removes Calls; it never rewrites them.
 - Changing the entropy gate, the templatizer, or `flows.ts`'s existing `repeated: n` polling
@@ -482,6 +587,10 @@ UI behaviour is verified manually by the analyst; no browser automation is added
 
 - A Session that nobody marks as reference contributes nothing to composition, exactly as an
   unpromoted Session does today. The toggle replaces the promote step.
+- Stopping a recording now does work proportional to the total number of Sessions, not to the one
+  just recorded. It happens in the background, so the analyst is not blocked, but the cost grows.
 - Re-running derivation after curating changes that Session's flow and graph. This is intended: the
   analyst's deletions are the durable input, and the derived artifacts follow them.
+- Deriving a single Session is no longer possible from any entry point. This removes the bug where
+  doing so replaced the Catalog with one Session's Operations.
 - Existing Exemplars are discarded, and existing knowledge packs are superseded on next build.
