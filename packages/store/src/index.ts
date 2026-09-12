@@ -6,6 +6,7 @@ export type { DerivationInput } from "./saveDerivation.js";
 export { mergeOperation } from "./merge.js";
 export type { MergedOperation } from "./merge.js";
 export type { Repos } from "./repos/index.js";
+export type { SessionCurationRow } from "./repos/curation.js";
 export type { SessionRow, PackRecord, AuditEntry, SpecRow, RunRow } from "./repos/misc.js";
 export { embeddingTextHash } from "./repos/embeddings.js";
 export type { EmbeddingKind, EmbeddingRow } from "./repos/embeddings.js";

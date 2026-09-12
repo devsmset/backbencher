@@ -100,4 +100,37 @@ describe("store", () => {
     expect(store.sessions.get("s1")?.sessionId).toBe("s1");
     expect(store.sessions.get("s1")?.name).toBe("Login and land on homepage");
   });
+
+  it("persists session call edges and replaces them on the next derivation", () => {
+    const edge = {
+      producerCorrelationId: "p1",
+      producerLocation: "responseBody" as const,
+      producerJsonPath: "$.token",
+      consumerCorrelationId: "c1",
+      consumerLocation: "requestHeader" as const,
+      consumerJsonPath: "Authorization",
+      value: "TOKEN-abcdef123456",
+      confidence: "strong" as const,
+    };
+    store.saveDerivation({ operations: [op], dataflow: [], flows: [], sessionGraphs: { s1: [edge] } });
+    expect(store.sessionGraphs.listBySession("s1")).toHaveLength(1);
+    store.saveDerivation({ operations: [op], dataflow: [], flows: [], sessionGraphs: {} });
+    expect(store.sessionGraphs.listBySession("s1")).toHaveLength(0);
+  });
+
+  it("keeps analyst curation across a full re-derivation", () => {
+    store.sessionCuration.setDeleted("s1", ["c9"], "alice");
+    store.sessionCuration.setUseAsReference("s1", true, "alice");
+    store.saveDerivation({ operations: [op], dataflow: [], flows: [] });
+    const row = store.sessionCuration.get("s1");
+    expect(row?.deletedCorrelationIds).toEqual(["c9"]);
+    expect(row?.useAsReference).toBe(true);
+  });
+
+  it("unions repeated deletions and exposes them as a map", () => {
+    store.sessionCuration.setDeleted("s1", ["c1"], "alice");
+    store.sessionCuration.setDeleted("s1", ["c2", "c1"], "alice");
+    expect(store.sessionCuration.get("s1")?.deletedCorrelationIds).toEqual(["c1", "c2"]);
+    expect([...(store.sessionCuration.deletionMap().get("s1") ?? [])].sort()).toEqual(["c1", "c2"]);
+  });
 });

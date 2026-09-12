@@ -182,6 +182,24 @@ CREATE TABLE IF NOT EXISTS test_specs (
 );
 `,
   },
+  {
+    id: "0004_session_curation_and_graph",
+    sql: `
+CREATE TABLE IF NOT EXISTS session_curation (
+  session_id TEXT PRIMARY KEY,
+  deleted_correlation_ids TEXT NOT NULL,
+  use_as_reference INTEGER NOT NULL DEFAULT 0,
+  updated_by TEXT NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS session_call_edges (
+  session_id TEXT NOT NULL,
+  seq INTEGER NOT NULL,
+  payload TEXT NOT NULL,
+  PRIMARY KEY (session_id, seq)
+);
+`,
+  },
 ];
 
 export function runMigrations(raw: Database.Database): void {

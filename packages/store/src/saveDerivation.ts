@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
-import type { DataflowEdge, ObservedFlow, Operation } from "@backbencher/schemas";
+import type { DataflowEdge, ObservedFlow, Operation, SessionCallEdge } from "@backbencher/schemas";
 import type { Db } from "./dbtypes.js";
-import { dataflowEdges, dependencyFacts, observedFlows, operations } from "./schema.js";
+import { dataflowEdges, dependencyFacts, observedFlows, operations, sessionCallEdges } from "./schema.js";
 
 // Persist a derivation run (architecture §5.1 persist / §6.1 rules). Derivation writes ONLY
 // operations / dataflow_edges / observed_flows / dependency_facts, as a full replace inside one
@@ -13,6 +13,8 @@ export interface DerivationInput {
   flows: ObservedFlow[];
   /** operationId -> input JSON paths whose values are client-generated (§5.5.6 / realignment §5). */
   clientGeneratedFields?: Record<string, string[]>;
+  /** sessionId -> the Session's call-level dependency graph. Full-replaced, like every derived table. */
+  sessionGraphs?: Record<string, SessionCallEdge[]>;
 }
 
 function edgeId(e: DataflowEdge): string {
@@ -29,6 +31,7 @@ export function saveDerivation(db: Db, input: DerivationInput): void {
     tx.delete(dataflowEdges).run();
     tx.delete(observedFlows).run();
     tx.delete(dependencyFacts).run();
+    tx.delete(sessionCallEdges).run();
 
     for (const op of input.operations) {
       tx.insert(operations)
@@ -62,6 +65,11 @@ export function saveDerivation(db: Db, input: DerivationInput): void {
       tx.insert(dependencyFacts)
         .values({ operationId, clientGenerated: JSON.stringify(paths) })
         .run();
+    }
+    for (const [sessionId, edges] of Object.entries(input.sessionGraphs ?? {}).sort((a, b) => a[0].localeCompare(b[0]))) {
+      edges.forEach((e, seq) => {
+        tx.insert(sessionCallEdges).values({ sessionId, seq, payload: JSON.stringify(e) }).run();
+      });
     }
   });
 }

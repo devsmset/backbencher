@@ -1,4 +1,5 @@
 import type { Db } from "../dbtypes.js";
+import { sessionCurationRepo, sessionGraphsRepo } from "./curation.js";
 import { dataflowRepo, dependencyFactsRepo, flowsRepo, operationsRepo } from "./derived.js";
 import { embeddingsRepo } from "./embeddings.js";
 import {
@@ -17,6 +18,8 @@ export interface Repos {
   dataflow: ReturnType<typeof dataflowRepo>;
   flows: ReturnType<typeof flowsRepo>;
   dependencyFacts: ReturnType<typeof dependencyFactsRepo>;
+  sessionCuration: ReturnType<typeof sessionCurationRepo>;
+  sessionGraphs: ReturnType<typeof sessionGraphsRepo>;
   annotations: ReturnType<typeof catalogAnnotationsRepo>;
   testingAnnotations: ReturnType<typeof testingAnnotationsRepo>;
   exemplars: ReturnType<typeof exemplarsRepo>;
@@ -37,6 +40,8 @@ export function createRepos(db: Db): Repos {
     dataflow: dataflowRepo(db),
     flows: flowsRepo(db),
     dependencyFacts: dependencyFactsRepo(db),
+    sessionCuration: sessionCurationRepo(db),
+    sessionGraphs: sessionGraphsRepo(db),
     annotations: catalogAnnotationsRepo(db),
     testingAnnotations: testingAnnotationsRepo(db),
     exemplars: exemplarsRepo(db),

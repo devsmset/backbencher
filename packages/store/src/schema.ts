@@ -88,6 +88,26 @@ export const dependencyFacts = sqliteTable("dependency_facts", {
   clientGenerated: text("client_generated").notNull(), // JSON string[] of request json paths
 });
 
+// The Analyst's curation of a Session: which Calls they deleted, and whether the Session teaches
+// the composer. Human-owned — derivation full-replaces the derived tables and never touches this.
+export const sessionCuration = sqliteTable("session_curation", {
+  sessionId: text("session_id").primaryKey(),
+  deletedCorrelationIds: text("deleted_correlation_ids").notNull(), // JSON string[]
+  useAsReference: integer("use_as_reference").notNull(),
+  updatedBy: text("updated_by").notNull(),
+  updatedAt: integer("updated_at").notNull(),
+});
+
+export const sessionCallEdges = sqliteTable(
+  "session_call_edges",
+  {
+    sessionId: text("session_id").notNull(),
+    seq: integer("seq").notNull(),
+    payload: text("payload").notNull(),
+  },
+  (t) => ({ pk: primaryKey({ columns: [t.sessionId, t.seq] }) }),
+);
+
 export const catalogAnnotations = sqliteTable("catalog_annotations", {
   operationId: text("operation_id").primaryKey(),
   payload: text("payload").notNull(),
