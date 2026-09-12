@@ -11,12 +11,9 @@ import {
 import { dataDir, newId } from "@backbencher/shared";
 import { mergeOperation } from "@backbencher/store";
 import {
-  buildSessionCallGraph,
-  extractObservedFlow,
   loadCuratedOrRawSession,
   loadSession,
   pairCalls,
-  templatizePaths,
   writeCuratedEvents,
 } from "@backbencher/derive";
 import { type RecorderHandle, startRecording } from "@backbencher/recorder";
@@ -56,46 +53,6 @@ function isAssetLikeCall(c: { pathname: string; requestContentType: string | und
   const contentType = (c.responseContentType ?? c.requestContentType ?? "").toLowerCase();
   if (DROPPED_CONTENT_PREFIXES.some((prefix) => contentType.startsWith(prefix))) return true;
   return ASSET_PATH_RE.test(c.pathname);
-}
-
-function buildCuratedSessionArtifacts(
-  sessionId: string,
-  calls: ReturnType<typeof pairCalls>,
-  catalogOperations: Array<{
-    operationId: string;
-    method: string;
-    host: string;
-    pathTemplate: {
-      template: string;
-      params: Array<{ name: string; position: number; kind: "uuid" | "numeric" | "slug" | "opaque"; observedValues: string[] }>;
-    };
-  }>,
-) {
-  const { operations, callOp: derivedCallOp } = templatizePaths(calls);
-  const catalogOpIds = new Map(
-    catalogOperations.map((op) => [`${op.method}\u0000${op.host}\u0000${op.pathTemplate.template}`, op.operationId] as const),
-  );
-  const normalizedOpIds = new Map(
-    [...operations.values()].map((op) => [
-      op.operationId,
-      catalogOpIds.get(`${op.method}\u0000${op.host}\u0000${op.template}`) ?? op.operationId,
-    ] as const),
-  );
-  const callOp = new Map(
-    [...derivedCallOp.entries()].flatMap(([call, derivedOpId]) => {
-      const operationId = normalizedOpIds.get(derivedOpId);
-      return operationId ? [[call, operationId] as const] : [];
-    }),
-  );
-  const opAccums = new Map<string, (typeof operations extends Map<any, infer V> ? V : never)>();
-  for (const op of operations.values()) {
-    const operationId = normalizedOpIds.get(op.operationId) ?? op.operationId;
-    if (!opAccums.has(operationId)) opAccums.set(operationId, { ...op, operationId, calls: [] });
-  }
-  return {
-    flow: extractObservedFlow(sessionId, calls, callOp),
-    edges: buildSessionCallGraph(calls, callOp, opAccums),
-  };
 }
 
 const sessionsRouter = router({
@@ -187,7 +144,16 @@ const sessionsRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST", message: `unknown correlationIds: ${unknown.join(", ")}` });
       }
 
-      assertDeletable(ctx.store.sessionGraphs.listBySession(input.sessionId), newlyDeleted);
+      // Curation prunes derivation output, so there has to be some. Without it the sole-producer
+      // guard would pass vacuously over an empty edge set. Same `derived` signal sessions.graph uses.
+      const persistedFlows = ctx.store.flows.listBySession(input.sessionId);
+      const persistedFlow = persistedFlows[0];
+      if (!persistedFlow) {
+        throw new TRPCError({ code: "PRECONDITION_FAILED", message: "session has not been derived yet" });
+      }
+      const persistedEdges = ctx.store.sessionGraphs.listBySession(input.sessionId);
+
+      assertDeletable(persistedEdges, newlyDeleted);
 
       // Everything already absent from the curated file stays absent: that set is the auto-filtered
       // Redundant Calls, which only a full re-derivation may recompute.
@@ -198,12 +164,19 @@ const sessionsRouter = router({
       for (const id of newlyDeleted) excluded.add(id);
       writeCuratedEvents(dir, raw, excluded);
 
-      const curatedCalls = pairCalls(raw).filter((call) => !excluded.has(call.correlationId));
-      const artifacts = buildCuratedSessionArtifacts(input.sessionId, curatedCalls, ctx.store.operations.list());
+      // A deletion only ever removes Calls, so the narrative artifacts are filtered, never rebuilt:
+      // re-templatizing one Session in isolation would yield operationIds the Catalog does not have.
+      const surviving = new Set(
+        pairCalls(raw).filter((call) => !excluded.has(call.correlationId)).map((call) => call.correlationId),
+      );
+      const flow = { ...persistedFlow, steps: persistedFlow.steps.filter((s) => surviving.has(s.correlationId)) };
+      const edges = persistedEdges.filter(
+        (e) => surviving.has(e.producerCorrelationId) && surviving.has(e.consumerCorrelationId),
+      );
 
       ctx.store.sessionCuration.setDeleted(input.sessionId, newlyDeleted, ctx.actor);
-      ctx.store.flows.replaceForSession(input.sessionId, artifacts.flow);
-      ctx.store.sessionGraphs.replaceForSession(input.sessionId, artifacts.edges);
+      ctx.store.flows.replaceForSession(input.sessionId, flow);
+      ctx.store.sessionGraphs.replaceForSession(input.sessionId, edges);
 
       ctx.store.audit.append({
         entityType: "session",

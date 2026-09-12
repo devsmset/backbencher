@@ -187,29 +187,33 @@ describe("sessions router", () => {
     ).toHaveLength(1);
   });
 
-  it("recomputes the observed flow from curated calls instead of filtering stale polling metadata", async () => {
+  it("drops only the deleted call from the observed flow", async () => {
     resetClock();
     const session = completeSession("sess-curation-flow", [
-      ...apiCall("p1", { url: `${H}/api/jobs/status`, body: { state: "pending" } }),
-      ...apiCall("p2", { url: `${H}/api/jobs/status`, body: { state: "pending" } }),
-      ...apiCall("p3", { url: `${H}/api/jobs/status`, body: { state: "done" } }),
+      ...apiCall("p1", { url: `${H}/api/one`, body: { ok: true } }),
+      ...apiCall("p2", { url: `${H}/api/two`, body: { ok: true } }),
+      ...apiCall("p3", { url: `${H}/api/three`, body: { ok: true } }),
       ...apiCall("q1", { url: `${H}/api/final`, body: { ok: true } }),
     ]);
     seed(session, { derive: true });
+    const before = store.flows.listBySession(session.meta.sessionId)[0];
 
     await expect(
       caller().sessions.deleteCalls({ sessionId: session.meta.sessionId, correlationIds: ["p1"] }),
     ).resolves.toEqual({ deleted: 1 });
 
-    const flow = store.flows.listBySession(session.meta.sessionId)[0];
-    expect(store.flows.listBySession(session.meta.sessionId)[0]?.steps).toEqual([
-      { operationId: flow?.steps[0]?.operationId, correlationId: "p2" },
-      { operationId: flow?.steps[1]?.operationId, correlationId: "p3" },
-      { operationId: flow?.steps[2]?.operationId, correlationId: "q1" },
+    // Steps survive verbatim, operationIds included: a deletion filters, it never re-derives.
+    expect(store.flows.listBySession(session.meta.sessionId)[0]?.steps).toEqual(
+      (before?.steps ?? []).filter((s) => s.correlationId !== "p1"),
+    );
+    expect(store.flows.listBySession(session.meta.sessionId)[0]?.steps.map((s) => s.correlationId)).toEqual([
+      "p2",
+      "p3",
+      "q1",
     ]);
   });
 
-  it("recomputes the session graph from curated calls instead of keeping stale filtered edges", async () => {
+  it("keeps edges unrelated to the deleted call", async () => {
     resetClock();
     const item1 = "11111111-1111-1111-1111-111111111111";
     const item2 = "22222222-2222-2222-2222-222222222222";
@@ -220,12 +224,51 @@ describe("sessions router", () => {
     ]);
     seed(session, { derive: true });
     expect(store.sessionGraphs.listBySession(session.meta.sessionId)).toHaveLength(1);
+    const before = store.sessionGraphs.listBySession(session.meta.sessionId);
 
     await expect(
       caller().sessions.deleteCalls({ sessionId: session.meta.sessionId, correlationIds: ["c2"] }),
     ).resolves.toEqual({ deleted: 1 });
 
-    expect(store.sessionGraphs.listBySession(session.meta.sessionId)).toEqual([]);
+    // c2 touches neither end of p1 -> c1, so that edge must survive untouched.
+    expect(store.sessionGraphs.listBySession(session.meta.sessionId)).toEqual(before);
+  });
+
+  it("drops only edges touching the deleted call", async () => {
+    resetClock();
+    const token = "TOKEN-abcdef123456";
+    const other = "OTHER-9876543210ab";
+    const session = completeSession("sess-curation-graph-partial", [
+      ...apiCall("p1", { url: `${H}/auth/token`, body: { token } }),
+      ...apiCall("p2", { url: `${H}/auth/other`, body: { other } }),
+      ...apiCall("c1", { url: `${H}/api/one`, reqHeaders: { "x-token": token }, body: { ok: true } }),
+      ...apiCall("c2", { url: `${H}/api/two`, reqHeaders: { "x-other": other }, body: { ok: true } }),
+    ]);
+    seed(session, { derive: true });
+    expect(store.sessionGraphs.listBySession(session.meta.sessionId)).toHaveLength(2);
+
+    await expect(
+      caller().sessions.deleteCalls({ sessionId: session.meta.sessionId, correlationIds: ["c2"] }),
+    ).resolves.toEqual({ deleted: 1 });
+
+    expect(
+      store.sessionGraphs
+        .listBySession(session.meta.sessionId)
+        .map((e) => `${e.producerCorrelationId}->${e.consumerCorrelationId}`),
+    ).toEqual(["p1->c1"]);
+  });
+
+  it("refuses to curate a session that has not been derived", async () => {
+    resetClock();
+    const session = completeSession("sess-curation-underived", [
+      ...apiCall("u1", { url: `${H}/api/a`, body: { id: "AAAA1111BBBB2222" } }),
+    ]);
+    seed(session);
+
+    await expect(
+      caller().sessions.deleteCalls({ sessionId: session.meta.sessionId, correlationIds: ["u1"] }),
+    ).rejects.toMatchObject({ code: "PRECONDITION_FAILED", message: expect.stringContaining("derived") });
+    expect(store.sessionCuration.get(session.meta.sessionId)).toBeFalsy();
   });
 
   it("filters graph edges to the returned node set", async () => {
