@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { trpc } from "../trpc.js";
 import { Chip, Field, JsonBlock, Muted, Panel, QueryState } from "../ui.js";
 import { SessionGraphModal } from "./SessionGraph.js";
@@ -53,10 +53,15 @@ function RecordingPanel() {
   const derivation = trpc.derive.status.useQuery(undefined, { refetchInterval: 1500 });
 
   const derivationStatus = derivation.data?.status;
+  const prevStatusRef = useRef<string | undefined>(undefined);
+
   useEffect(() => {
-    if (derivationStatus !== "idle") return;
-    void utils.sessions.list.invalidate();
-    void utils.operations.list.invalidate();
+    const prevStatus = prevStatusRef.current;
+    if (prevStatus === "running" && derivationStatus !== "running") {
+      void utils.sessions.list.invalidate();
+      void utils.operations.list.invalidate();
+    }
+    prevStatusRef.current = derivationStatus;
   }, [derivationStatus, utils]);
 
   const recording = sessionId !== null;
