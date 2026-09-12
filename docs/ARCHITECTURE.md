@@ -92,9 +92,8 @@ Zod schemas with `z.infer` types, parsed at every boundary. `SCHEMAS_VERSION = "
     is not `suggested`, is not `ignored`, and has both a `name` and a `does`.
   - `catalogReviewStateFor(a)` — derives the review state. **Review state is computed, never set by
     hand.**
-  - `Exemplar` (teaches; never approved, never tested) and `Composition` (proposed; must be approved
-    with a `TestDecision` before it can become a test).
-- **`pack.ts`** — `KnowledgePackSchema` (catalog, operations, exemplars, compositions, guides,
+  - `Composition` (proposed; must be approved with a `TestDecision` before it can become a test).
+- **`pack.ts`** — `KnowledgePackSchema` (catalog, operations, referenceSessions, compositions, guides,
   dataflow, environments, `contentHash`).
 - **`testspec.ts`** — `TestSpecSchema` (steps with request/extract/expect/poll, `jsonAssertions`,
   `cleanup[]`).
@@ -165,7 +164,7 @@ Deterministic and LLM-free. `runDerivation(sessions)` in `pipeline.ts`:
 13. **`curatedEvents.ts`** — materialises `curated-events.ndjson` per Session and reads it back.
 
 `store.saveDerivation()` then transactionally full-replaces `operations`, `dataflowEdges`,
-`observedFlows`, and `dependencyFacts`. It never touches annotation, composition, or guide
+`observedFlows`, `dependencyFacts`, and `sessionCallEdges`. It never touches annotation, composition, or guide
 tables. Operations, schemas, and dataflow come from raw events; `ObservedFlow` and `SessionCallEdge[]`
 come from curated Calls.
 
@@ -192,7 +191,7 @@ params, and ignore fields; `reviewState: "ignored"` excludes the Operation from 
 mutation appends to `auditLog`.
 
 Embedding vectors live in `embeddings`, keyed by `(kind, entityId)` with `model` and `textHash`.
-`EmbeddingKind` is `"operation" | "exemplar"`. Cache invalidation is implicit: changed annotation text
+`EmbeddingKind` is `"operation" | "session"`. Cache invalidation is implicit: changed annotation text
 or a changed model misses the cache and re-embeds. Do not add explicit re-embed hooks.
 
 ---
@@ -207,8 +206,8 @@ Auth is a Fastify `onRequest` hook in `server.ts` checking `x-portal-token` or a
 deployment and is not acceptable for a hosted one.
 
 Routers: `sessions` (list/get/timeline/graph plus in-process start/stop/discard recording), `derive`,
-`operations` (list/get/**annotate**/**annotateTesting**/setReviewState/merge), `flows`, `exemplars`
-(list/get/getBySession/**fromSession**/upsert/remove), `suggest` (run/accept), `guides`, `dataflow`,
+`operations` (list/get/**annotate**/**annotateTesting**/setReviewState/merge), `flows`,
+`suggest` (run/accept), `guides`, `dataflow`,
 `dependencies`, `compose` (propose/drafts/**approve**/reject), `pack` (build/list/diff), `specs`,
 `agent.generate`, `runs` (with `guardEnvironment` refusing writes against non-destructive
 environments), `security` (`authzMatrix`, `bolaProbes`), `drift.report`, and `rehearsal`.
@@ -223,7 +222,7 @@ first thing to revisit for a hosted deployment. Derivation is triggered in the b
 ### 7.2 `packages/portal-web` — React + Vite, hash-routed
 
 Screens: Dashboard, Sessions (list, timeline, graph, start/stop recording), Catalog, OperationDetail
-(the annotation editor), Exemplars, Compose (goal → proposal → approve with a test decision), Guides,
+(the annotation editor), Compose (goal → proposal → approve with a test decision), Guides,
 Pack, Specs.
 
 No automated tests. `vite build` does not typecheck, so correctness here rests on
@@ -234,13 +233,13 @@ No automated tests. `vite build` does not typecheck, so correctness here rests o
 ## 8. Agent — `packages/agent`
 
 **Retrieval** (`embed.ts`) — `retrieveForGoal(store, goal, opts)` embeds the goal, takes the top-K
-Operations and Exemplars by cosine similarity, then **expands by transitive dependency closure**, so a
+Operations and Reference Sessions by cosine similarity, then **expands by transitive dependency closure**, so a
 goal that never mentions authentication still pulls in the login Operation that its writes require.
 `localEmbed` is lexical trigram hashing: a test-only default, never for a real corpus. Only Ready
-Operations and Example-ready Exemplars enter the corpus.
+Operations and reference-ready Sessions enter the corpus.
 
 **Composition** (`compose.ts`) — `proposeScenario(store, goal, opts)`. Builds a prompt from the goal,
-the closure-expanded candidate pool, few-shot Exemplars, and authoritative dependency facts; the model
+the closure-expanded candidate pool, few-shot Reference Sessions, and authoritative dependency facts; the model
 selects and orders; then `reconcileDependencies()` deterministically auto-inserts a missing producer
 where exactly one high-confidence candidate satisfies a slot, and records anything else as an
 **unmet dependency** or a **candidate gap** rather than guessing. The result persists as a
@@ -248,10 +247,6 @@ where exactly one high-confidence candidate satisfies a slot, and records anythi
 
 **Dependencies** (`dependencies.ts`) — `computeDependencyGraph(store)` derives per-Operation
 `requires`, `produces`, and `clientGenerated`.
-
-**Exemplar promotion** (`exemplar.ts`) — `draftExemplarFromSession(store, sessionId, opts)` promotes a
-recorded Session to an Exemplar, optionally drafting per-step intents with the model for a human to
-correct.
 
 **Annotation suggestion** (`suggest.ts`) — `suggestAnnotations(store, opts)` proposes catalog
 annotations in bulk. A suggestion is written with `suggested: true` and therefore **never makes an
@@ -369,7 +364,7 @@ Each of these has been got wrong at least once, or would be by anyone who didn't
 5. Portal auth is off entirely when no token is configured, and recording runs in the server process.
    Both block a hosted deployment.
 6. `portal-web` has no automated tests; `apps/cli` has none either.
-7. `suggest`, `rehearsal`, and exemplar promotion have no CLI entry points; they are portal-only.
+7. `suggest` and `rehearsal` have no CLI entry points; they are portal-only.
 
 ---
 
