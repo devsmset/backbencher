@@ -9,6 +9,18 @@ import type { Store } from "@backbencher/store";
 
 const log = childLogger({ mod: "portal-api" });
 
+interface DerivationJobDeps {
+  loadAllSessions: typeof loadAllSessions;
+  runDerivation: typeof runDerivation;
+  writeCuratedEvents: typeof writeCuratedEvents;
+}
+
+const defaultDerivationJobDeps: DerivationJobDeps = {
+  loadAllSessions,
+  runDerivation,
+  writeCuratedEvents,
+};
+
 export interface DerivationSummary {
   sessionsProcessed: number;
   operations: number;
@@ -35,19 +47,20 @@ export async function waitForDerivationIdle(): Promise<void> {
   while (inFlight) await inFlight;
 }
 
-function deriveOnce(store: Store, actor: string): DerivationSummary {
-  const sessions = loadAllSessions();
-  const result = runDerivation(sessions, { deletedCorrelationIds: store.sessionCuration.deletionMap() });
-  for (const s of sessions) store.sessions.upsertFromMeta(s.meta);
-  store.saveDerivation(result);
+function deriveOnce(store: Store, actor: string, deps: DerivationJobDeps): DerivationSummary {
+  const sessions = deps.loadAllSessions();
+  const result = deps.runDerivation(sessions, { deletedCorrelationIds: store.sessionCuration.deletionMap() });
 
   let callsFiltered = 0;
   for (const s of sessions) {
     const excluded = new Set(result.autoFiltered[s.meta.sessionId] ?? []);
     for (const id of store.sessionCuration.get(s.meta.sessionId)?.deletedCorrelationIds ?? []) excluded.add(id);
     callsFiltered += excluded.size;
-    writeCuratedEvents(join(dataDir(), "sessions", s.meta.sessionId), s, excluded);
+    deps.writeCuratedEvents(join(dataDir(), "sessions", s.meta.sessionId), s, excluded);
   }
+
+  for (const s of sessions) store.sessions.upsertFromMeta(s.meta);
+  store.saveDerivation(result);
 
   store.audit.append({
     entityType: "derivation",
@@ -67,19 +80,20 @@ function deriveOnce(store: Store, actor: string): DerivationSummary {
 }
 
 /** Fire-and-forget. Never throws to the caller; failures land in the state. */
-export function runDerivationJob(store: Store, actor: string): void {
+export function runDerivationJob(store: Store, actor: string, depsOverrides?: Partial<DerivationJobDeps>): void {
   if (inFlight) {
     rerunQueued = true; // repeated requests collapse into one follow-up: the pass covers everything
     return;
   }
+  const deps: DerivationJobDeps = { ...defaultDerivationJobDeps, ...depsOverrides };
   state = { status: "running", startedAt: Date.now() };
   let promise: Promise<void>;
   promise = Promise.resolve()
     .then(() => {
-      let summary = deriveOnce(store, actor);
+      let summary = deriveOnce(store, actor, deps);
       while (rerunQueued) {
         rerunQueued = false;
-        summary = deriveOnce(store, actor);
+        summary = deriveOnce(store, actor, deps);
       }
       state = { status: "idle", lastFinishedAt: Date.now(), lastResult: summary };
     })

@@ -1,6 +1,26 @@
+import type { Operation } from "@backbencher/schemas";
 import { openStore } from "@backbencher/store";
 import { describe, expect, it } from "vitest";
+import { apiCall, makeSession, resetClock } from "../../derive/fixtures/sessions.js";
 import { derivationState, runDerivationJob, waitForDerivationIdle } from "../src/derivationJob.js";
+
+const previousDerivation: Operation = {
+  operationId: "op_previous",
+  method: "GET",
+  host: "h",
+  pathTemplate: { template: "/api/previous", params: [] },
+  observedCount: 1,
+  statusCodesObserved: { "200": 1 },
+  requestSchema: null,
+  responseSchemas: {},
+  queryParams: [],
+  authObserved: "none",
+  contentTypes: ["application/json"],
+  exampleCorrelationIds: ["c-prev"],
+  firstSeenSessionId: "s-prev",
+  lastSeenAt: 1,
+  volatileResponseFields: [],
+};
 
 describe("derivation job", () => {
   it("runs to completion and reports idle", async () => {
@@ -9,6 +29,32 @@ describe("derivation job", () => {
     expect(derivationState().status).toBe("running");
     await waitForDerivationIdle();
     expect(derivationState().status).toBe("idle");
+    store.close();
+  });
+
+  it("keeps the previous derivation when a curated-file write fails", async () => {
+    const store = openStore(":memory:");
+    store.saveDerivation({ operations: [previousDerivation], dataflow: [], flows: [] });
+
+    resetClock();
+    const session = makeSession("sess-failure", [
+      ...apiCall("c1", { url: "https://app.example.net/api/current", body: { ok: true } }),
+    ]);
+
+    runDerivationJob(store, "alice", {
+      loadAllSessions: () => [session],
+      writeCuratedEvents: () => {
+        throw new Error("curated write failed");
+      },
+    });
+
+    await waitForDerivationIdle();
+
+    expect(derivationState()).toMatchObject({ status: "failed", error: "curated write failed" });
+    expect(store.operations.list()).toHaveLength(1);
+    expect(store.operations.get("op_previous")?.pathTemplate.template).toBe("/api/previous");
+    expect(store.audit.list("derivation", "all")).toHaveLength(0);
+
     store.close();
   });
 
