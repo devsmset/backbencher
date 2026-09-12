@@ -136,6 +136,23 @@ describe("derived + pack contracts", () => {
     });
     expect(pack.version).toBe(1);
   });
+
+  it("parses a pack written before Reference Sessions existed", () => {
+    const pack = KnowledgePackSchema.parse({
+      version: 1,
+      builtAt: 1,
+      contentHash: "deadbeef",
+      catalog: [],
+      operations: {},
+      exemplars: [{ exemplarId: "x1" }], // the field Reference Sessions replaced
+      compositions: [],
+      guides: [],
+      dataflow: [],
+      authProfiles: [],
+      environments: [],
+    });
+    expect(pack.referenceSessions).toEqual([]);
+  });
 });
 
 describe("schema registry", () => {
