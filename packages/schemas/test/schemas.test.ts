@@ -127,7 +127,7 @@ describe("derived + pack contracts", () => {
       contentHash: "deadbeef",
       catalog: [],
       operations: {},
-      exemplars: [],
+      referenceSessions: [],
       compositions: [],
       guides: [],
       dataflow: [],

@@ -66,7 +66,17 @@ export function buildKnowledgePack(store: Store, opts: BuildPackOptions = {}): B
   const operations: Record<string, unknown> = {};
   for (const m of merged) operations[m.operationId] = m;
 
-  const exemplars = store.exemplars.list().sort((a, b) => a.exemplarId.localeCompare(b.exemplarId));
+  const referenceSessions = store.sessionCuration
+    .list()
+    .filter((c) => c.useAsReference)
+    .map((c) => ({
+      sessionId: c.sessionId,
+      name: store.sessions.get(c.sessionId)?.meta.name ?? c.sessionId,
+      goal: store.sessions.get(c.sessionId)?.meta.goal ?? "",
+      steps: store.flows.listBySession(c.sessionId).flatMap((f) => f.steps),
+      edges: store.sessionGraphs.listBySession(c.sessionId),
+    }))
+    .sort((a, b) => a.sessionId.localeCompare(b.sessionId));
   const compositions = store.compositions
     .listByStatus("approved")
     .sort((a, b) => a.compositionId.localeCompare(b.compositionId));
@@ -95,7 +105,7 @@ export function buildKnowledgePack(store: Store, opts: BuildPackOptions = {}): B
     destructive: e.destructive,
   }));
 
-  const core = { catalog, operations, exemplars, compositions, guides, dataflow, authProfiles, environments: envs };
+  const core = { catalog, operations, referenceSessions, compositions, guides, dataflow, authProfiles, environments: envs };
   const contentHash = createHash("sha256").update(stableStringify(core)).digest("hex").slice(0, 16);
 
   const pack = KnowledgePackSchema.parse({
@@ -144,7 +154,7 @@ function renderCatalogMd(pack: KnowledgePack): string {
   }
   lines.push(
     "",
-    `## Exemplars (${pack.exemplars.length})`,
+    `## Reference Sessions (${pack.referenceSessions.length})`,
     "",
     `## Compositions (${pack.compositions.length})`,
     "",

@@ -3,7 +3,6 @@ import { join } from "node:path";
 import {
   AnalystGuideSchema,
   CatalogReviewState,
-  ExemplarSchema,
   KnowledgePackSchema,
   SideEffect,
   TestDecisionSchema,
@@ -26,7 +25,6 @@ import {
   computeDependencyGraph,
   createEmbedder,
   createLlm,
-  draftExemplarFromSession,
   generateTestSpec,
   latestResults,
   packDiff,
@@ -384,39 +382,6 @@ const flowsRouter = router({
     .query(({ ctx, input }) => ctx.store.flows.get(input.flowId)),
 });
 
-const exemplarsRouter = router({
-  list: publicProcedure.query(({ ctx }) => ctx.store.exemplars.list()),
-  get: publicProcedure
-    .input(z.object({ exemplarId: z.string() }))
-    .query(({ ctx, input }) => ctx.store.exemplars.get(input.exemplarId)),
-  getBySession: publicProcedure
-    .input(z.object({ sessionId: z.string() }))
-    .query(({ ctx, input }) => ctx.store.exemplars.getBySession(input.sessionId)),
-  /** Draft an Exemplar from a recorded session; not persisted until the analyst upserts it. */
-  fromSession: publicProcedure
-    .input(z.object({ sessionId: z.string(), model: z.string().optional() }))
-    .mutation(async ({ ctx, input }) => {
-      let llm: ReturnType<typeof createLlm> | undefined;
-      try {
-        llm = createLlm(ctx.config, "stepIntents", input.model);
-      } catch {
-        llm = undefined; // no model configured -> draft with empty intents for the analyst to fill in
-      }
-      return draftExemplarFromSession(ctx.store, input.sessionId, { ...(llm ? { llm } : {}), actor: ctx.actor });
-    }),
-  upsert: publicProcedure.input(ExemplarSchema).mutation(({ ctx, input }) => {
-    const exemplarId = input.exemplarId || newId();
-    const saved = ctx.store.exemplars.upsert({ ...input, exemplarId, updatedBy: ctx.actor, updatedAt: Date.now() });
-    ctx.store.audit.append({ entityType: "exemplar", entityId: exemplarId, action: "upsert", actor: ctx.actor });
-    return saved;
-  }),
-  remove: publicProcedure.input(z.object({ exemplarId: z.string() })).mutation(({ ctx, input }) => {
-    ctx.store.exemplars.remove(input.exemplarId);
-    ctx.store.audit.append({ entityType: "exemplar", entityId: input.exemplarId, action: "remove", actor: ctx.actor });
-    return { ok: true };
-  }),
-});
-
 const suggestRouter = router({
   run: publicProcedure
     .input(z.object({ model: z.string().optional(), force: z.boolean().optional(), batchSize: z.number().optional() }).optional())
@@ -669,7 +634,6 @@ const driftRouter = router({
     const annotations = new Map(ctx.store.annotations.list().map((a) => [a.operationId, a]));
     const reviewed = [...annotations.values()].filter((a) => a.reviewState !== "unannotated").length;
     const approvedCompositions = ctx.store.compositions.listByStatus("approved");
-    const exemplars = ctx.store.exemplars.list();
     const opIds = new Set(ops.map((o) => o.operationId));
     const covered = new Set(
       approvedCompositions.flatMap((c) => c.steps.map((st) => st.operationId)).filter((id) => opIds.has(id)),
@@ -678,8 +642,14 @@ const driftRouter = router({
     // Phase 7 metrics (realignment guide §9): three coverage lenses over the same catalog, each
     // independent of the others (an op can be dependency-resolvable but have zero example usage).
     const readyOps = ops.filter((o) => isOperationReady(annotations.get(o.operationId) ?? null));
-    const exampledOpIds = new Set(exemplars.flatMap((e) => e.steps.map((st) => st.operationId)));
-    const readyAndExampled = readyOps.filter((o) => exampledOpIds.has(o.operationId));
+    const referencedOpIds = new Set(
+      ctx.store.sessionCuration
+        .list()
+        .filter((row) => row.useAsReference)
+        .flatMap((row) => ctx.store.flows.listBySession(row.sessionId))
+        .flatMap((flow) => flow.steps.map((step) => step.operationId)),
+    );
+    const readyAndReferenced = readyOps.filter((o) => referencedOpIds.has(o.operationId));
 
     const graph = computeDependencyGraph(ctx.store);
     const resolvable = ops.filter((o) => {
@@ -698,7 +668,7 @@ const driftRouter = router({
         reviewedOperations: reviewed,
         operationsWithApprovedComposition: covered.size,
         annotationReadyOperations: readyOps.length,
-        exampleCoveredOperations: readyAndExampled.length,
+        exampleCoveredOperations: readyAndReferenced.length,
         dependencyResolvableOperations: resolvable.length,
       },
     };
@@ -766,7 +736,6 @@ export const appRouter = router({
   derive: deriveRouter,
   operations: operationsRouter,
   flows: flowsRouter,
-  exemplars: exemplarsRouter,
   suggest: suggestRouter,
   guides: guidesRouter,
   dataflow: dataflowRouter,

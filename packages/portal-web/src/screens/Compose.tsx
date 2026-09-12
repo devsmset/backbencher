@@ -127,7 +127,7 @@ export function Compose() {
           <Muted>Pending drafts</Muted>
           <QueryState isLoading={draftsQ.isLoading} error={draftsQ.error} />
           <div className="mb-2 mt-1 text-xs">
-            <a href="#/exemplars">View exemplars →</a>
+            <a href="#/sessions">View sessions →</a>
           </div>
           {draftsQ.data?.map((d) => (
             <button

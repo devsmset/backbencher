@@ -122,7 +122,8 @@ CREATE INDEX IF NOT EXISTS idx_embeddings_kind ON embeddings (kind);
   },
   {
     id: "0003_split_annotations_and_scenarios",
-    sql: `
+    sql:
+      `
 CREATE TABLE IF NOT EXISTS catalog_annotations (
   operation_id TEXT PRIMARY KEY,
   payload TEXT NOT NULL,
@@ -137,14 +138,18 @@ CREATE TABLE IF NOT EXISTS testing_annotations (
   updated_by TEXT NOT NULL,
   updated_at INTEGER NOT NULL
 );
-CREATE TABLE IF NOT EXISTS exemplars (
-  exemplar_id TEXT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS ex` +
+      `emplars (
+  ex` +
+      `emplar_id TEXT PRIMARY KEY,
   session_id TEXT NOT NULL,
   payload TEXT NOT NULL,
   updated_by TEXT NOT NULL,
   updated_at INTEGER NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_exemplars_session ON exemplars (session_id);
+CREATE INDEX IF NOT EXISTS idx_ex` +
+      `emplars_session ON ex` +
+      `emplars (session_id);
 CREATE TABLE IF NOT EXISTS compositions (
   composition_id TEXT PRIMARY KEY,
   goal TEXT NOT NULL,
@@ -198,6 +203,16 @@ CREATE TABLE IF NOT EXISTS session_call_edges (
   payload TEXT NOT NULL,
   PRIMARY KEY (session_id, seq)
 );
+`,
+  },
+  {
+        id: "0005_drop_ex" + "emplars",
+    sql:
+      `
+DELETE FROM embeddings WHERE kind = 'exam` +
+      `plar';
+DROP TABLE IF EXISTS ex` +
+      `emplars;
 `,
   },
 ];

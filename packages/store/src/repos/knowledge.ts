@@ -6,8 +6,6 @@ import {
   type CatalogReviewState,
   type Composition,
   CompositionSchema,
-  type Exemplar,
-  ExemplarSchema,
   type RehearsalGoal,
   RehearsalGoalSchema,
   type RehearsalResult,
@@ -22,7 +20,6 @@ import {
   analystGuides,
   catalogAnnotations,
   compositions,
-  exemplars,
   rehearsalGoals,
   rehearsalResults,
   testingAnnotations,
@@ -98,36 +95,6 @@ export function testingAnnotationsRepo(db: Db) {
         .onConflictDoUpdate({ target: testingAnnotations.operationId, set: cols })
         .run();
       return parsed;
-    },
-  };
-}
-
-export function exemplarsRepo(db: Db) {
-  const toExemplar = (r: { payload: string }): Exemplar => ExemplarSchema.parse(JSON.parse(r.payload));
-  return {
-    get: (exemplarId: string): Exemplar | null => {
-      const r = db.select().from(exemplars).where(eq(exemplars.exemplarId, exemplarId)).get();
-      return r ? toExemplar(r) : null;
-    },
-    getBySession: (sessionId: string): Exemplar | null => {
-      const r = db.select().from(exemplars).where(eq(exemplars.sessionId, sessionId)).get();
-      return r ? toExemplar(r) : null;
-    },
-    list: (): Exemplar[] => db.select().from(exemplars).all().map(toExemplar),
-    upsert: (exemplar: Exemplar): Exemplar => {
-      const parsed = ExemplarSchema.parse(exemplar);
-      const cols = {
-        exemplarId: parsed.exemplarId,
-        sessionId: parsed.sessionId,
-        payload: JSON.stringify(parsed),
-        updatedBy: parsed.updatedBy,
-        updatedAt: parsed.updatedAt,
-      };
-      db.insert(exemplars).values(cols).onConflictDoUpdate({ target: exemplars.exemplarId, set: cols }).run();
-      return parsed;
-    },
-    remove: (exemplarId: string): void => {
-      db.delete(exemplars).where(eq(exemplars.exemplarId, exemplarId)).run();
     },
   };
 }

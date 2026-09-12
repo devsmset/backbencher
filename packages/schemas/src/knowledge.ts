@@ -3,9 +3,8 @@ import { z } from "zod";
 // Human knowledge layer. Analyst-authored; NEVER in the same rows as derived facts. The composer
 // and the pack builder consume a merged view where human input wins.
 //
-// Two deliberate splits live here (docs/adr/0002-exemplar-composition-split.md):
-//   CatalogAnnotation (composition-facing) vs TestingAnnotation (testkit-facing)
-//   Exemplar (teaches, never approved) vs Composition (proposed, must be approved)
+// The deliberate split that remains here is CatalogAnnotation (composition-facing) vs
+// TestingAnnotation (testkit-facing).
 
 export const SideEffect = z.enum(["read", "create", "update", "delete", "auth", "unknown"]);
 export type SideEffect = z.infer<typeof SideEffect>;
@@ -76,28 +75,6 @@ export const AnalystGuideSchema = z.object({
   updatedAt: z.number().int(),
 });
 export type AnalystGuide = z.infer<typeof AnalystGuideSchema>;
-
-export const ExemplarStepSchema = z.object({
-  operationId: z.string(),
-  intent: z.string(), // one line, in the goal's terms; may be model-drafted then edited
-  notes: z.string().optional(),
-});
-
-/**
- * A promoted Session. Teaches the composer how Operations are ordered in practice, so it carries
- * the analyst's own name and goal. It is never approved and never tested.
- */
-export const ExemplarSchema = z.object({
-  exemplarId: z.string(),
-  sessionId: z.string(),
-  name: z.string().min(1), // the analyst's session name
-  goal: z.string().min(1), // the analyst's own words — what a composition goal is matched against
-  steps: z.array(ExemplarStepSchema),
-  sourceFlowIds: z.array(z.string()).default([]),
-  updatedBy: z.string(),
-  updatedAt: z.number().int(),
-});
-export type Exemplar = z.infer<typeof ExemplarSchema>;
 
 export const CompositionStatus = z.enum(["draft", "approved", "rejected"]);
 export type CompositionStatus = z.infer<typeof CompositionStatus>;

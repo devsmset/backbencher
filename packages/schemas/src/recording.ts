@@ -29,8 +29,7 @@ export type RecordingMetaDraft = z.infer<typeof RecordingMetaDraftSchema>;
 
 /**
  * A completed session. Name and goal are REQUIRED: the analyst's own words are the highest-signal
- * text in the system — they are what a composition goal is matched against, and what an Exemplar
- * teaches from. They cannot be reconstructed from a call list afterwards.
+ * text in the system, and they cannot be reconstructed from a call list afterwards.
  */
 export const RecordingMetaSchema = SessionMetaBase.extend({
   name: z.string().min(1),

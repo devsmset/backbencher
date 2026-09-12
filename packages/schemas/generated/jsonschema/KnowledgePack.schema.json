@@ -67,7 +67,7 @@
           "type": "object",
           "additionalProperties": {}
         },
-        "exemplars": {
+        "referenceSessions": {
           "type": "array",
           "items": {}
         },
@@ -199,7 +199,7 @@
         "contentHash",
         "catalog",
         "operations",
-        "exemplars",
+        "referenceSessions",
         "compositions",
         "guides",
         "dataflow",

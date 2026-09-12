@@ -124,14 +124,6 @@ export const testingAnnotations = sqliteTable("testing_annotations", {
   updatedAt: integer("updated_at").notNull(),
 });
 
-export const exemplars = sqliteTable("exemplars", {
-  exemplarId: text("exemplar_id").primaryKey(),
-  sessionId: text("session_id").notNull(),
-  payload: text("payload").notNull(),
-  updatedBy: text("updated_by").notNull(),
-  updatedAt: integer("updated_at").notNull(),
-});
-
 export const compositions = sqliteTable("compositions", {
   compositionId: text("composition_id").primaryKey(),
   goal: text("goal").notNull(),
@@ -161,7 +153,7 @@ export const rehearsalResults = sqliteTable("rehearsal_results", {
 export const embeddings = sqliteTable(
   "embeddings",
   {
-    kind: text("kind").notNull(), // "operation" | "exemplar"
+    kind: text("kind").notNull(), // "operation"
     entityId: text("entity_id").notNull(),
     model: text("model").notNull(),
     textHash: text("text_hash").notNull(),

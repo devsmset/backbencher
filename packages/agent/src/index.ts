@@ -17,8 +17,6 @@ export {
 export type { Embed, Embedder, RetrievableItem, RetrievalResult, RetrieveOptions } from "./embed.js";
 export { proposeScenario } from "./compose.js";
 export type { ComposeOptions, ComposeResult } from "./compose.js";
-export { draftExemplarFromSession } from "./exemplar.js";
-export type { DraftExemplarOptions, DraftExemplarResult } from "./exemplar.js";
 export { suggestAnnotations } from "./suggest.js";
 export type { SuggestOptions, SuggestResult } from "./suggest.js";
 export { runRehearsal, summarize, latestResults } from "./rehearsal.js";

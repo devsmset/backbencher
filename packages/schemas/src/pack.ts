@@ -23,7 +23,7 @@ export const KnowledgePackSchema = z.object({
     }),
   ),
   operations: z.record(z.unknown()), // operationId -> full merged detail doc, retrieved on demand
-  exemplars: z.array(z.unknown()), // Exemplar objects — how operations have been ordered in practice
+  referenceSessions: z.array(z.unknown()), // curated Sessions — how operations are ordered in practice
   compositions: z.array(z.unknown()), // approved Composition objects
   guides: z.array(z.unknown()), // AnalystGuide objects
   dataflow: z.array(DataflowEdgeSchema),

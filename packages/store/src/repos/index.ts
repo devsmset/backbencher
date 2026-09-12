@@ -5,7 +5,6 @@ import { embeddingsRepo } from "./embeddings.js";
 import {
   catalogAnnotationsRepo,
   compositionsRepo,
-  exemplarsRepo,
   guidesRepo,
   rehearsalRepo,
   testingAnnotationsRepo,
@@ -22,7 +21,6 @@ export interface Repos {
   sessionGraphs: ReturnType<typeof sessionGraphsRepo>;
   annotations: ReturnType<typeof catalogAnnotationsRepo>;
   testingAnnotations: ReturnType<typeof testingAnnotationsRepo>;
-  exemplars: ReturnType<typeof exemplarsRepo>;
   compositions: ReturnType<typeof compositionsRepo>;
   rehearsal: ReturnType<typeof rehearsalRepo>;
   guides: ReturnType<typeof guidesRepo>;
@@ -44,7 +42,6 @@ export function createRepos(db: Db): Repos {
     sessionGraphs: sessionGraphsRepo(db),
     annotations: catalogAnnotationsRepo(db),
     testingAnnotations: testingAnnotationsRepo(db),
-    exemplars: exemplarsRepo(db),
     compositions: compositionsRepo(db),
     rehearsal: rehearsalRepo(db),
     guides: guidesRepo(db),
