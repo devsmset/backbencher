@@ -5,6 +5,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
 import { childLogger, dataDir, findRepoRoot, loadConfig, newId } from "@backbencher/shared";
+import { deriveAfterRecording } from "./postRecord.js";
 
 const log = childLogger({ mod: "cli" });
 
@@ -98,8 +99,7 @@ async function cmdRecord(argv: string[]): Promise<void> {
         `   ${counts}\n   warnings=${result.summary.warnings}\n`,
     );
     process.stdout.write("⚙️  Deriving…\n");
-    await cmdDerive([]);
-    process.exit(0);
+    process.exit(await deriveAfterRecording(() => cmdDerive([]), result.sessionDir));
   };
 
   rl.on("line", () => void finish());
@@ -169,12 +169,14 @@ async function cmdDerive(argv: string[]): Promise<void> {
       process.stdout.write(`\ud83d\udd0e Probed ${safe.size} probe-safe operation(s) against ${env.name}\n`);
     }
   }
-  store.saveDerivation({ ...result, operations });
+  // Curated files first: a failed write must leave the previous derivation intact in the store
+  // (same ordering as the portal's deriveOnce).
   for (const s of sessions) {
     const excluded = new Set(result.autoFiltered[s.meta.sessionId] ?? []);
     for (const id of store.sessionCuration.get(s.meta.sessionId)?.deletedCorrelationIds ?? []) excluded.add(id);
     writeCuratedEvents(join(dataDir(), "sessions", s.meta.sessionId), s, excluded);
   }
+  store.saveDerivation({ ...result, operations });
   store.close();
   process.stdout.write(
     `\u2705 Derived ${operations.length} operations, ${result.dataflow.length} dataflow edges, ` +
