@@ -4,6 +4,7 @@ import type {
   Operation,
   RecordingEvent,
   RecordingMeta,
+  SessionCallEdge,
 } from "@backbencher/schemas";
 
 // Internal derivation types (architecture §5). A `PairedCall` is one api_request joined to its
@@ -40,4 +41,13 @@ export interface DerivationResult {
   flows: ObservedFlow[];
   /** operationId -> input JSON paths whose values are client-generated (§5.5.6). */
   clientGeneratedFields: Record<string, string[]>;
+  /** sessionId -> the Session's call-level dependency graph, over curated Calls only. */
+  sessionGraphs: Record<string, SessionCallEdge[]>;
+  /** sessionId -> correlationIds dropped as Redundant Calls. */
+  autoFiltered: Record<string, string[]>;
+}
+
+export interface RunDerivationOptions {
+  /** sessionId -> correlationIds the Analyst deleted by hand. Never overwritten by derivation. */
+  deletedCorrelationIds?: ReadonlyMap<string, ReadonlySet<string>>;
 }

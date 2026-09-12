@@ -1,4 +1,4 @@
-import { type Operation, OperationSchema } from "@backbencher/schemas";
+import { type Operation, OperationSchema, type SessionCallEdge } from "@backbencher/schemas";
 import { buildDataflowGraph } from "./dataflow.js";
 import { extractObservedFlow } from "./flows.js";
 import {
@@ -9,13 +9,15 @@ import {
   inferResponseSchemas,
 } from "./inferSchemas.js";
 import { pairCalls } from "./pairCalls.js";
+import { findRedundantCalls } from "./redundant.js";
+import { buildSessionCallGraph } from "./sessionGraph.js";
 import { templatizePaths } from "./templatize.js";
-import type { DerivationResult, PairedCall, SessionData } from "./types.js";
+import type { DerivationResult, PairedCall, RunDerivationOptions, SessionData } from "./types.js";
 import { detectVolatileFields } from "./volatile.js";
 
 // Deterministic, idempotent orchestration of every §5 pass: sessions in -> facts out. No LLM.
 
-export function runDerivation(sessions: SessionData[]): DerivationResult {
+export function runDerivation(sessions: SessionData[], opts: RunDerivationOptions = {}): DerivationResult {
   const allCalls: PairedCall[] = sessions.flatMap((s) => pairCalls(s));
   const { operations: accums, callOp } = templatizePaths(allCalls);
 
@@ -64,15 +66,31 @@ export function runDerivation(sessions: SessionData[]): DerivationResult {
 
   const { edges, clientGeneratedFields } = buildDataflowGraph(allCalls, callOp, accums);
 
+  // Catalog-level facts above are always derived from raw Calls, so curation can never shrink the
+  // Catalog. Only the per-Session narrative artifacts below use the curated Call set.
   const bySession = new Map<string, PairedCall[]>();
   for (const c of allCalls) {
     const arr = bySession.get(c.sessionId);
     if (arr) arr.push(c);
     else bySession.set(c.sessionId, [c]);
   }
-  const flows = [...bySession.entries()]
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([sessionId, calls]) => extractObservedFlow(sessionId, calls, callOp));
 
-  return { operations, dataflow: edges, flows, clientGeneratedFields };
+  const flows: DerivationResult["flows"] = [];
+  const sessionGraphs: Record<string, SessionCallEdge[]> = {};
+  const autoFiltered: Record<string, string[]> = {};
+
+  for (const [sessionId, calls] of [...bySession.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+    const redundant = findRedundantCalls(calls, callOp);
+    autoFiltered[sessionId] = [...redundant].sort();
+
+    const deleted = opts.deletedCorrelationIds?.get(sessionId);
+    const excluded = new Set(redundant);
+    if (deleted) for (const id of deleted) excluded.add(id);
+
+    const curated = calls.filter((c) => !excluded.has(c.correlationId));
+    flows.push(extractObservedFlow(sessionId, curated, callOp));
+    sessionGraphs[sessionId] = buildSessionCallGraph(curated, callOp, accums);
+  }
+
+  return { operations, dataflow: edges, flows, clientGeneratedFields, sessionGraphs, autoFiltered };
 }
