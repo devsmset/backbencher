@@ -173,8 +173,6 @@ export function sessionRetrievalText(
   return `${session.name}. ${session.goal}. steps: ${stepNames}`;
 }
 
-export const exemplarRetrievalText = sessionRetrievalText;
-
 export interface RetrievalResult {
   endpoints: Array<MergedOperation & { score: number }>;
   referenceSessions: Array<ReferenceSession & { score: number }>;
@@ -193,8 +191,6 @@ export interface RetrieveOptions {
 export function isReferenceReady(session: ReferenceSession, readyOpIds: ReadonlySet<string>): boolean {
   return session.steps.length > 0 && session.steps.every((s) => readyOpIds.has(s.operationId));
 }
-
-export const isExampleReady = isReferenceReady;
 
 /** The corpus that is retrievable today: `ready` operations, plus reference-ready Sessions. */
 export function retrievalCorpus(store: Store): {

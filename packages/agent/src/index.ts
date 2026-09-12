@@ -10,8 +10,6 @@ export {
   cosineSimilarity,
   topK,
   endpointRetrievalText,
-  exemplarRetrievalText,
-  isExampleReady,
   retrievalCorpus,
   retrieveForGoal,
   warmEmbeddings,

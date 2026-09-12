@@ -116,7 +116,7 @@ async function cmdEmbed(argv: string[]): Promise<void> {
     const res = await warmEmbeddings(store, embedder);
     process.stdout.write(
       `✅ Embeddings up to date with ${embedder.model}\n` +
-        `   ready operations=${res.operations}, exemplars=${res.exemplars}, newly embedded=${res.embedded}\n`,
+        `   ready operations=${res.operations}, referenceSessions=${res.referenceSessions}, newly embedded=${res.embedded}\n`,
     );
   } catch (e) {
     process.stderr.write(`${(e as Error).message}\n`);
