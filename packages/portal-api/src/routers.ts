@@ -11,7 +11,7 @@ import {
 } from "@backbencher/schemas";
 import { dataDir, newId } from "@backbencher/shared";
 import { mergeOperation } from "@backbencher/store";
-import { buildSessionCallGraph, loadSession, pairCalls, templatizePaths } from "@backbencher/derive";
+import { loadCuratedOrRawSession, loadSession, pairCalls, writeCuratedEvents } from "@backbencher/derive";
 import { type RecorderHandle, startRecording } from "@backbencher/recorder";
 import {
   buildKnowledgePack,
@@ -30,6 +30,7 @@ import {
 import { loadSpecYaml, runSpecAgainstEnv, generateAuthzMatrix, generateBolaProbes, specToYaml } from "@backbencher/testkit";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { assertDeletable } from "./curation.js";
 import { derivationState, runDerivationJob } from "./derivationJob.js";
 import { publicProcedure, router } from "./trpc.js";
 
@@ -63,34 +64,118 @@ const sessionsRouter = router({
       if (!existsSync(dir)) {
         return { meta: ctx.store.sessions.get(input.sessionId)?.meta ?? null, events: [] };
       }
-      const session = loadSession(dir);
+      const session = loadCuratedOrRawSession(dir);
       return { meta: session.meta, events: session.events };
     }),
   graph: publicProcedure
     .input(z.object({ sessionId: z.string() }))
-    .query(({ input }) => {
+    .query(({ ctx, input }) => {
       const dir = join(dataDir(), "sessions", input.sessionId);
-      if (!existsSync(dir)) return { nodes: [], edges: [] };
-      const session = loadSession(dir);
-      const calls = pairCalls(session).filter((c) => !isAssetLikeCall(c));
-      const { operations, callOp } = templatizePaths(calls);
-      const edges = buildSessionCallGraph(calls, callOp, operations);
-      const nodes = calls.map((c) => ({
+      const flows = ctx.store.flows.listBySession(input.sessionId);
+      if (!existsSync(dir) || flows.length === 0) return { nodes: [], edges: [], derived: false };
+
+      const opByCorrelation = new Map(
+        flows.flatMap((f) => f.steps.map((s) => [s.correlationId, s.operationId] as const)),
+      );
+      const nodes = pairCalls(loadCuratedOrRawSession(dir))
+        .filter((c) => !isAssetLikeCall(c))
+        .map((c) => ({
         correlationId: c.correlationId,
-        operationId: callOp.get(c) ?? null,
-        method: c.method,
-        host: c.host,
-        pathname: c.pathname,
-        status: c.status,
-        requestTimestamp: c.requestTimestamp,
-        responseTimestamp: c.responseTimestamp,
-        requestHeaders: c.requestHeaders,
-        requestBody: c.requestBody,
-        responseHeaders: c.responseHeaders,
-        responseBody: c.responseBody,
-        responseBodyKind: c.responseBodyKind,
-      }));
-      return { nodes, edges };
+          operationId: opByCorrelation.get(c.correlationId) ?? null,
+          method: c.method,
+          host: c.host,
+          pathname: c.pathname,
+          status: c.status,
+          requestTimestamp: c.requestTimestamp,
+          responseTimestamp: c.responseTimestamp,
+          requestHeaders: c.requestHeaders,
+          requestBody: c.requestBody,
+          responseHeaders: c.responseHeaders,
+          responseBody: c.responseBody,
+          responseBodyKind: c.responseBodyKind,
+        }));
+
+      return { nodes, edges: ctx.store.sessionGraphs.listBySession(input.sessionId), derived: true };
+    }),
+  curation: publicProcedure
+    .input(z.object({ sessionId: z.string() }))
+    .query(({ ctx, input }) => {
+      const dir = join(dataDir(), "sessions", input.sessionId);
+      const row = ctx.store.sessionCuration.get(input.sessionId);
+      const deletedCorrelationIds = row?.deletedCorrelationIds ?? [];
+      if (!existsSync(dir)) {
+        return { useAsReference: row?.useAsReference ?? false, deletedCorrelationIds, rawCallCount: 0, curatedCallCount: 0 };
+      }
+      return {
+        useAsReference: row?.useAsReference ?? false,
+        deletedCorrelationIds,
+        rawCallCount: pairCalls(loadSession(dir)).length,
+        curatedCallCount: pairCalls(loadCuratedOrRawSession(dir)).length,
+      };
+    }),
+  deleteCalls: publicProcedure
+    .input(z.object({ sessionId: z.string(), correlationIds: z.array(z.string()).min(1) }))
+    .mutation(({ ctx, input }) => {
+      if (derivationState().status === "running") {
+        throw new TRPCError({ code: "CONFLICT", message: "a derivation is running — try again in a moment" });
+      }
+      const dir = join(dataDir(), "sessions", input.sessionId);
+      if (!existsSync(dir)) throw new TRPCError({ code: "NOT_FOUND", message: "no such session" });
+      const raw = loadSession(dir);
+      const known = new Set(raw.events.map((e) => e.correlationId));
+      const unknown = input.correlationIds.filter((id) => !known.has(id));
+      if (unknown.length > 0) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: `unknown correlationIds: ${unknown.join(", ")}` });
+      }
+
+      assertDeletable(ctx.store.sessionGraphs.listBySession(input.sessionId), input.correlationIds);
+
+      // Everything already absent from the curated file stays absent: that set is the auto-filtered
+      // Redundant Calls, which only a full re-derivation may recompute.
+      const excluded = new Set(raw.events.map((e) => e.correlationId));
+      for (const c of pairCalls(loadCuratedOrRawSession(dir))) excluded.delete(c.correlationId);
+      ctx.store.sessionCuration.setDeleted(input.sessionId, input.correlationIds, ctx.actor);
+      for (const id of ctx.store.sessionCuration.get(input.sessionId)?.deletedCorrelationIds ?? []) excluded.add(id);
+      writeCuratedEvents(dir, raw, excluded);
+
+      // Reuse the persisted operationIds rather than re-templatizing one Session in isolation,
+      // which would mint operationIds that disagree with the Catalog.
+      const surviving = new Set(pairCalls(loadCuratedOrRawSession(dir)).map((c) => c.correlationId));
+      const flow = ctx.store.flows.listBySession(input.sessionId)[0];
+      if (flow) {
+        ctx.store.flows.replaceForSession(input.sessionId, {
+          ...flow,
+          steps: flow.steps.filter((s) => surviving.has(s.correlationId)),
+        });
+      }
+      ctx.store.sessionGraphs.replaceForSession(
+        input.sessionId,
+        ctx.store.sessionGraphs
+          .listBySession(input.sessionId)
+          .filter((e) => surviving.has(e.producerCorrelationId) && surviving.has(e.consumerCorrelationId)),
+      );
+
+      ctx.store.audit.append({
+        entityType: "session",
+        entityId: input.sessionId,
+        action: "curate.delete",
+        actor: ctx.actor,
+        diff: { correlationIds: input.correlationIds },
+      });
+      return { deleted: input.correlationIds.length };
+    }),
+  setUseAsReference: publicProcedure
+    .input(z.object({ sessionId: z.string(), useAsReference: z.boolean() }))
+    .mutation(({ ctx, input }) => {
+      ctx.store.sessionCuration.setUseAsReference(input.sessionId, input.useAsReference, ctx.actor);
+      ctx.store.audit.append({
+        entityType: "session",
+        entityId: input.sessionId,
+        action: "curate.reference",
+        actor: ctx.actor,
+        diff: { useAsReference: input.useAsReference },
+      });
+      return { ok: true as const };
     }),
   activeRecordings: publicProcedure.query(() => [...activeRecordings.keys()]),
   startRecording: publicProcedure

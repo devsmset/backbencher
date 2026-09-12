@@ -53,6 +53,12 @@ export function flowsRepo(db: Db) {
       const r = db.select().from(observedFlows).where(eq(observedFlows.flowId, flowId)).get();
       return r ? ObservedFlowSchema.parse(JSON.parse(r.payload)) : null;
     },
+    replaceForSession: (sessionId: string, flow: ObservedFlow): void => {
+      db.delete(observedFlows).where(eq(observedFlows.sessionId, sessionId)).run();
+      db.insert(observedFlows)
+        .values({ flowId: flow.flowId, sessionId, payload: JSON.stringify(flow) })
+        .run();
+    },
   };
 }
 
