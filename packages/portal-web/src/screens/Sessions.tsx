@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { curationSummary } from "../curation.js";
 import { trpc } from "../trpc.js";
 import { Chip, Field, JsonBlock, Muted, Panel, QueryState } from "../ui.js";
 import { SessionGraphModal } from "./SessionGraph.js";
@@ -271,7 +272,14 @@ function buildApiCalls(events: unknown[]): ApiCallRow[] {
 }
 
 export function SessionDetail({ sessionId }: { sessionId: string }) {
+  const utils = trpc.useUtils();
   const timeline = trpc.sessions.timeline.useQuery({ sessionId });
+  const curation = trpc.sessions.curation.useQuery({ sessionId });
+  const setUseAsReference = trpc.sessions.setUseAsReference.useMutation({
+    onSuccess: () => {
+      void utils.sessions.curation.invalidate({ sessionId });
+    },
+  });
   const calls = buildApiCalls(timeline.data?.events ?? []);
   const [graphOpen, setGraphOpen] = useState(false);
   return (
@@ -292,6 +300,22 @@ export function SessionDetail({ sessionId }: { sessionId: string }) {
         }
       >
         <Muted>{timeline.data?.meta?.startUrl ?? ""}</Muted>
+        <div className="mt-2.5 flex flex-wrap items-center gap-3">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={curation.data?.useAsReference ?? false}
+              disabled={!curation.data || setUseAsReference.isPending}
+              onChange={(e) => setUseAsReference.mutate({ sessionId, useAsReference: e.target.checked })}
+            />
+            Use as reference for composing
+          </label>
+          {curation.data && <Muted>{curationSummary(curation.data)}</Muted>}
+        </div>
+        <QueryState isLoading={curation.isLoading} error={curation.error} />
+        {setUseAsReference.error && (
+          <div className="mt-1 text-xs text-[--bad]">{setUseAsReference.error.message}</div>
+        )}
       </Panel>
 
       {graphOpen && <SessionGraphModal sessionId={sessionId} onClose={() => setGraphOpen(false)} />}
