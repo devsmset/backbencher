@@ -336,9 +336,8 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
   const previousLayoutInputs = useRef<{ graphData: typeof graph.data; windowWidth: number } | null>(null);
 
   const deleteCalls = trpc.sessions.deleteCalls.useMutation({
-    onSuccess: () => {
-      setPendingDeletes(new Set());
-      void utils.sessions.graph.invalidate({ sessionId });
+    onSuccess: async () => {
+      await utils.sessions.graph.invalidate({ sessionId });
     },
   });
 
@@ -440,8 +439,6 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
     // positions; all other recomputes preserve any node positions the user has already adjusted.
     if (shouldReset) {
       setNodes(layoutNodes);
-      setPendingDeletes(new Set());
-      setConfirming(null);
     } else {
       setNodes((current) => {
         const existingById = new Map(current.map((n) => [n.id, n]));
@@ -455,7 +452,12 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
     previousLayoutInputs.current = { graphData: graph.data, windowWidth };
   }, [graph.data, layoutNodes, setNodes]);
 
-  const nodesById = useMemo(() => {
+  useEffect(() => {
+    setPendingDeletes(new Set());
+    setConfirming(null);
+  }, [graph.data]);
+
+  const visibleNodesById = useMemo(() => {
     const map = new Map<string, GraphCallNode>();
     for (const n of (graph.data?.nodes ?? []).filter((node) => !pendingDeletes.has(node.correlationId))) {
       map.set(n.correlationId, n);
@@ -463,7 +465,15 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
     return map;
   }, [graph.data, pendingDeletes]);
 
-  const selectedNode = selectedId ? nodesById.get(selectedId) ?? null : null;
+  const allNodesById = useMemo(() => {
+    const map = new Map<string, GraphCallNode>();
+    for (const n of graph.data?.nodes ?? []) {
+      map.set(n.correlationId, n);
+    }
+    return map;
+  }, [graph.data]);
+
+  const selectedNode = selectedId ? visibleNodesById.get(selectedId) ?? null : null;
   const graphEdgesRaw = (graph.data?.edges ?? []).filter(
     (e) => !pendingDeletes.has(e.producerCorrelationId) && !pendingDeletes.has(e.consumerCorrelationId),
   );
@@ -563,7 +573,7 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
               <NodeDetails
                 node={selectedNode}
                 edges={graphEdgesRaw}
-                nodesById={nodesById}
+                nodesById={visibleNodesById}
                 onRequestDelete={(correlationId) => setConfirming(correlationId)}
               />
             ) : (
@@ -576,7 +586,7 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
             correlationId={confirming}
             edges={graph.data?.edges ?? []}
             pending={pendingDeletes}
-            nodesById={nodesById}
+            nodesById={allNodesById}
             onCancel={() => setConfirming(null)}
             onConfirm={() => {
               setPendingDeletes((prev) => new Set([...prev, confirming]));
