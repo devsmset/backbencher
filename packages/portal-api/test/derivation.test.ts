@@ -1,6 +1,6 @@
 import type { Operation } from "@backbencher/schemas";
 import { openStore } from "@backbencher/store";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { apiCall, makeSession, resetClock } from "../../derive/fixtures/sessions.js";
 import { derivationState, runDerivationJob, waitForDerivationIdle } from "../src/derivationJob.js";
 
@@ -35,27 +35,33 @@ describe("derivation job", () => {
   it("keeps the previous derivation when a curated-file write fails", async () => {
     const store = openStore(":memory:");
     store.saveDerivation({ operations: [previousDerivation], dataflow: [], flows: [] });
+    const logError = vi.fn();
 
     resetClock();
     const session = makeSession("sess-failure", [
       ...apiCall("c1", { url: "https://app.example.net/api/current", body: { ok: true } }),
     ]);
 
-    runDerivationJob(store, "alice", {
-      loadAllSessions: () => [session],
-      writeCuratedEvents: () => {
-        throw new Error("curated write failed");
-      },
-    });
+    try {
+      runDerivationJob(store, "alice", {
+        loadAllSessions: () => [session],
+        writeCuratedEvents: () => {
+          throw new Error("curated write failed");
+        },
+        logError,
+      });
 
-    await waitForDerivationIdle();
+      await waitForDerivationIdle();
 
-    expect(derivationState()).toMatchObject({ status: "failed", error: "curated write failed" });
-    expect(store.operations.list()).toHaveLength(1);
-    expect(store.operations.get("op_previous")?.pathTemplate.template).toBe("/api/previous");
-    expect(store.audit.list("derivation", "all")).toHaveLength(0);
-
-    store.close();
+      expect(derivationState()).toMatchObject({ status: "failed", error: "curated write failed" });
+      expect(store.operations.list()).toHaveLength(1);
+      expect(store.operations.get("op_previous")?.pathTemplate.template).toBe("/api/previous");
+      expect(store.audit.list("derivation", "all")).toHaveLength(0);
+      expect(logError).toHaveBeenCalledTimes(1);
+      expect(logError.mock.calls[0]?.[0]).toBeInstanceOf(Error);
+    } finally {
+      store.close();
+    }
   });
 
   it("collapses concurrent requests into a single follow-up run", async () => {

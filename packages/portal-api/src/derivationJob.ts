@@ -13,12 +13,14 @@ interface DerivationJobDeps {
   loadAllSessions: typeof loadAllSessions;
   runDerivation: typeof runDerivation;
   writeCuratedEvents: typeof writeCuratedEvents;
+  logError: (err: unknown) => void;
 }
 
 const defaultDerivationJobDeps: DerivationJobDeps = {
   loadAllSessions,
   runDerivation,
   writeCuratedEvents,
+  logError: (err) => log.error({ err }, "derivation failed"),
 };
 
 export interface DerivationSummary {
@@ -99,7 +101,7 @@ export function runDerivationJob(store: Store, actor: string, depsOverrides?: Pa
     })
     .catch((err: unknown) => {
       const error = err instanceof Error ? err.message : String(err);
-      log.error({ err }, "derivation failed");
+      deps.logError(err);
       state = { status: "failed", failedAt: Date.now(), error };
     })
     .finally(() => {
