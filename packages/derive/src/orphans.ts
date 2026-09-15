@@ -6,10 +6,14 @@ export interface OrphanedConsumer {
   value: string;
 }
 
+// `value` is optional here (unlike the full SessionCallEdge) because callers that trimmed it from
+// a payload for size reasons — e.g. the session graph view — still need orphan-checking to work.
+type OrphanCheckEdge = Omit<SessionCallEdge, "value"> & { value?: string };
+
 // Evaluated against the whole pending deletion set at once, not one Call at a time: two Calls that
 // each cover for the other must be rejected when deleted together.
 export function findOrphanedConsumers(
-  edges: SessionCallEdge[],
+  edges: OrphanCheckEdge[],
   deleting: ReadonlySet<string>,
 ): OrphanedConsumer[] {
   const slots = new Map<string, { orphan: OrphanedConsumer; survivingProducer: boolean }>();
@@ -23,7 +27,7 @@ export function findOrphanedConsumers(
         orphan: {
           consumerCorrelationId: e.consumerCorrelationId,
           consumerJsonPath: e.consumerJsonPath,
-          value: e.value,
+          value: e.value ?? "",
         },
         survivingProducer: false,
       };

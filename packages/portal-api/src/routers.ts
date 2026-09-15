@@ -80,6 +80,9 @@ const sessionsRouter = router({
       const opByCorrelation = new Map(
         flows.flatMap((f) => f.steps.map((s) => [s.correlationId, s.operationId] as const)),
       );
+      // Deliberately excludes request/response bodies and headers: captured bodies are uncapped
+      // and can run to megabytes per session, but the graph only ever renders method/status/path
+      // cards. Full call detail is fetched lazily, per node, via callDetail below.
       const nodes = pairCalls(loadCuratedOrRawSession(dir))
         .filter((c) => !isAssetLikeCall(c))
         .map((c) => ({
@@ -91,22 +94,37 @@ const sessionsRouter = router({
           status: c.status,
           requestTimestamp: c.requestTimestamp,
           responseTimestamp: c.responseTimestamp,
-          requestHeaders: c.requestHeaders,
-          requestBody: c.requestBody,
-          responseHeaders: c.responseHeaders,
-          responseBody: c.responseBody,
           responseBodyKind: c.responseBodyKind,
         }));
 
       const visibleNodeIds = new Set(nodes.map((node) => node.correlationId));
+      // `value` (the literal captured value for the edge) is never rendered by the graph — drop it
+      // here too, same reasoning as the node bodies above; a session with thousands of edges can
+      // otherwise ship megabytes of values nothing on the graph screen reads.
       const edges = ctx.store.sessionGraphs
         .listBySession(input.sessionId)
         .filter(
           (edge) =>
             visibleNodeIds.has(edge.producerCorrelationId) && visibleNodeIds.has(edge.consumerCorrelationId),
-        );
+        )
+        .map(({ value: _value, ...edge }) => edge);
 
       return { nodes, edges, derived: true };
+    }),
+  callDetail: publicProcedure
+    .input(z.object({ sessionId: z.string(), correlationId: z.string() }))
+    .query(({ input }) => {
+      const dir = join(dataDir(), "sessions", input.sessionId);
+      if (!existsSync(dir)) throw new TRPCError({ code: "NOT_FOUND", message: "no such session" });
+      const call = pairCalls(loadCuratedOrRawSession(dir)).find((c) => c.correlationId === input.correlationId);
+      if (!call) throw new TRPCError({ code: "NOT_FOUND", message: "no such call" });
+      return {
+        requestHeaders: call.requestHeaders,
+        requestBody: call.requestBody,
+        responseHeaders: call.responseHeaders,
+        responseBody: call.responseBody,
+        responseBodyKind: call.responseBodyKind,
+      };
     }),
   curation: publicProcedure
     .input(z.object({ sessionId: z.string() }))
