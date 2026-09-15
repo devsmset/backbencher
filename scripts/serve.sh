@@ -5,12 +5,11 @@
 # Usage:
 #   ./scripts/serve.sh [port]
 #   ./scripts/serve.sh --port <port>
-#   ./scripts/serve.sh --watch-web [port]
 #
-# Defaults to port 4100. Frees the port first (via scripts/kill-port.sh) in case a
-# previous server instance is still holding it. `--watch-web` keeps rebuilding
-# portal-web on frontend edits so a browser refresh picks up the latest dist files
-# without restarting the server.
+# Defaults to port 4100 for the API. Frees the port first (via scripts/kill-port.sh)
+# in case a previous server instance is still holding it. Always starts portal-web's
+# Vite dev server too (real hot module reload, no manual refresh) — open the printed
+# UI URL, not the API port, to get hot reload.
 
 set -euo pipefail
 
@@ -18,16 +17,14 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
 port="4100"
-watch_web="0"
 server_pid=""
-watcher_pid=""
+vite_pid=""
 
 usage() {
 	cat <<'EOF'
 Usage:
 	./scripts/serve.sh [port]
 	./scripts/serve.sh --port <port>
-	./scripts/serve.sh --watch-web [port]
 EOF
 }
 
@@ -37,19 +34,15 @@ cleanup() {
 		kill "$server_pid" 2>/dev/null || true
 		wait "$server_pid" 2>/dev/null || true
 	fi
-	if [[ -n "$watcher_pid" ]]; then
-		kill "$watcher_pid" 2>/dev/null || true
-		wait "$watcher_pid" 2>/dev/null || true
+	if [[ -n "$vite_pid" ]]; then
+		kill "$vite_pid" 2>/dev/null || true
+		wait "$vite_pid" 2>/dev/null || true
 	fi
 	exit "$status"
 }
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
-		--watch-web)
-			watch_web="1"
-			shift
-			;;
 		--port)
 			if [[ $# -lt 2 ]]; then
 				usage
@@ -83,15 +76,18 @@ pnpm -r build
 echo "==> Freeing port $port (if in use)"
 "$repo_root/scripts/kill-port.sh" "$port" || true
 
-if [[ "$watch_web" == "1" ]]; then
-	echo "==> Watching portal-web for frontend changes"
-	pnpm --filter @backbencher/portal-web exec vite build --watch &
-	watcher_pid="$!"
-fi
-
-echo "==> Starting portal on http://localhost:$port"
+echo "==> Starting portal API on http://localhost:$port"
 cd apps/cli
 node dist/index.js serve --port "$port" &
 server_pid="$!"
+cd "$repo_root"
+
+echo "==> Starting portal-web dev server (hot reload) on http://localhost:5173"
+BB_API_PORT="$port" pnpm --filter @backbencher/portal-web exec vite &
+vite_pid="$!"
+
+echo ""
+echo "Open http://localhost:5173 for the hot-reloading UI (proxies /trpc to :$port)."
+echo ""
 
 wait "$server_pid"
