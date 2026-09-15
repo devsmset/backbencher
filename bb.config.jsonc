@@ -4,7 +4,7 @@
     "defaultUrl": null, // must be passed via --url when null
     "tlsPermissive": false, // opt-in; sets ignoreHTTPSErrors + cert flags
     "apiFilter": {
-      "hostAllowlist": ["*.otxlab.net"], // empty = all hosts
+      "hostAllowlist": [], // empty = all hosts
       "pathAllowPatterns": ["/api/", "/idm-service/", "/bo/"],
       "resourceTypes": ["xhr", "fetch"],
       "dropContentTypes": ["image/", "font/", "text/css", "text/javascript"],
