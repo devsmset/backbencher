@@ -23,13 +23,17 @@ import { Chip, JsonBlock, Muted, QueryState } from "../ui.js";
 // scheme for the y axis, then draws an edge per SessionCallEdge (a real value observed
 // flowing from one call's response into a later call's request).
 
-const ROW_HEIGHT = 70;
+// sessions.graph omits `value` (the literal captured value) — it's never rendered here and can be
+// large; full detail (including value, via callDetail-style lookups) is fetched only when needed.
+type GraphEdge = Omit<SessionCallEdge, "value">;
+
 const NODE_WIDTH = 220;
 
-// Minimum x-gap enforced between consecutive same-lane nodes by the nudge pass in the layout
-// memo below. Also the per-node width added to `timelineWidth` once a session has enough calls
-// to need more room than the container provides.
+// Horizontal gap between sibling nodes within the same dependency-depth level.
 const MIN_NODE_SPACING = 260;
+
+// Vertical gap between dependency-depth levels, sized for card height plus edge label room.
+const LEVEL_HEIGHT = 160;
 
 function useContainerWidth(ref: RefObject<HTMLDivElement>): number {
   const [width, setWidth] = useState(1200);
@@ -46,6 +50,8 @@ function useContainerWidth(ref: RefObject<HTMLDivElement>): number {
   return width;
 }
 
+// Deliberately excludes request/response bodies and headers — those are fetched lazily per node
+// via sessions.callDetail, since captured bodies are uncapped and can run to megabytes per session.
 interface GraphCallNode {
   correlationId: string;
   operationId: string | null;
@@ -55,42 +61,130 @@ interface GraphCallNode {
   status: number | null;
   requestTimestamp: number;
   responseTimestamp: number | null;
-  requestHeaders: Record<string, string>;
-  requestBody?: unknown;
-  responseHeaders: Record<string, string>;
-  responseBody?: unknown;
   responseBodyKind: string | null;
-}
-
-// Greedy interval scheduling: each call occupies [requestTimestamp, responseTimestamp] and
-// gets the first lane whose previous occupant has already finished.
-function assignLanes(nodes: GraphCallNode[]): Map<string, number> {
-  const sorted = [...nodes].sort((a, b) => a.requestTimestamp - b.requestTimestamp);
-  const laneEnds: number[] = [];
-  const lanes = new Map<string, number>();
-  for (const n of sorted) {
-    const end = n.responseTimestamp ?? n.requestTimestamp;
-    let lane = laneEnds.findIndex((laneEnd) => laneEnd <= n.requestTimestamp);
-    if (lane === -1) {
-      lane = laneEnds.length;
-      laneEnds.push(end);
-    } else {
-      laneEnds[lane] = end;
-    }
-    lanes.set(n.correlationId, lane);
-  }
-  return lanes;
 }
 
 function statusVariant(status: number | null): "ok" | "warn" {
   return status === null || status >= 400 ? "warn" : "ok";
 }
 
+type GraphMode = "trace" | "producers" | "consumers" | "both" | null;
+
+// Transitive walk over SessionCallEdge: "up" follows consumer -> producer (ancestors that fed a
+// value into `startId`), "down" follows producer -> consumer (descendants that consumed one).
+function transitiveClosure(startId: string, edges: GraphEdge[], direction: "up" | "down"): Set<string> {
+  const adjacency = new Map<string, string[]>();
+  for (const e of edges) {
+    const from = direction === "up" ? e.consumerCorrelationId : e.producerCorrelationId;
+    const to = direction === "up" ? e.producerCorrelationId : e.consumerCorrelationId;
+    const arr = adjacency.get(from);
+    if (arr) arr.push(to);
+    else adjacency.set(from, [to]);
+  }
+  const visited = new Set<string>([startId]);
+  const queue = [startId];
+  while (queue.length > 0) {
+    const cur = queue.shift() as string;
+    for (const next of adjacency.get(cur) ?? []) {
+      if (!visited.has(next)) {
+        visited.add(next);
+        queue.push(next);
+      }
+    }
+  }
+  return visited;
+}
+
+// Returns the node ids a graphMode narrows the view to, or null when no narrowing applies
+// (no mode, no selection, or the selection was deleted out from under it).
+function computeFilteredIds(
+  mode: GraphMode,
+  selectedId: string | null,
+  presentIds: Set<string>,
+  edges: GraphEdge[],
+): Set<string> | null {
+  if (!mode || !selectedId || !presentIds.has(selectedId)) return null;
+  if (mode === "trace" || mode === "producers") return transitiveClosure(selectedId, edges, "up");
+  if (mode === "consumers") return transitiveClosure(selectedId, edges, "down");
+  const up = transitiveClosure(selectedId, edges, "up");
+  const down = transitiveClosure(selectedId, edges, "down");
+  return new Set([...up, ...down]);
+}
+
+// Kahn's algorithm over the producer -> consumer edges restricted to `nodeIds`, breaking ties
+// (and any unexpected cycle) by requestTimestamp so the line always has a deterministic order.
+function topoOrder(nodeIds: Set<string>, edges: GraphEdge[], timestampOf: Map<string, number>): string[] {
+  const inDegree = new Map<string, number>();
+  const adjacency = new Map<string, string[]>();
+  for (const id of nodeIds) inDegree.set(id, 0);
+  for (const e of edges) {
+    if (!nodeIds.has(e.producerCorrelationId) || !nodeIds.has(e.consumerCorrelationId)) continue;
+    const arr = adjacency.get(e.producerCorrelationId);
+    if (arr) arr.push(e.consumerCorrelationId);
+    else adjacency.set(e.producerCorrelationId, [e.consumerCorrelationId]);
+    inDegree.set(e.consumerCorrelationId, (inDegree.get(e.consumerCorrelationId) ?? 0) + 1);
+  }
+  const byTimestamp = (a: string, b: string) => (timestampOf.get(a) ?? 0) - (timestampOf.get(b) ?? 0);
+  const remaining = new Set(nodeIds);
+  const order: string[] = [];
+  while (remaining.size > 0) {
+    const ready = [...remaining].filter((id) => (inDegree.get(id) ?? 0) === 0).sort(byTimestamp);
+    if (ready.length === 0) {
+      order.push(...[...remaining].sort(byTimestamp));
+      break;
+    }
+    for (const id of ready) {
+      order.push(id);
+      remaining.delete(id);
+      for (const next of adjacency.get(id) ?? []) {
+        inDegree.set(next, (inDegree.get(next) ?? 0) - 1);
+      }
+    }
+  }
+  return order;
+}
+
+// Layers nodes by longest-path depth from their producers, via the same Kahn's-algorithm batching
+// as topoOrder above: each pass of currently-zero-in-degree nodes becomes one depth level, so a
+// node lands one level below the deepest of its producers. Nodes with no producer (including
+// fully isolated calls) land in level 0. Any leftover cycle nodes are appended as one final level.
+function assignLevels(nodeIds: Set<string>, edges: GraphEdge[]): Map<string, number> {
+  const inDegree = new Map<string, number>();
+  const adjacency = new Map<string, string[]>();
+  for (const id of nodeIds) inDegree.set(id, 0);
+  for (const e of edges) {
+    if (!nodeIds.has(e.producerCorrelationId) || !nodeIds.has(e.consumerCorrelationId)) continue;
+    const arr = adjacency.get(e.producerCorrelationId);
+    if (arr) arr.push(e.consumerCorrelationId);
+    else adjacency.set(e.producerCorrelationId, [e.consumerCorrelationId]);
+    inDegree.set(e.consumerCorrelationId, (inDegree.get(e.consumerCorrelationId) ?? 0) + 1);
+  }
+  const remaining = new Set(nodeIds);
+  const levels = new Map<string, number>();
+  let level = 0;
+  while (remaining.size > 0) {
+    const ready = [...remaining].filter((id) => (inDegree.get(id) ?? 0) === 0);
+    if (ready.length === 0) {
+      for (const id of remaining) levels.set(id, level);
+      break;
+    }
+    for (const id of ready) {
+      levels.set(id, level);
+      remaining.delete(id);
+      for (const next of adjacency.get(id) ?? []) {
+        inDegree.set(next, (inDegree.get(next) ?? 0) - 1);
+      }
+    }
+    level++;
+  }
+  return levels;
+}
+
 function CallNode({ data }: NodeProps<{ node: GraphCallNode }>) {
   const { node } = data;
   return (
     <div className="rounded-md border border-[--line] bg-[--panel2] px-2 py-1.5 text-xs" style={{ width: NODE_WIDTH }}>
-      <Handle type="target" position={Position.Left} />
+      <Handle type="target" position={Position.Top} />
       <div className="flex items-center gap-1.5">
         <span className="font-bold">{node.method}</span>
         <Chip variant={statusVariant(node.status)}>{node.status !== null ? String(node.status) : "?"}</Chip>
@@ -98,7 +192,7 @@ function CallNode({ data }: NodeProps<{ node: GraphCallNode }>) {
       <div className="mt-0.5 truncate text-[--muted]" title={node.pathname}>
         {node.pathname}
       </div>
-      <Handle type="source" position={Position.Right} />
+      <Handle type="source" position={Position.Bottom} />
     </div>
   );
 }
@@ -120,7 +214,7 @@ function ConnectedEdges({
   correlationId,
   nodesById,
 }: {
-  edges: SessionCallEdge[];
+  edges: GraphEdge[];
   correlationId: string;
   nodesById: Map<string, GraphCallNode>;
 }) {
@@ -204,16 +298,20 @@ function OperationSummary({ operationId }: { operationId: string }) {
 }
 
 function NodeDetails({
+  sessionId,
   node,
   edges,
   nodesById,
   onRequestDelete,
 }: {
+  sessionId: string;
   node: GraphCallNode;
-  edges: SessionCallEdge[];
+  edges: GraphEdge[];
   nodesById: Map<string, GraphCallNode>;
   onRequestDelete: (correlationId: string) => void;
 }) {
+  const detail = trpc.sessions.callDetail.useQuery({ sessionId, correlationId: node.correlationId });
+
   return (
     <div className="flex flex-col gap-4">
       <div>
@@ -223,13 +321,17 @@ function NodeDetails({
       </div>
       <div>
         <h4 className="mb-1.5 text-xs font-bold uppercase tracking-[0.4px] text-[--muted]">Request</h4>
-        <JsonBlock value={{ headers: node.requestHeaders, body: node.requestBody }} />
+        {detail.isLoading && <Muted>loading…</Muted>}
+        {detail.data && <JsonBlock value={{ headers: detail.data.requestHeaders, body: detail.data.requestBody }} />}
       </div>
       <div>
         <h4 className="mb-1.5 text-xs font-bold uppercase tracking-[0.4px] text-[--muted]">Response</h4>
-        <JsonBlock
-          value={{ bodyKind: node.responseBodyKind, headers: node.responseHeaders, body: node.responseBody }}
-        />
+        {detail.isLoading && <Muted>loading…</Muted>}
+        {detail.data && (
+          <JsonBlock
+            value={{ bodyKind: detail.data.responseBodyKind, headers: detail.data.responseHeaders, body: detail.data.responseBody }}
+          />
+        )}
       </div>
       <div>
         <h4 className="mb-1.5 text-xs font-bold uppercase tracking-[0.4px] text-[--muted]">Connected values</h4>
@@ -261,7 +363,7 @@ function DeleteConfirm({
   onConfirm,
 }: {
   correlationId: string;
-  edges: SessionCallEdge[];
+  edges: GraphEdge[];
   pending: Set<string>;
   nodesById: Map<string, GraphCallNode>;
   onCancel: () => void;
@@ -322,6 +424,7 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
   const utils = trpc.useUtils();
   const graph = trpc.sessions.graph.useQuery({ sessionId });
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [graphMode, setGraphMode] = useState<GraphMode>(null);
   const [pendingDeletes, setPendingDeletes] = useState<Set<string>>(new Set());
   const [confirming, setConfirming] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -333,7 +436,9 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
   const [rightPanelWidth, setRightPanelWidth] = useState(420);
   const [isDraggingDivider, setIsDraggingDivider] = useState(false);
   const draggingDivider = useRef(false);
-  const previousLayoutInputs = useRef<{ graphData: typeof graph.data; windowWidth: number } | null>(null);
+  const previousLayoutInputs = useRef<{ graphData: typeof graph.data; windowWidth: number; graphMode: GraphMode } | null>(
+    null,
+  );
 
   const deleteCalls = trpc.sessions.deleteCalls.useMutation({
     onSuccess: async () => {
@@ -372,6 +477,20 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
     closeButtonRef.current?.focus();
   }, []);
 
+  // Computed separately from the layout memo below: when no mode is active this is always the
+  // same `null` reference, so selecting a node (the common case) never forces the full relayout
+  // — only an actual mode switch or a selection change *while a mode is active* should.
+  const filteredIds = useMemo(() => {
+    if (!graphMode || !selectedId) return null;
+    const presentIds = new Set(
+      (graph.data?.nodes ?? []).filter((n) => !pendingDeletes.has(n.correlationId)).map((n) => n.correlationId),
+    );
+    const graphEdgesRaw = (graph.data?.edges ?? []).filter(
+      (e) => !pendingDeletes.has(e.producerCorrelationId) && !pendingDeletes.has(e.consumerCorrelationId),
+    );
+    return computeFilteredIds(graphMode, selectedId, presentIds, graphEdgesRaw);
+  }, [graph.data, pendingDeletes, graphMode, selectedId]);
+
   const { nodes: layoutNodes, edges } = useMemo(() => {
     const visibleNodes = (graph.data?.nodes ?? []).filter((n) => !pendingDeletes.has(n.correlationId));
     const graphEdgesRaw = (graph.data?.edges ?? []).filter(
@@ -379,43 +498,47 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
     );
     if (visibleNodes.length === 0) return { nodes: [] as Node[], edges: [] as Edge[] };
 
-    const minTs = Math.min(...visibleNodes.map((n) => n.requestTimestamp));
-    const maxTs = Math.max(...visibleNodes.map((n) => n.responseTimestamp ?? n.requestTimestamp));
-    const span = Math.max(1, maxTs - minTs);
-    const lanes = assignLanes(visibleNodes);
-    const timelineWidth = Math.max(containerWidth, visibleNodes.length * MIN_NODE_SPACING);
+    const scopedNodes = filteredIds ? visibleNodes.filter((n) => filteredIds.has(n.correlationId)) : visibleNodes;
+    const scopedEdges = filteredIds
+      ? graphEdgesRaw.filter((e) => filteredIds.has(e.producerCorrelationId) && filteredIds.has(e.consumerCorrelationId))
+      : graphEdgesRaw;
+    const nodesById = new Map(scopedNodes.map((n) => [n.correlationId, n]));
 
-    const rfNodes: Node[] = visibleNodes.map((n) => ({
-      id: n.correlationId,
-      type: "call",
-      position: {
-        x: ((n.requestTimestamp - minTs) / span) * timelineWidth,
-        y: (lanes.get(n.correlationId) ?? 0) * ROW_HEIGHT,
-      },
-      data: { node: n },
-    }));
+    let rfNodes: Node[];
+    if (graphMode === "trace") {
+      const timestampOf = new Map(scopedNodes.map((n) => [n.correlationId, n.requestTimestamp]));
+      const order = topoOrder(new Set(nodesById.keys()), scopedEdges, timestampOf);
+      rfNodes = order.map((id, i) => ({
+        id,
+        type: "call",
+        position: { x: 0, y: i * MIN_NODE_SPACING },
+        data: { node: nodesById.get(id) as GraphCallNode },
+      }));
+    } else {
+      const levels = assignLevels(new Set(nodesById.keys()), scopedEdges);
+      const byLevel = new Map<number, GraphCallNode[]>();
+      for (const n of scopedNodes) {
+        const level = levels.get(n.correlationId) ?? 0;
+        const arr = byLevel.get(level);
+        if (arr) arr.push(n);
+        else byLevel.set(level, [n]);
+      }
 
-    // x above is proportional to elapsed time alone, so a burst of calls in a short window can
-    // still land on top of each other within a lane. Push each node right of its same-lane
-    // predecessor by at least MIN_NODE_SPACING; isolated nodes are left untouched.
-    const byLane = new Map<number, Node[]>();
-    for (const node of rfNodes) {
-      const lane = node.position.y;
-      const arr = byLane.get(lane);
-      if (arr) arr.push(node);
-      else byLane.set(lane, [node]);
-    }
-    for (const laneNodes of byLane.values()) {
-      laneNodes.sort((a, b) => a.position.x - b.position.x);
-      for (let i = 1; i < laneNodes.length; i++) {
-        const cur = laneNodes[i]!;
-        const prev = laneNodes[i - 1]!;
-        if (!cur.position || !prev.position) continue;
-        cur.position.x = Math.max(cur.position.x, prev.position.x + MIN_NODE_SPACING);
+      rfNodes = [];
+      for (const [level, levelNodes] of byLevel) {
+        levelNodes.sort((a, b) => a.requestTimestamp - b.requestTimestamp);
+        levelNodes.forEach((n, i) => {
+          rfNodes.push({
+            id: n.correlationId,
+            type: "call",
+            position: { x: i * MIN_NODE_SPACING, y: level * LEVEL_HEIGHT },
+            data: { node: n },
+          });
+        });
       }
     }
 
-    const rfEdges: Edge[] = graphEdgesRaw.map((e, i) => ({
+    const rfEdges: Edge[] = scopedEdges.map((e, i) => ({
       id: `${e.producerCorrelationId}-${e.consumerCorrelationId}-${i}`,
       source: e.producerCorrelationId,
       target: e.consumerCorrelationId,
@@ -426,17 +549,22 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
     }));
 
     return { nodes: rfNodes, edges: rfEdges };
-  }, [graph.data, containerWidth, pendingDeletes]);
+  }, [graph.data, containerWidth, pendingDeletes, graphMode, filteredIds]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState<{ node: GraphCallNode }>([]);
   useEffect(() => {
     const windowWidth = window.innerWidth;
     const previous = previousLayoutInputs.current;
-    const shouldReset = !previous || previous.graphData !== graph.data || previous.windowWidth !== windowWidth;
+    const shouldReset =
+      !previous ||
+      previous.graphData !== graph.data ||
+      previous.windowWidth !== windowWidth ||
+      previous.graphMode !== graphMode;
 
     // layoutNodes is recomputed whenever containerWidth changes, including divider drags and real
-    // window resizes. Only a new graph payload or a real window width change should reset node
-    // positions; all other recomputes preserve any node positions the user has already adjusted.
+    // window resizes. Only a new graph payload, a real window width change, or a graphMode switch
+    // (which uses a different layout algorithm entirely) should reset node positions; all other
+    // recomputes preserve any node positions the user has already adjusted.
     if (shouldReset) {
       setNodes(layoutNodes);
     } else {
@@ -449,12 +577,13 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
       });
     }
 
-    previousLayoutInputs.current = { graphData: graph.data, windowWidth };
-  }, [graph.data, layoutNodes, setNodes]);
+    previousLayoutInputs.current = { graphData: graph.data, windowWidth, graphMode };
+  }, [graph.data, layoutNodes, setNodes, graphMode]);
 
   useEffect(() => {
     setPendingDeletes(new Set());
     setConfirming(null);
+    setGraphMode(null);
   }, [graph.data]);
 
   const visibleNodesById = useMemo(() => {
@@ -498,6 +627,61 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
         <header className="flex items-center justify-between border-b border-[--line] bg-[--panel2] px-4 py-2.5">
           <h3 className="m-0 text-sm">Session {sessionId} — dependency graph</h3>
           <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              {(
+                [
+                  ["trace", "Trace to here"],
+                  ["producers", "Producers"],
+                  ["consumers", "Consumers"],
+                  ["both", "Both"],
+                ] as const
+              ).map(([mode, label]) => (
+                <button
+                  key={mode}
+                  type="button"
+                  className={`rounded-md border px-2 py-1 text-xs font-semibold disabled:opacity-40 ${
+                    graphMode === mode
+                      ? "border-[--accent] bg-[--accent] text-[--panel]"
+                      : "border-[--line]"
+                  }`}
+                  disabled={!selectedId}
+                  title={selectedId ? undefined : "Select a call first"}
+                  onClick={() => setGraphMode(mode)}
+                >
+                  {label}
+                </button>
+              ))}
+              {graphMode && (
+                <button
+                  type="button"
+                  className="rounded-md border border-[--line] px-2 py-1 text-xs"
+                  onClick={() => setGraphMode(null)}
+                >
+                  Show all
+                </button>
+              )}
+              {graphMode === "trace" && filteredIds && (
+                <button
+                  type="button"
+                  className="rounded-md border border-[--line] px-2 py-1 text-xs"
+                  onClick={() => {
+                    const others = (graph.data?.nodes ?? [])
+                      .map((n) => n.correlationId)
+                      .filter((id) => !pendingDeletes.has(id) && !filteredIds.has(id));
+                    if (others.length === 0) return;
+                    if (
+                      window.confirm(
+                        `Mark ${others.length} call(s) outside this trace for deletion? Nothing is removed until you click Save.`,
+                      )
+                    ) {
+                      setPendingDeletes((prev) => new Set([...prev, ...others]));
+                    }
+                  }}
+                >
+                  Keep only these
+                </button>
+              )}
+            </div>
             <div className="flex flex-col items-end">
               <button
                 type="button"
@@ -571,6 +755,7 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
           <div className="shrink-0 overflow-y-auto p-4" style={{ width: rightPanelWidth }}>
             {selectedNode ? (
               <NodeDetails
+                sessionId={sessionId}
                 node={selectedNode}
                 edges={graphEdgesRaw}
                 nodesById={visibleNodesById}
