@@ -180,7 +180,7 @@ export function SessionsList() {
   );
 }
 
-interface ApiCallRow {
+export interface ApiCallRow {
   correlationId: string;
   ts: number;
   method: string;
@@ -271,6 +271,42 @@ function buildApiCalls(events: unknown[]): ApiCallRow[] {
   return rows.filter((row) => !isAssetLikeCall(row)).sort((a, b) => a.ts - b.ts);
 }
 
+// <details> only hides its content visually (display:none) — React still mounts whatever's
+// inside, open or not. Bodies are captured verbatim and uncapped (ADR-0006), so an outlier call
+// can carry a multi-megabyte JSON body; JsonBlock renders one React element per key/array-item/
+// scalar, so a single such body can blow up into hundreds of thousands of elements. Gating the
+// request/response panel on the details' own open state means that cost is only ever paid for a
+// call the analyst actually expands, not for every call in the session on every page load.
+export function CallRow({ call: c }: { call: ApiCallRow }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <details
+      key={c.correlationId || `${c.ts}-${c.url}`}
+      className="mb-2 overflow-hidden rounded-md border border-[--line]"
+      onToggle={(e) => setOpen(e.currentTarget.open)}
+    >
+      <summary className="cursor-pointer px-2.5 py-2">
+        <span className="mr-2 font-bold">{c.method || "?"}</span>
+        <span className="mr-2 text-[--muted]">{c.url || "(missing url)"}</span>
+        {c.status !== null ? <Chip>{String(c.status)}</Chip> : <Chip variant="warn">no status</Chip>}
+        {c.durationMs !== null && <span className="ml-2 text-[--muted]">{c.durationMs} ms</span>}
+      </summary>
+      {open && (
+        <div className="flex flex-col gap-3 border-t border-[--line] p-3">
+          <div>
+            <h4>Request</h4>
+            <JsonBlock value={{ headers: c.reqHeaders, body: c.reqBody }} />
+          </div>
+          <div>
+            <h4>Response</h4>
+            <JsonBlock value={{ bodyKind: c.bodyKind, headers: c.resHeaders, body: c.resBody }} />
+          </div>
+        </div>
+      )}
+    </details>
+  );
+}
+
 export function SessionDetail({ sessionId }: { sessionId: string }) {
   const utils = trpc.useUtils();
   const timeline = trpc.sessions.timeline.useQuery({ sessionId });
@@ -325,24 +361,7 @@ export function SessionDetail({ sessionId }: { sessionId: string }) {
         <div className="mb-2 text-xs text-[--muted]">{calls.length} paired request/response calls</div>
         {calls.length === 0 && <Muted>No API calls in this session.</Muted>}
         {calls.map((c) => (
-          <details key={c.correlationId || `${c.ts}-${c.url}`} className="mb-2 overflow-hidden rounded-md border border-[--line]">
-            <summary className="cursor-pointer px-2.5 py-2">
-              <span className="mr-2 font-bold">{c.method || "?"}</span>
-              <span className="mr-2 text-[--muted]">{c.url || "(missing url)"}</span>
-              {c.status !== null ? <Chip>{String(c.status)}</Chip> : <Chip variant="warn">no status</Chip>}
-              {c.durationMs !== null && <span className="ml-2 text-[--muted]">{c.durationMs} ms</span>}
-            </summary>
-            <div className="flex flex-col gap-3 border-t border-[--line] p-3">
-              <div>
-                <h4>Request</h4>
-                <JsonBlock value={{ headers: c.reqHeaders, body: c.reqBody }} />
-              </div>
-              <div>
-                <h4>Response</h4>
-                <JsonBlock value={{ bodyKind: c.bodyKind, headers: c.resHeaders, body: c.resBody }} />
-              </div>
-            </div>
-          </details>
+          <CallRow key={c.correlationId || `${c.ts}-${c.url}`} call={c} />
         ))}
       </Panel>
 
