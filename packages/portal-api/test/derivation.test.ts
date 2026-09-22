@@ -25,7 +25,11 @@ const previousDerivation: Operation = {
 describe("derivation job", () => {
   it("runs to completion and reports idle", async () => {
     const store = openStore(":memory:");
-    runDerivationJob(store, "alice");
+    // Only asserts on state transitions, so an empty session list is enough — and it must stay
+    // empty: the defaults for loadAllSessions/writeCuratedEvents read and write the real project
+    // data/ directory, and this store (fresh, in-memory) has no idea about real sessions' actual
+    // curation state, so letting it touch real sessions would silently revert their deletions.
+    runDerivationJob(store, "alice", { loadAllSessions: () => [] });
     expect(derivationState().status).toBe("running");
     await waitForDerivationIdle();
     expect(derivationState().status).toBe("idle");
@@ -92,9 +96,10 @@ describe("derivation job", () => {
 
   it("collapses concurrent requests into a single follow-up run", async () => {
     const store = openStore(":memory:");
-    runDerivationJob(store, "alice");
-    runDerivationJob(store, "alice");
-    runDerivationJob(store, "alice");
+    // Same isolation reasoning as the first test above — real sessions must stay out of this.
+    runDerivationJob(store, "alice", { loadAllSessions: () => [] });
+    runDerivationJob(store, "alice", { loadAllSessions: () => [] });
+    runDerivationJob(store, "alice", { loadAllSessions: () => [] });
     await waitForDerivationIdle();
     expect(derivationState().status).toBe("idle");
     store.close();
