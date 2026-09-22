@@ -180,11 +180,24 @@ function assignLevels(nodeIds: Set<string>, edges: GraphEdge[]): Map<string, num
   return levels;
 }
 
-function CallNode({ data }: NodeProps<{ node: GraphCallNode }>) {
-  const { node } = data;
+function CallNode({ data }: NodeProps<{ node: GraphCallNode; onDeleteClick: (correlationId: string) => void }>) {
+  const { node, onDeleteClick } = data;
   return (
-    <div className="rounded-md border border-[--line] bg-[--panel2] px-2 py-1.5 text-xs" style={{ width: NODE_WIDTH }}>
+    <div className="group relative rounded-md border border-[--line] bg-[--panel2] px-2 py-1.5 text-xs" style={{ width: NODE_WIDTH }}>
       <Handle type="target" position={Position.Top} />
+      <button
+        type="button"
+        aria-label={`Delete ${node.method} ${node.pathname}`}
+        title="Delete call"
+        className="absolute -right-2 -top-2 hidden h-5 w-5 items-center justify-center rounded-full border border-[--line] bg-[--panel] text-[10px] font-bold leading-none text-[--muted] hover:border-[--bad] hover:text-[--bad] group-hover:flex"
+        // Stop the click from also bubbling into ReactFlow's onNodeClick (node selection).
+        onClick={(e) => {
+          e.stopPropagation();
+          onDeleteClick(node.correlationId);
+        }}
+      >
+        ✕
+      </button>
       <div className="flex items-center gap-1.5">
         <span className="font-bold">{node.method}</span>
         <Chip variant={statusVariant(node.status)}>{node.status !== null ? String(node.status) : "?"}</Chip>
@@ -240,6 +253,22 @@ function ConnectedEdges({
         );
       })}
     </div>
+  );
+}
+
+// Same rationale as CallRow's lazy body rendering in Sessions.tsx: <details> only hides content
+// visually, so an un-gated JsonBlock would still mount a captured (uncapped) body regardless of
+// collapsed state. Give the caller a fresh `key` per node so re-selecting a different node starts
+// collapsed again instead of preserving whatever was left open.
+export function CollapsibleJson({ label, value }: { label: string; value: unknown }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <details onToggle={(e) => setOpen(e.currentTarget.open)}>
+      <summary className="mb-1.5 cursor-pointer text-xs font-bold uppercase tracking-[0.4px] text-[--muted]">
+        {label}
+      </summary>
+      {open && <JsonBlock value={value} />}
+    </details>
   );
 }
 
@@ -320,15 +349,21 @@ function NodeDetails({
         </div>
       </div>
       <div>
-        <h4 className="mb-1.5 text-xs font-bold uppercase tracking-[0.4px] text-[--muted]">Request</h4>
-        {detail.isLoading && <Muted>loading…</Muted>}
-        {detail.data && <JsonBlock value={{ headers: detail.data.requestHeaders, body: detail.data.requestBody }} />}
-      </div>
-      <div>
-        <h4 className="mb-1.5 text-xs font-bold uppercase tracking-[0.4px] text-[--muted]">Response</h4>
         {detail.isLoading && <Muted>loading…</Muted>}
         {detail.data && (
-          <JsonBlock
+          <CollapsibleJson
+            key={`${node.correlationId}-request`}
+            label="Request"
+            value={{ headers: detail.data.requestHeaders, body: detail.data.requestBody }}
+          />
+        )}
+      </div>
+      <div>
+        {detail.isLoading && <Muted>loading…</Muted>}
+        {detail.data && (
+          <CollapsibleJson
+            key={`${node.correlationId}-response`}
+            label="Response"
             value={{ bodyKind: detail.data.responseBodyKind, headers: detail.data.responseHeaders, body: detail.data.responseBody }}
           />
         )}
@@ -586,6 +621,15 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
     setGraphMode(null);
   }, [graph.data]);
 
+  // Injects the node card's hover-X delete trigger here, kept out of the layoutNodes memo above
+  // (which already has enough dependencies) — it opens the same confirm dialog the side panel's
+  // "Delete call" button uses, so a node-card delete gets the same orphan-producer check and
+  // staged-save behavior, just from a second entry point.
+  const nodesWithHandlers = useMemo(
+    () => nodes.map((n) => ({ ...n, data: { ...n.data, onDeleteClick: setConfirming } })),
+    [nodes],
+  );
+
   const visibleNodesById = useMemo(() => {
     const map = new Map<string, GraphCallNode>();
     for (const n of (graph.data?.nodes ?? []).filter((node) => !pendingDeletes.has(node.correlationId))) {
@@ -715,7 +759,7 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
             {graph.data && graph.data.derived !== false && graph.data.nodes.length > 0 && (
               <ReactFlowProvider>
                 <ReactFlow
-                  nodes={nodes}
+                  nodes={nodesWithHandlers}
                   edges={edges}
                   nodeTypes={nodeTypes}
                   onNodesChange={onNodesChange}
