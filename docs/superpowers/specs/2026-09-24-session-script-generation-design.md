@@ -95,8 +95,10 @@ graph screen's trimmed payload — needed to match edges against real request fi
   with `{{steps.<id>.extract.<var>}}` and add a matching `extract` entry on the producing step.
   Where the field is flagged `clientGenerated` for this Operation (already computed by
   `computeDependencyGraph`), replace it with `{{faker.uuid}}` instead of a hardcoded literal, so
-  replay doesn't reuse a stale id. Otherwise, leave the real captured literal as-is (static/
-  structural request data that doesn't vary).
+  replay doesn't reuse a stale id. Otherwise, a credential-named leaf (and, likewise, a
+  credential-named query param or form-encoded body value) becomes `{{env.BB_SECRET_<NAME>}}`
+  rather than the captured literal (ADR-0008); everything else keeps its real captured literal
+  (static/structural request data that doesn't vary).
 - **`extract`**: for each edge where this Call is the producer and the consuming step is also in
   this Composition, emit one `extract` entry (`varName` derived from the JSONPath's last segment,
   de-duplicated on collision).

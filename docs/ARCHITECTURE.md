@@ -273,6 +273,13 @@ model emits TestSpec YAML only. `validateSpec()` checks operationId validity, fo
 references, declared extracts, and write-implies-cleanup. On failure there is exactly one automatic
 repair round-trip; a still-invalid spec is persisted with `status: "invalid"` for a human.
 
+**Deterministic path from a Session** (`composeFromSession.ts`, `generateFromSession.ts`) —
+`proposeCompositionFromSession` turns a curated Session's real calls into a draft Composition with no
+model (refusing unclassified, unanswered, or empty sessions), and `generateTestSpecFromSession` builds
+the TestSpec from those calls and the session's dataflow edges. `Composition.sourceSessionId` routes
+`agent.generate` and `bb agent generate` to this path instead of the LLM. It reuses `validateSpec`, so
+it lands `generated` or `invalid` exactly like the LLM path.
+
 ---
 
 ## 9. Testkit — `packages/testkit`
@@ -353,6 +360,10 @@ Each of these has been got wrong at least once, or would be by anyone who didn't
 11. **Flake is not failure.** Quarantine before reporting, or the results lose credibility.
 12. **Safety rails live in deterministic code, not in prompts.** Environment destructiveness, auth
     matrices, and cleanup requirements are enforced by the compiler and runner.
+13. **A session-sourced Composition's steps carry `sourceCorrelationId`; `approve` must never rebuild
+    them.** Only intent text may change, or `agent.generate` has nothing to replay.
+14. **Generated specs never copy captured headers, and credential-named body/query/form fields become
+    `{{env.BB_SECRET_*}}`** (ADR-0008). Compiled specs inline the whole spec under `data/`.
 
 ---
 
@@ -371,6 +382,9 @@ Each of these has been got wrong at least once, or would be by anyone who didn't
    Both block a hosted deployment.
 6. `portal-web` has no automated tests; `apps/cli` has none either.
 7. `suggest` and `rehearsal` have no CLI entry points; they are portal-only.
+8. Login/2FA POSTs count as writes, so any session containing one lands `invalid` until a cleanup
+   entry is hand-added, and the Specs screen has no YAML/cleanup editor (repair is via
+   `specs.updateYaml` only).
 
 ---
 

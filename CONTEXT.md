@@ -95,8 +95,9 @@ the composer. Derived, never set by hand.
 _Avoid_: Published, enabled
 
 **Composition**:
-An ordered list of Operations a model proposed to achieve a Goal, awaiting human judgement. Only an
-approved Composition may become a test.
+An ordered list of Operations proposed to achieve a Goal, awaiting human judgement. Proposed either
+by a model from a Goal, or deterministically from a curated Session's real calls (then it has no
+model info). Only an approved Composition may become a test.
 _Avoid_: Scenario, plan, draft, flow
 
 **Unmet dependency**:
