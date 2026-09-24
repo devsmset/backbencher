@@ -11,6 +11,7 @@ import {
 import { dataDir, newId } from "@backbencher/shared";
 import { mergeOperation } from "@backbencher/store";
 import {
+  isAssetLikeCall,
   loadCuratedOrRawSession,
   loadSession,
   pairCalls,
@@ -43,17 +44,6 @@ import { publicProcedure, router } from "./trpc.js";
 // In-memory registry of in-progress recordings, keyed by sessionId. A recording is a live
 // headed browser + Playwright listeners running in this server process (mirrors `bb record`).
 const activeRecordings = new Map<string, RecorderHandle>();
-
-const ASSET_PATH_RE = /\.(?:svg|woff2?|ttf|otf|eot|ico|png|jpe?g|gif|webp|avif)(?:$|[?#])/i;
-const DROPPED_CONTENT_PREFIXES = ["image/", "font/", "text/css", "text/javascript"];
-
-// Mirrors the frontend's isAssetLikeCall (Sessions.tsx) but for a PairedCall, not the raw
-// ndjson-derived row — kept separate since the two shapes differ.
-function isAssetLikeCall(c: { pathname: string; requestContentType: string | undefined; responseContentType: string | undefined }): boolean {
-  const contentType = (c.responseContentType ?? c.requestContentType ?? "").toLowerCase();
-  if (DROPPED_CONTENT_PREFIXES.some((prefix) => contentType.startsWith(prefix))) return true;
-  return ASSET_PATH_RE.test(c.pathname);
-}
 
 const sessionsRouter = router({
   list: publicProcedure.query(({ ctx }) => ctx.store.sessions.list()),

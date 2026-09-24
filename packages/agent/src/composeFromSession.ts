@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { type PairedCall, loadCuratedOrRawSession, pairCalls } from "@backbencher/derive";
+import { isAssetLikeCall, loadCuratedOrRawSession, pairCalls } from "@backbencher/derive";
 import { type Composition, CompositionSchema } from "@backbencher/schemas";
 import { dataDir, newId } from "@backbencher/shared";
 import type { Store } from "@backbencher/store";
@@ -8,18 +8,6 @@ import type { Store } from "@backbencher/store";
 // §2). A second, model-free way to arrive at a draft Composition, sourced from a curated Session's
 // real observed calls instead of a free-text goal. Every downstream step (approve, TestDecision,
 // generation) is shared with the LLM path — only proposal differs.
-
-// Duplicated from packages/portal-api/src/routers.ts's `isAssetLikeCall` (PairedCall-shaped
-// version) rather than shared — matches that file's own precedent of keeping this per-consumer
-// rather than factored out (see its comment: "kept separate since the two shapes differ").
-const ASSET_PATH_RE = /\.(?:svg|woff2?|ttf|otf|eot|ico|png|jpe?g|gif|webp|avif)(?:$|[?#])/i;
-const DROPPED_CONTENT_PREFIXES = ["image/", "font/", "text/css", "text/javascript"];
-
-function isAssetLikeCall(c: Pick<PairedCall, "pathname" | "requestContentType" | "responseContentType">): boolean {
-  const contentType = (c.responseContentType ?? c.requestContentType ?? "").toLowerCase();
-  if (DROPPED_CONTENT_PREFIXES.some((prefix) => contentType.startsWith(prefix))) return true;
-  return ASSET_PATH_RE.test(c.pathname);
-}
 
 export class UnclassifiedCallsError extends Error {
   constructor(public readonly calls: Array<{ correlationId: string; method: string; pathname: string }>) {

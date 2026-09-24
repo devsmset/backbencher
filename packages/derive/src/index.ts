@@ -2,6 +2,7 @@ export type { DerivationResult, PairedCall, RunDerivationOptions, SessionData } 
 export { loadSession, loadAllSessions } from "./loadSessions.js";
 export { CURATED_EVENTS_FILE, loadCuratedOrRawSession, writeCuratedEvents } from "./curatedEvents.js";
 export { pairCalls } from "./pairCalls.js";
+export { isAssetLikeCall } from "./assetCalls.js";
 export { templatizePaths } from "./templatize.js";
 export type { OpAccum, OpParam, TemplatizeResult } from "./templatize.js";
 export {
