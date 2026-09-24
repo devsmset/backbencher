@@ -194,4 +194,94 @@ it("lands as invalid when the session writes data, and still stores the spec for
 
     expect(result.spec?.steps[0]?.request?.body).toBe("user_id=ABC123&code=999999");
   });
+
+  const yamlOf = (store: ReturnType<typeof openStore>, specId: string) => store.specs.get(specId)?.yaml ?? "";
+
+  it("turns a credential-named JSON body field into an env ref and keeps other fields literal", () => {
+    resetClock();
+    const session = completeSession("sess-gen-7a", [
+      ...apiCall("g1", {
+        method: "POST",
+        url: `${H}/api/login`,
+        postData: JSON.stringify({ username: "bob", password: "hunter2-not-real" }),
+        body: { ok: true },
+      }),
+    ]);
+    const store = setup(session);
+
+    const result = generate(store, "sess-gen-7a");
+
+    expect(result.spec?.steps[0]?.request?.body).toEqual({ username: "bob", password: "{{env.BB_SECRET_PASSWORD}}" });
+    expect(yamlOf(store, result.specId)).not.toContain("hunter2-not-real");
+  });
+
+  it("turns a credential-named query param into an env ref", () => {
+    resetClock();
+    const session = completeSession("sess-gen-7b", [
+      ...apiCall("g1", { url: `${H}/api/items?api_key=abc123def456&page=2`, body: { ok: true } }),
+    ]);
+    const store = setup(session);
+
+    const result = generate(store, "sess-gen-7b");
+
+    expect(result.spec?.steps[0]?.request?.query).toEqual({ api_key: "{{env.BB_SECRET_API_KEY}}", page: "2" });
+    expect(yamlOf(store, result.specId)).not.toContain("abc123def456");
+  });
+
+  it("replaces only the credential value in a form-encoded body, byte-for-byte elsewhere", () => {
+    resetClock();
+    const session = completeSession("sess-gen-7c", [
+      ...apiCall("g1", {
+        method: "POST",
+        url: `${H}/api/form-login`,
+        reqHeaders: { "content-type": "application/x-www-form-urlencoded" },
+        postData: "user_id=WS0001&password=Not%5EReal%402609&type=user_id",
+        body: { ok: true },
+      }),
+    ]);
+    const store = setup(session);
+
+    const result = generate(store, "sess-gen-7c");
+
+    expect(result.spec?.steps[0]?.request?.body).toBe("user_id=WS0001&password={{env.BB_SECRET_PASSWORD}}&type=user_id");
+    const yaml = yamlOf(store, result.specId);
+    expect(yaml).not.toContain("Not%5EReal%402609");
+    expect(yaml).not.toContain("Not^Real@2609");
+  });
+
+  it("prefers a producer edge over the env ref for a credential-named field", () => {
+    resetClock();
+    const token = "eyJhbGciOiJIUzI1NiJ9.XYZ789ABC123DEF";
+    const session = completeSession("sess-gen-7d", [
+      ...apiCall("g1", { method: "POST", url: `${H}/auth/login`, body: { token } }),
+      ...apiCall("g2", {
+        method: "POST",
+        url: `${H}/api/tickets`,
+        postData: JSON.stringify({ authToken: token, title: "New ticket" }),
+        body: { id: "t1" },
+      }),
+    ]);
+    const store = setup(session);
+
+    const result = generate(store, "sess-gen-7d");
+
+    expect(result.spec?.steps[1]?.request?.body).toEqual({
+      authToken: "{{steps.step0.extract.token}}",
+      title: "New ticket",
+    });
+  });
+
+  it("never copies a captured cookie header into the spec", () => {
+    resetClock();
+    const cookie = "SESSION_ID=abcDEF123456ghiJKL789";
+    const session = completeSession("sess-gen-7e", [
+      ...apiCall("g1", { url: `${H}/api/me`, reqHeaders: { cookie }, body: { ok: true } }),
+    ]);
+    const store = setup(session);
+
+    const result = generate(store, "sess-gen-7e");
+
+    expect(result.spec?.steps[0]?.request?.headers).toBeUndefined();
+    expect(yamlOf(store, result.specId)).not.toContain("abcDEF123456ghiJKL789");
+  });
 });

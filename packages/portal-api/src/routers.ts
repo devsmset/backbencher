@@ -33,6 +33,8 @@ import {
   summarize,
   suggestAnnotations,
   UnclassifiedCallsError,
+  UnansweredCallsError,
+  NoReplayableCallsError,
 } from "@backbencher/agent";
 import { loadSpecYaml, runSpecAgainstEnv, generateAuthzMatrix, generateBolaProbes, specToYaml } from "@backbencher/testkit";
 import { TRPCError } from "@trpc/server";
@@ -480,7 +482,7 @@ const composeRouter = router({
         });
         return composition;
       } catch (e) {
-        if (e instanceof UnclassifiedCallsError) {
+        if (e instanceof UnclassifiedCallsError || e instanceof UnansweredCallsError || e instanceof NoReplayableCallsError) {
           throw new TRPCError({ code: "PRECONDITION_FAILED", message: e.message });
         }
         throw e;
@@ -498,9 +500,27 @@ const composeRouter = router({
     .mutation(({ ctx, input }) => {
       const existing = ctx.store.compositions.get(input.compositionId);
       if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "composition not found" });
-      const steps = input.steps
-        ? input.steps.map((s) => ({ ...s, satisfies: [], autoAdded: false, fromSessionIds: [] }))
-        : existing.steps;
+      let steps = existing.steps;
+      if (input.steps) {
+        if (existing.sourceSessionId) {
+          // Session-sourced steps carry sourceCorrelationId/fromSessionIds; rebuilding them would
+          // break agent.generate. Only the intent text may change.
+          const incoming = input.steps;
+          if (
+            incoming.length !== existing.steps.length ||
+            incoming.some((s, i) => s.operationId !== existing.steps[i]?.operationId)
+          ) {
+            throw new TRPCError({
+              code: "PRECONDITION_FAILED",
+              message:
+                "a session-sourced composition's steps can't be added, removed or reordered — only their intent text can be edited",
+            });
+          }
+          steps = existing.steps.map((s, i) => ({ ...s, intent: (incoming[i] as { intent: string }).intent }));
+        } else {
+          steps = input.steps.map((s) => ({ ...s, satisfies: [], autoAdded: false, fromSessionIds: [] }));
+        }
+      }
       const saved = ctx.store.compositions.upsert({
         ...existing,
         steps,

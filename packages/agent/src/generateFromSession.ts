@@ -55,6 +55,39 @@ function isArrayNestedPath(path: string): boolean {
   return path.includes("[*]");
 }
 
+// Credential handling (ADR-0007). Headers are dropped entirely because auth comes from the spec's
+// authProfile at run time. Bodies and query strings can't be dropped (they ARE the request), so
+// values whose field name looks like a credential become `{{env.BB_SECRET_<NAME>}}` instead of the
+// captured literal. The runtime throws on an unset `{{env.X}}` (packages/testkit/src/templates.ts),
+// so a missing secret fails loudly rather than replaying a stale credential.
+const SECRET_NAME_RE = /(pass(word|wd)?|secret|token|otp|totp|api[-_]?key|credential|authorization|twofa)/i;
+
+function secretEnvRef(name: string): string {
+  return `{{env.BB_SECRET_${name.toUpperCase().replace(/[^A-Z0-9]/g, "_")}}}`;
+}
+
+function safeDecode(s: string): string {
+  try {
+    return decodeURIComponent(s.replace(/\+/g, " "));
+  } catch {
+    return s;
+  }
+}
+
+/** Replaces credential-named values in an application/x-www-form-urlencoded string. Not
+ * URLSearchParams.toString, which would percent-encode the `{{ }}` of the env ref. */
+function redactFormBody(body: string): string {
+  return body
+    .split("&")
+    .map((pair) => {
+      const eq = pair.indexOf("=");
+      if (eq < 0) return pair;
+      const key = safeDecode(pair.slice(0, eq));
+      return SECRET_NAME_RE.test(key) ? `${pair.slice(0, eq)}=${secretEnvRef(key)}` : pair;
+    })
+    .join("&");
+}
+
 /** Returns a copy of `obj` with the value at a non-array "$.a.b" path replaced. */
 function setAtPath(obj: unknown, path: string, value: unknown): unknown {
   const keys = path
@@ -93,9 +126,11 @@ export function generateTestSpecFromSession(store: Store, compositionId: string)
   const annotationsById = new Map(store.annotations.list().map((a) => [a.operationId, a]));
   const dependencyGraph = computeDependencyGraph(store);
 
-  const stepIdByCorrelation = new Map(
-    composition.steps.map((s, i) => [s.sourceCorrelationId as string, `step${i}`] as const),
-  );
+  const stepIdByCorrelation = new Map<string, string>();
+  composition.steps.forEach((s, i) => {
+    if (!s.sourceCorrelationId) throw new Error(`step ${i} of composition ${compositionId} has no sourceCorrelationId`);
+    stepIdByCorrelation.set(s.sourceCorrelationId, `step${i}`);
+  });
 
   // Only edges we can actually express are usable:
   //  - both ends must be steps of THIS Composition (an edge to/from a call the analyst deleted, or
@@ -134,6 +169,10 @@ export function generateTestSpecFromSession(store: Store, compositionId: string)
     if (!call) {
       throw new Error(`call ${correlationId} not found in session ${sessionId} (deleted after this composition was proposed?)`);
     }
+    // The session can change between propose and generate; an unanswered call has no status to assert.
+    if (call.status === null || call.status <= 0) {
+      throw new Error(`call ${correlationId} in session ${sessionId} has no usable response status (${call.status}); delete it in the session graph and re-propose`);
+    }
     const stepId = `step${i}`;
     const edgesForCall = edgeByConsumer.get(correlationId);
     const edgeAt = (location: SessionCallEdge["consumerLocation"], jsonPath: string) =>
@@ -150,7 +189,7 @@ export function generateTestSpecFromSession(store: Store, compositionId: string)
     const query: Record<string, string> = {};
     for (const [name, literal] of call.query) {
       const edge = edgeAt("query", name);
-      query[name] = edge ? templateRef(edge) : literal;
+      query[name] = edge ? templateRef(edge) : SECRET_NAME_RE.test(name) ? secretEnvRef(name) : literal;
     }
 
     // Headers are NEVER copied verbatim: ADR-0006 captures them with live credentials, and auth is
@@ -177,7 +216,13 @@ export function generateTestSpecFromSession(store: Store, compositionId: string)
         const edge = edgeAt("requestBody", leaf.path);
         if (edge) body = setAtPath(body, leaf.path, templateRef(edge));
         else if (clientGenerated.includes(leaf.path)) body = setAtPath(body, leaf.path, "{{faker.uuid}}");
+        else {
+          const tail = jsonPathTail(leaf.path);
+          if (SECRET_NAME_RE.test(tail)) body = setAtPath(body, leaf.path, secretEnvRef(tail));
+        }
       }
+    } else if (typeof body === "string" && (call.requestContentType ?? "").toLowerCase().includes("application/x-www-form-urlencoded")) {
+      body = redactFormBody(body);
     }
 
     // Declare `extract` for every edge where THIS call is the producer, whether or not a consumer's
@@ -199,7 +244,7 @@ export function generateTestSpecFromSession(store: Store, compositionId: string)
       description: annotationsById.get(compStep.operationId)?.does ?? `${call.method} ${call.pathname}`,
       request,
       ...(extract ? { extract } : {}),
-      expect: { status: call.status ?? 0, schemaConformance: true, jsonAssertions: [] },
+      expect: { status: call.status, schemaConformance: true, jsonAssertions: [] },
       continueOnFailure: false,
     };
   });

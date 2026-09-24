@@ -23,6 +23,7 @@ npm-debug.log*
 pnpm-debug.log*
 
 # Runtime/generated data (sessions, SQLite store, knowledge packs)
+data/
 data/backbencher.db
 data/backbencher.db-shm
 data/backbencher.db-wal

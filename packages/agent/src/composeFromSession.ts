@@ -19,6 +19,25 @@ export class UnclassifiedCallsError extends Error {
   }
 }
 
+export class UnansweredCallsError extends Error {
+  constructor(
+    public readonly calls: Array<{ correlationId: string; method: string; pathname: string; status: number | null }>,
+  ) {
+    super(
+      `session has ${calls.length} call(s) with no usable response (failed, in flight or unanswered) — delete those calls in the session graph first: ` +
+        calls.map((c) => `${c.method} ${c.pathname} (${c.correlationId}, status ${c.status})`).join(", "),
+    );
+    this.name = "UnansweredCallsError";
+  }
+}
+
+export class NoReplayableCallsError extends Error {
+  constructor(public readonly sessionId: string) {
+    super(`session ${sessionId} has no replayable API calls (it is empty, or every call is a static asset)`);
+    this.name = "NoReplayableCallsError";
+  }
+}
+
 export function proposeCompositionFromSession(store: Store, sessionId: string, actor: string): Composition {
   const session = store.sessions.get(sessionId);
   if (!session) throw new Error(`session ${sessionId} not found`);
@@ -36,7 +55,17 @@ export function proposeCompositionFromSession(store: Store, sessionId: string, a
     );
   }
 
-  const annotationsById = new Map(store.annotations.list().map((a) => [a.operationId, a]));
+  // status is null when no response event arrived; the recorder writes 0 for a failed request and
+  // -1 for one still in flight at stop. None of those can be asserted on at replay time.
+  const unanswered = calls.filter((c) => c.status === null || c.status <= 0);
+  if (unanswered.length > 0) {
+    throw new UnansweredCallsError(
+      unanswered.map((c) => ({ correlationId: c.correlationId, method: c.method, pathname: c.pathname, status: c.status })),
+    );
+  }
+  if (calls.length === 0) throw new NoReplayableCallsError(sessionId);
+
+  const annotationsById =new Map(store.annotations.list().map((a) => [a.operationId, a]));
 
   const steps = calls.map((c) => {
     const operationId = opByCorrelation.get(c.correlationId) as string;

@@ -5,7 +5,12 @@ import { dataDir } from "@backbencher/shared";
 import { openStore } from "@backbencher/store";
 import { afterEach, describe, expect, it } from "vitest";
 import { apiCall, makeSession, resetClock } from "../../derive/fixtures/sessions.js";
-import { proposeCompositionFromSession, UnclassifiedCallsError } from "../src/composeFromSession.js";
+import {
+  NoReplayableCallsError,
+  proposeCompositionFromSession,
+  UnansweredCallsError,
+  UnclassifiedCallsError,
+} from "../src/composeFromSession.js";
 
 // Mirrors packages/portal-api/test/curation.test.ts's fixture pattern: real files under the real
 // dataDir(), tracked and removed in afterEach. Never the unscoped pattern derivation.test.ts had
@@ -91,5 +96,67 @@ describe("proposeCompositionFromSession", () => {
       expect((e as UnclassifiedCallsError).calls).toHaveLength(1);
       expect((e as UnclassifiedCallsError).calls[0]?.correlationId).toBe("c1");
     }
+  });
+
+  function deriveInto(session: SessionData) {
+    writeSession(session);
+    const store = openStore(":memory:");
+    store.saveDerivation(runDerivation([session]));
+    store.sessions.upsertFromMeta(session.meta);
+    return store;
+  }
+
+  it("refuses a call whose recorded status is 0 (request failed)", () => {
+    resetClock();
+    const session = completeSession(
+      "sess-propose-3",
+      [...apiCall("c1", { url: "https://app.example.net/api/things", status: 0 })],
+      "failed call",
+    );
+    const store = deriveInto(session);
+
+    try {
+      proposeCompositionFromSession(store, "sess-propose-3", "alice");
+      expect.unreachable();
+    } catch (e) {
+      expect(e).toBeInstanceOf(UnansweredCallsError);
+      expect((e as UnansweredCallsError).calls[0]).toMatchObject({ correlationId: "c1", status: 0 });
+    }
+  });
+
+  it("refuses a request that never got a response event", () => {
+    resetClock();
+    const session = completeSession(
+      "sess-propose-4",
+      [apiCall("c1", { url: "https://app.example.net/api/things" })[0] as SessionData["events"][number]],
+      "unanswered call",
+    );
+    const store = deriveInto(session);
+
+    try {
+      proposeCompositionFromSession(store, "sess-propose-4", "alice");
+      expect.unreachable();
+    } catch (e) {
+      expect(e).toBeInstanceOf(UnansweredCallsError);
+      expect((e as UnansweredCallsError).calls[0]).toMatchObject({ correlationId: "c1", status: null });
+    }
+  });
+
+  it("refuses a session whose only calls are assets", () => {
+    resetClock();
+    const session = completeSession(
+      "sess-propose-5",
+      [
+        ...apiCall("a1", {
+          url: "https://app.example.net/logo.png",
+          resHeaders: { "content-type": "image/png" },
+          bodyKind: "binary",
+        }),
+      ],
+      "only assets",
+    );
+    const store = deriveInto(session);
+
+    expect(() => proposeCompositionFromSession(store, "sess-propose-5", "alice")).toThrow(NoReplayableCallsError);
   });
 });

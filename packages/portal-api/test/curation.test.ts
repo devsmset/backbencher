@@ -358,4 +358,70 @@ describe("sessions router", () => {
     expect(res.valid).toBe(true);
     expect(store.specs.get(res.specId)?.generatedBy).toBe("session-replay");
   });
+
+  const decision = { inScope: true, strategy: "api_functional", rationale: "r", riskLevel: "low", environments: ["staging"] } as const;
+
+  async function proposeTwoStep(sessionId: string) {
+    const session = completeSession(sessionId, [
+      ...apiCall("c1", { url: `${H}/api/health`, body: { ok: true } }),
+      ...apiCall("c2", { url: `${H}/api/users`, body: { users: [] } }),
+    ]);
+    seed(session, { derive: true });
+    store.sessions.upsertFromMeta(session.meta);
+    return caller().compose.proposeFromSession({ sessionId });
+  }
+
+  it("compose.approve keeps session provenance when the portal sends steps, so agent.generate still works", async () => {
+    const draft = await proposeTwoStep("sess-fix-1");
+    // Exactly what Compose.tsx sends.
+    const approved = await caller().compose.approve({
+      compositionId: draft.compositionId,
+      steps: draft.steps.map((s) => ({ operationId: s.operationId, intent: s.intent })),
+      testDecision: decision,
+    });
+    expect(approved.steps.map((s) => s.sourceCorrelationId)).toEqual(["c1", "c2"]);
+    expect(approved.steps.every((s) => s.fromSessionIds.includes("sess-fix-1"))).toBe(true);
+
+    const res = await caller().agent.generate({ compositionId: draft.compositionId });
+    expect(res.specId).toBeTruthy();
+    expect(store.specs.get(res.specId)?.generatedBy).toBe("session-replay");
+  });
+
+  it("compose.approve persists an edited intent on a session-sourced step and keeps sourceCorrelationId", async () => {
+    const draft = await proposeTwoStep("sess-fix-2");
+    const approved = await caller().compose.approve({
+      compositionId: draft.compositionId,
+      steps: draft.steps.map((s, i) => ({ operationId: s.operationId, intent: i === 1 ? "edited intent" : s.intent })),
+      testDecision: decision,
+    });
+    expect(approved.steps[1]?.intent).toBe("edited intent");
+    expect(approved.steps[0]?.intent).toBe(draft.steps[0]?.intent);
+    expect(approved.steps.map((s) => s.sourceCorrelationId)).toEqual(["c1", "c2"]);
+    expect(store.compositions.get(draft.compositionId)?.steps[1]?.sourceCorrelationId).toBe("c2");
+  });
+
+  it("compose.approve rejects added, removed or reordered steps on a session-sourced Composition", async () => {
+    const draft = await proposeTwoStep("sess-fix-3");
+    const steps = draft.steps.map((s) => ({ operationId: s.operationId, intent: s.intent }));
+
+    await expect(
+      caller().compose.approve({ compositionId: draft.compositionId, steps: steps.slice(0, 1), testDecision: decision }),
+    ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
+    await expect(
+      caller().compose.approve({ compositionId: draft.compositionId, steps: [...steps].reverse(), testDecision: decision }),
+    ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
+    expect(store.compositions.get(draft.compositionId)?.status).toBe("draft");
+  });
+
+  it("compose.proposeFromSession reports a session with no replayable calls as a precondition failure", async () => {
+    const session = completeSession("sess-fix-4", [
+      ...apiCall("a1", { url: `${H}/logo.png`, resHeaders: { "content-type": "image/png" }, bodyKind: "binary" }),
+    ]);
+    seed(session, { derive: true });
+    store.sessions.upsertFromMeta(session.meta);
+
+    await expect(caller().compose.proposeFromSession({ sessionId: "sess-fix-4" })).rejects.toMatchObject({
+      code: "PRECONDITION_FAILED",
+    });
+  });
 });
