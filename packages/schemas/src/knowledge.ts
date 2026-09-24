@@ -85,6 +85,8 @@ export const CompositionStepSchema = z.object({
   satisfies: z.array(z.string()).default([]), // downstream requires-slots this step feeds
   autoAdded: z.boolean().default(false), // inserted by dependency auto-completion, not the model
   fromSessionIds: z.array(z.string()).default([]), // provenance: which Reference Sessions showed this
+  sourceCorrelationId: z.string().optional(), // set only when this step was deterministically
+  // generated from a curated Session (not proposed by the model) — the exact Call it came from.
 });
 
 export const TestDecisionSchema = z.object({
@@ -116,6 +118,9 @@ export const CompositionSchema = z.object({
     .object({ model: z.string(), packHash: z.string().optional(), promptHash: z.string().optional() })
     .optional(),
   testDecision: TestDecisionSchema.optional(), // set at approval, not at proposal
+  sourceSessionId: z.string().optional(), // set only when this Composition was deterministically
+  // generated from a curated Session, not proposed by the model. agent.generate branches on its
+  // presence to pick the deterministic generator instead of the LLM path.
   createdBy: z.string(),
   createdAt: z.number().int(),
   updatedBy: z.string(),

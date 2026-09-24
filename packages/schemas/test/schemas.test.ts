@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   ApiRequestEventSchema,
+  CompositionSchema,
   KnowledgePackSchema,
   OperationSchema,
   RecordingEventSchema,
@@ -194,5 +195,39 @@ describe("session graph node schema", () => {
         responseTimestamp: null,
       }),
     ).toThrow();
+  });
+});
+
+describe("composition provenance", () => {
+  const base = {
+    goal: "replay session s1",
+    status: "draft" as const,
+    unmetDependencies: [],
+    candidateGaps: [],
+    createdBy: "alice",
+    createdAt: 1,
+    updatedBy: "alice",
+    updatedAt: 1,
+  };
+
+  it("round-trips the optional session-provenance fields", () => {
+    const parsed = CompositionSchema.parse({
+      ...base,
+      compositionId: "c1",
+      sourceSessionId: "s1",
+      steps: [{ operationId: "op_a", intent: "GET /a", sourceCorrelationId: "corr-1" }],
+    });
+    expect(parsed.sourceSessionId).toBe("s1");
+    expect(parsed.steps[0]?.sourceCorrelationId).toBe("corr-1");
+  });
+
+  it("still parses a Composition that has neither field, as every LLM-authored one does", () => {
+    const parsed = CompositionSchema.parse({
+      ...base,
+      compositionId: "c2",
+      steps: [{ operationId: "op_a", intent: "why" }],
+    });
+    expect(parsed.sourceSessionId).toBeUndefined();
+    expect(parsed.steps[0]?.sourceCorrelationId).toBeUndefined();
   });
 });
