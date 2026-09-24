@@ -179,4 +179,19 @@ it("lands as invalid when the session writes data, and still stores the spec for
   // The analyst repairs it via specs.updateYaml, which needs a real YAML document to edit.
   expect(TestSpecSchema.parse(loadYaml(row?.yaml ?? "")).steps).toHaveLength(1);
 });
+
+  it("leaves a non-JSON (form-encoded) request body exactly as recorded", () => {
+    resetClock();
+    const session = completeSession("sess-gen-6", [
+      ...apiCall("g1", { method: "POST", url: `${H}/api/twofa`, postData: "user_id=ABC123&code=999999", body: { ok: true } }),
+    ]);
+    const store = setup(session, (d) => ({
+      ...d,
+      clientGeneratedFields: { [d.operations[0]?.operationId as string]: ["$"] },
+    }));
+
+    const result = generate(store, "sess-gen-6");
+
+    expect(result.spec?.steps[0]?.request?.body).toBe("user_id=ABC123&code=999999");
+  });
 });

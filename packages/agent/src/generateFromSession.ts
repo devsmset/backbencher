@@ -169,7 +169,9 @@ export function generateTestSpecFromSession(store: Store, compositionId: string)
     // fresh by the client each time) must not be replayed as the recorded literal.
     const clientGenerated = dependencyGraph.byOperation.get(compStep.operationId)?.clientGenerated ?? [];
     let body: unknown = call.requestBody ?? undefined;
-    if (body !== undefined) {
+    // Only a parsed JSON object/array is templated. A raw string (e.g. form-encoded) is a single "$"
+    // leaf, and replacing it wholesale would destroy the body, so non-objects stay as recorded.
+    if (typeof body === "object" && body !== null) {
       for (const leaf of walkScalars(body)) {
         if (isArrayNestedPath(leaf.path)) continue;
         const edge = edgeAt("requestBody", leaf.path);
