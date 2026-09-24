@@ -21,3 +21,6 @@ export { suggestAnnotations } from "./suggest.js";
 export type { SuggestOptions, SuggestResult } from "./suggest.js";
 export { runRehearsal, summarize, latestResults } from "./rehearsal.js";
 export type { RehearsalRunOptions, RehearsalSummary } from "./rehearsal.js";
+export { proposeCompositionFromSession, UnclassifiedCallsError } from "./composeFromSession.js";
+export { generateTestSpecFromSession } from "./generateFromSession.js";
+export type { GenerateFromSessionResult } from "./generateFromSession.js";

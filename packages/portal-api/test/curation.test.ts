@@ -317,4 +317,45 @@ describe("sessions router", () => {
       edges: [],
     });
   });
+
+  it("compose.proposeFromSession drafts a Composition from a curated session", async () => {
+    const session = completeSession("sess-cfs-1", [...apiCall("c1", { url: `${H}/api/health`, body: { ok: true } })]);
+    seed(session, { derive: true });
+    store.sessions.upsertFromMeta(session.meta);
+
+    const draft = await caller().compose.proposeFromSession({ sessionId: "sess-cfs-1" });
+
+    expect(draft.sourceSessionId).toBe("sess-cfs-1");
+    expect(draft.status).toBe("draft");
+    expect(draft.goal).toBe("exercise sess-cfs-1"); // the session's own recorded goal
+    expect((await caller().compose.drafts()).some((d) => d.compositionId === draft.compositionId)).toBe(true);
+  });
+
+  it("compose.proposeFromSession reports unclassified calls as a precondition failure, not a 500", async () => {
+    const session = completeSession("sess-cfs-2", [...apiCall("c1", { url: `${H}/api/health`, body: { ok: true } })]);
+    seed(session); // not derived: no Flow exists, so every call is unclassified
+    store.sessions.upsertFromMeta(session.meta);
+
+    await expect(caller().compose.proposeFromSession({ sessionId: "sess-cfs-2" })).rejects.toMatchObject({
+      code: "PRECONDITION_FAILED",
+    });
+  });
+
+  it("agent.generate uses the deterministic generator for a session-sourced Composition, with no LLM configured", async () => {
+    const session = completeSession("sess-cfs-3", [...apiCall("c1", { url: `${H}/api/health`, body: { ok: true } })]);
+    seed(session, { derive: true });
+    store.sessions.upsertFromMeta(session.meta);
+    const draft = await caller().compose.proposeFromSession({ sessionId: "sess-cfs-3" });
+    await caller().compose.approve({
+      compositionId: draft.compositionId,
+      testDecision: { inScope: true, strategy: "api_functional", rationale: "r", riskLevel: "low", environments: ["staging"] },
+    });
+
+    // BbConfigSchema.parse({}) configures no model or API key: this only succeeds if agent.generate
+    // branches to the deterministic path BEFORE it tries createLlm().
+    const res = await caller().agent.generate({ compositionId: draft.compositionId });
+
+    expect(res.valid).toBe(true);
+    expect(store.specs.get(res.specId)?.generatedBy).toBe("session-replay");
+  });
 });

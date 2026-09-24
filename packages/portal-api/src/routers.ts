@@ -24,12 +24,15 @@ import {
   createEmbedder,
   createLlm,
   generateTestSpec,
+  generateTestSpecFromSession,
   latestResults,
   packDiff,
+  proposeCompositionFromSession,
   proposeScenario,
   runRehearsal,
   summarize,
   suggestAnnotations,
+  UnclassifiedCallsError,
 } from "@backbencher/agent";
 import { loadSpecYaml, runSpecAgainstEnv, generateAuthzMatrix, generateBolaProbes, specToYaml } from "@backbencher/testkit";
 import { TRPCError } from "@trpc/server";
@@ -463,6 +466,26 @@ const composeRouter = router({
       });
       return { composition: result.composition, attempts: result.attempts };
     }),
+  proposeFromSession: publicProcedure
+    .input(z.object({ sessionId: z.string() }))
+    .mutation(({ ctx, input }) => {
+      try {
+        const composition = proposeCompositionFromSession(ctx.store, input.sessionId, ctx.actor);
+        ctx.store.audit.append({
+          entityType: "composition",
+          entityId: composition.compositionId,
+          action: "compose.proposeFromSession",
+          actor: ctx.actor,
+          diff: { sessionId: input.sessionId },
+        });
+        return composition;
+      } catch (e) {
+        if (e instanceof UnclassifiedCallsError) {
+          throw new TRPCError({ code: "PRECONDITION_FAILED", message: e.message });
+        }
+        throw e;
+      }
+    }),
   drafts: publicProcedure.query(({ ctx }) => ctx.store.compositions.listByStatus("draft")),
   approve: publicProcedure
     .input(
@@ -541,6 +564,11 @@ const agentRouter = router({
   generate: publicProcedure
     .input(z.object({ compositionId: z.string(), model: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
+      if (ctx.store.compositions.get(input.compositionId)?.sourceSessionId) {
+        const res = generateTestSpecFromSession(ctx.store, input.compositionId);
+        ctx.store.audit.append({ entityType: "composition", entityId: input.compositionId, action: "agent.generate", actor: ctx.actor });
+        return { specId: res.specId, valid: res.valid, errors: res.errors, attempts: 1 };
+      }
       let llm: ReturnType<typeof createLlm>;
       try {
         llm = createLlm(ctx.config, "generateSpec", input.model);
