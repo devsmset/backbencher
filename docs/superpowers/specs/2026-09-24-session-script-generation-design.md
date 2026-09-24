@@ -59,8 +59,9 @@ existing meaning ("provenance: which session showed this") already fits.
    analyst's plain-language statement of what a Session ... is for"), `sourceSessionId: sessionId`,
    `status: "draft"`, `modelInfo` left unset (nothing to record — no model ran), `rationale` ←
    `"Replayed from session ${sessionId}: ${meta.name}"`, `createdBy: actor`.
-5. Persist via `store.compositions.upsert()`, append an audit entry (`action: "compose.fromSession"`),
-   return it.
+5. Persist via `store.compositions.upsert()` and return it. (The audit entry,
+   `action: "compose.proposeFromSession"`, is appended by the portal-api mutation, mirroring how
+   `compose.propose` audits.)
 
 ### 3. Generate — `packages/agent/src/generateFromSession.ts` (new)
 
@@ -76,12 +77,20 @@ graph screen's trimmed payload — needed to match edges against real request fi
 - **`request.pathParams`/`query`**: read straight off the real captured URL, matched against the
   Operation's `pathTemplate.params` positions.
 - **`request.headers`**: **not copied verbatim.** Only a header resolved via an edge (e.g. an
-  `Authorization` token sourced from an earlier login step's `extract`) is included. ADR-0006
+  `x-csrf-token` whose value came from an earlier response body) is included, as a template.
+  `Authorization` never forms an edge at all (`dataflow.ts` skips "standard" request headers), and
+  cookie edges are skipped too — both are always dropped, because auth is supplied at run time by
+  the runtime from the spec's `authProfile` (`runtime.ts` `authHeaders`). ADR-0006
   captures headers verbatim including live credentials; baking an unresolved captured cookie or
   static bearer token into a shareable `TestSpec` file would leak a real credential. A static
   credential the graph can't explain is dropped, not hardcoded — the analyst adds it by hand (via
   the existing `specs.updateYaml`) if a run then fails on missing auth.
-- **`request.body`**: walk every JSON leaf (reusing `derive`'s existing `walkScalars`). Where a
+- **Only response-body producers are templated.** A `TestSpec` `extract` is a JSONPath into the
+  response body, so an edge whose producer is a response *header* (e.g. `Set-Cookie`) can't be
+  expressed; its consumer keeps the real captured literal (path/query/body) or is dropped (header).
+- **`request.body`**: walk every JSON leaf (reusing `derive`'s existing `walkScalars`), **skipping
+  array-nested paths in v1** (edge paths collapse indices to `[*]`, which is ambiguous when writing
+  back into one specific captured document — such a value stays its real literal). Where a
   `SessionCallEdge` says this exact value came from an earlier step in this Composition, replace it
   with `{{steps.<id>.extract.<var>}}` and add a matching `extract` entry on the producing step.
   Where the field is flagged `clientGenerated` for this Operation (already computed by
