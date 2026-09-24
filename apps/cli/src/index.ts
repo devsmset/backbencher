@@ -227,7 +227,27 @@ async function cmdAgent(argv: string[]): Promise<void> {
     return;
   }
   const { openStore } = await import("@backbencher/store");
-  const { generateTestSpec, createLlm } = await import("@backbencher/agent");
+  const { generateTestSpec, generateTestSpecFromSession, createLlm } = await import("@backbencher/agent");
+
+  // A session-sourced Composition is generated deterministically, no LLM or API key involved.
+  const probe = openStore();
+  const sessionSourced = Boolean(probe.compositions.get(compositionId)?.sourceSessionId);
+  if (sessionSourced) {
+    try {
+      const res = generateTestSpecFromSession(probe, compositionId);
+      if (res.valid) {
+        process.stdout.write(`✅ Generated spec ${res.specId} from session replay\n`);
+      } else {
+        process.stderr.write(`⚠️  Spec ${res.specId} INVALID:\n${res.errors.map((e) => `  - ${e}`).join("\n")}\n`);
+        process.exitCode = 1;
+      }
+    } finally {
+      probe.close();
+    }
+    return;
+  }
+  probe.close();
+
   const config = loadConfig();
   const model = getFlag(argv, "--model");
   const providerFlag = getFlag(argv, "--provider");

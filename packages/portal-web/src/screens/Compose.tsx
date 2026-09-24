@@ -58,9 +58,10 @@ export function Compose() {
     );
   };
 
-  const updateIntent = (operationId: string, intent: string) => {
+  // Keyed by step index: session-sourced compositions repeat operations, so operationId isn't unique.
+  const updateIntent = (index: number, intent: string) => {
     if (!active) return;
-    setActive({ ...active, steps: active.steps.map((s) => (s.operationId === operationId ? { ...s, intent } : s)) });
+    setActive({ ...active, steps: active.steps.map((s, i) => (i === index ? { ...s, intent } : s)) });
   };
 
   const doApprove = () => {
@@ -81,9 +82,11 @@ export function Compose() {
         },
       },
       {
-        onSuccess: () => {
+        onSuccess: (saved) => {
           setStatus("Approved ✓");
-          setActive(null);
+          // Keep the approved composition selected: its Generate button is only reachable while it
+          // is `active`, and it no longer appears in compose.drafts.
+          setActive(saved as Draft);
           setGoal("");
           void utils.compose.drafts.invalidate();
         },
@@ -146,7 +149,8 @@ export function Compose() {
       <Panel
         title={active ? "Draft" : "No draft selected"}
         actions={
-          active && (
+          active &&
+          active.status === "draft" && (
             <>
               <button type="button" onClick={doReject} disabled={reject.isPending}>
                 Reject
@@ -177,12 +181,12 @@ export function Compose() {
             <Field label="Steps">
               <div>
                 {active.steps.map((s, i) => (
-                  <div key={s.operationId} className="flex items-center gap-2.5 border-b border-[--line] py-2">
+                  <div key={`${i}-${s.operationId}`} className="flex items-center gap-2.5 border-b border-[--line] py-2">
                     <Muted>{i + 1}.</Muted>
                     <code>{s.operationId}</code>
                     {s.autoAdded && <Chip variant="warn">auto-added dependency</Chip>}
                     {!s.autoAdded && s.fromSessionIds.length > 0 && <Chip>seen in: {s.fromSessionIds.join(", ")}</Chip>}
-                    <input className="flex-1" value={s.intent} onChange={(e) => updateIntent(s.operationId, e.target.value)} />
+                    <input className="flex-1" value={s.intent} onChange={(e) => updateIntent(i, e.target.value)} />
                   </div>
                 ))}
               </div>
