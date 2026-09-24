@@ -481,6 +481,14 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
     },
   });
 
+  const proposeFromSession = trpc.compose.proposeFromSession.useMutation({
+    onSuccess: async () => {
+      // Refresh Compose's draft list first, so the new draft is there when the screen mounts.
+      await utils.compose.drafts.invalidate();
+      window.location.hash = "#/compose";
+    },
+  });
+
   function requestClose() {
     if (pendingDeletes.size > 0 && !window.confirm(`Discard ${pendingDeletes.size} unsaved deletion(s)?`)) return;
     setPendingDeletes(new Set());
@@ -736,6 +744,22 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
                 Save ({pendingDeletes.size})
               </button>
               {deleteCalls.error?.message && <div className="mt-1 text-xs text-[--bad]">{deleteCalls.error.message}</div>}
+            </div>
+            <div className="flex flex-col items-end">
+              <button
+                type="button"
+                className="rounded-md border border-[--line] px-2 py-1 text-xs font-semibold disabled:opacity-40"
+                // Unsaved deletions aren't persisted yet, so generating now would include calls the
+                // analyst is about to remove. Mirrors Save's own disabled rule, inverted.
+                disabled={pendingDeletes.size > 0 || proposeFromSession.isPending}
+                title={pendingDeletes.size > 0 ? "Save your pending deletions first" : undefined}
+                onClick={() => proposeFromSession.mutate({ sessionId })}
+              >
+                {proposeFromSession.isPending ? "Generating…" : "Generate automation script"}
+              </button>
+              {proposeFromSession.error?.message && (
+                <div className="mt-1 max-w-[320px] text-right text-xs text-[--bad]">{proposeFromSession.error.message}</div>
+              )}
             </div>
             <button
               type="button"
