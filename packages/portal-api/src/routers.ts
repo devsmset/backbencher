@@ -9,7 +9,7 @@ import {
   isOperationReady,
 } from "@backbencher/schemas";
 import { dataDir, newId } from "@backbencher/shared";
-import { mergeOperation } from "@backbencher/store";
+import { mergeOperation, type Store } from "@backbencher/store";
 import {
   isAssetLikeCall,
   loadCuratedOrRawSession,
@@ -34,6 +34,7 @@ import {
   suggestAnnotations,
   UnclassifiedCallsError,
   UnansweredCallsError,
+  validateSpec,
   NoReplayableCallsError,
 } from "@backbencher/agent";
 import { loadSpecYaml, runSpecAgainstEnv, generateAuthzMatrix, generateBolaProbes, specToYaml } from "@backbencher/testkit";
@@ -565,9 +566,55 @@ const packRouter = router({
   }),
 });
 
+function describeSpec(
+  store: Store,
+  row: { compositionId: string; yaml: string },
+  sessionNames: Map<string, string | null>,
+): { title: string | null; sourceSession: { sessionId: string; name: string | null } | null } {
+  const composition = store.compositions.get(row.compositionId);
+  let title = composition?.goal ?? null;
+  if (!title) {
+    try {
+      title = loadSpecYaml(row.yaml).title;
+    } catch {
+      title = null; // unparseable YAML still lists; the UI falls back to "Untitled test"
+    }
+  }
+  const sessionId = composition?.sourceSessionId;
+  return { title, sourceSession: sessionId ? { sessionId, name: sessionNames.get(sessionId) ?? null } : null };
+}
+
 const specsRouter = router({
   get: publicProcedure.input(z.object({ specId: z.string() })).query(({ ctx, input }) => ctx.store.specs.get(input.specId)),
-  list: publicProcedure.query(({ ctx }) => ctx.store.specs.list()),
+  // Each row carries what a human recognises it by: its title (the Composition's goal, else the
+  // spec's own title, e.g. generated security probes) and, when replayed from a recording, that
+  // Session's name. Ids stay on the row for actions.
+  list: publicProcedure.query(({ ctx }) => {
+    const sessionNames = new Map(ctx.store.sessions.list().map((s) => [s.sessionId, s.name]));
+    return ctx.store.specs.list().map((row) => ({ ...row, ...describeSpec(ctx.store, row, sessionNames) }));
+  }),
+  // Everything the spec viewer shows: the parsed spec, and why it is invalid — validation re-run
+  // now, since generation only reported it once. `parseError` is set when the YAML no longer loads.
+  view: publicProcedure.input(z.object({ specId: z.string() })).query(({ ctx, input }) => {
+    const row = ctx.store.specs.get(input.specId);
+    if (!row) return null;
+    const sessionNames = new Map(ctx.store.sessions.list().map((s) => [s.sessionId, s.name]));
+    let spec: ReturnType<typeof loadSpecYaml> | null = null;
+    let parseError: string | null = null;
+    try {
+      spec = loadSpecYaml(row.yaml);
+    } catch (e) {
+      parseError = (e as Error).message;
+    }
+    const operations = ctx.store.operations.list();
+    const errors = spec
+      ? validateSpec(spec, {
+          validOperationIds: new Set(operations.map((o) => o.operationId)),
+          operationMethods: Object.fromEntries(operations.map((o) => [o.operationId, o.method])),
+        })
+      : [];
+    return { ...row, ...describeSpec(ctx.store, row, sessionNames), spec, parseError, errors };
+  }),
   updateYaml: publicProcedure.input(z.object({ specId: z.string(), yaml: z.string() })).mutation(({ ctx, input }) => {
     ctx.store.specs.updateYaml(input.specId, input.yaml);
     ctx.store.audit.append({ entityType: "spec", entityId: input.specId, action: "updateYaml", actor: ctx.actor });
