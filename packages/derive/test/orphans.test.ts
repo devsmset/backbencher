@@ -1,6 +1,6 @@
 import type { SessionCallEdge } from "@backbencher/schemas";
 import { describe, expect, it } from "vitest";
-import { findOrphanedConsumers } from "../src/orphans.js";
+import { findIsolatedCalls, findOrphanedConsumers } from "../src/orphans.js";
 
 function edge(producer: string, consumer: string, value = "TOKEN-abcdef123456"): SessionCallEdge {
   return {
@@ -37,5 +37,22 @@ describe("findOrphanedConsumers", () => {
   it("ignores slots whose consumer is itself being deleted", () => {
     const edges = [edge("a", "c")];
     expect(findOrphanedConsumers(edges, new Set(["a", "c"]))).toEqual([]);
+  });
+});
+
+describe("findIsolatedCalls", () => {
+  it("returns nothing for a single-level session with no edges at all", () => {
+    expect(findIsolatedCalls(["a", "b", "c"], [])).toEqual([]);
+  });
+
+  it("returns only the calls with no edge in or out when the session has edges", () => {
+    expect(findIsolatedCalls(["a", "x", "b", "y"], [edge("a", "b")])).toEqual(["x", "y"]);
+  });
+
+  it("ignores edges touching calls outside the given set", () => {
+    // b is staged for deletion, so a is left with no live edge — and with no edge left at all,
+    // the session is single-level again.
+    expect(findIsolatedCalls(["a", "x"], [edge("a", "b")])).toEqual([]);
+    expect(findIsolatedCalls(["a", "c", "x"], [edge("a", "b"), edge("c", "d"), edge("c", "a")])).toEqual(["x"]);
   });
 });

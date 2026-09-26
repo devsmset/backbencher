@@ -15,7 +15,7 @@ export {
 } from "./inferSchemas.js";
 export { detectVolatileFields } from "./volatile.js";
 export { findRedundantCalls } from "./redundant.js";
-export { findOrphanedConsumers } from "./orphans.js";
+export { findIsolatedCalls, findOrphanedConsumers } from "./orphans.js";
 export type { OrphanedConsumer } from "./orphans.js";
 export { buildDataflowGraph } from "./dataflow.js";
 export type { DataflowResult } from "./dataflow.js";

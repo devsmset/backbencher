@@ -13,8 +13,9 @@ describe("runDerivation (SSO integration)", () => {
     const flow = result.flows.find((f) => f.sessionId === "sess-sso");
     expect(flow).toBeDefined();
 
-    expect(result.autoFiltered["sess-sso"]).toEqual(["s4"]);
-    expect(flow?.steps.map((s) => s.correlationId)).toEqual(["s1", "s2", "s3", "s5"]);
+    // Polls that hand nothing on to another Operation collapse to the first one.
+    expect(result.autoFiltered["sess-sso"]).toEqual(["s4", "s5"]);
+    expect(flow?.steps.map((s) => s.correlationId)).toEqual(["s1", "s2", "s3"]);
 
     const login = flow?.steps.find((s) => s.correlationId === "s2");
     expect(login).toBeDefined();

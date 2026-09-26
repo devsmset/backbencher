@@ -44,3 +44,22 @@ export function findOrphanedConsumers(
       a.consumerJsonPath.localeCompare(b.consumerJsonPath),
     );
 }
+
+// Calls with no Dependency edge in or out among `nodeIds`. When no edge survives at all the
+// Session is single-level — every call stands alone — and nothing counts as isolated. Edges
+// touching calls outside `nodeIds` (e.g. ones staged for deletion) are ignored.
+export function findIsolatedCalls(
+  nodeIds: Iterable<string>,
+  edges: Pick<SessionCallEdge, "producerCorrelationId" | "consumerCorrelationId">[],
+): string[] {
+  const ids = [...nodeIds];
+  const present = new Set(ids);
+  const linked = new Set<string>();
+  for (const e of edges) {
+    if (!present.has(e.producerCorrelationId) || !present.has(e.consumerCorrelationId)) continue;
+    linked.add(e.producerCorrelationId);
+    linked.add(e.consumerCorrelationId);
+  }
+  if (linked.size === 0) return [];
+  return ids.filter((id) => !linked.has(id));
+}

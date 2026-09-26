@@ -116,7 +116,7 @@ export function ssoFixture(): SessionData {
       postData: JSON.stringify({ user: "suite-admin" }),
       body: { ok: true },
     }),
-    // polling: same endpoint 3x consecutively → collapsed to one repeated step
+    // polling: same endpoint 3x; nothing consumes its output, so the repeats are Redundant Calls
     ...apiCall("s3", { url: `${H}/api/jobs/status`, body: { state: "pending" } }),
     ...apiCall("s4", { url: `${H}/api/jobs/status`, body: { state: "pending" } }),
     ...apiCall("s5", { url: `${H}/api/jobs/status`, body: { state: "done" } }),

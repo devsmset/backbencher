@@ -80,7 +80,7 @@ export function runDerivation(sessions: SessionData[], opts: RunDerivationOption
   const autoFiltered: Record<string, string[]> = {};
 
   for (const [sessionId, calls] of [...bySession.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
-    const redundant = findRedundantCalls(calls, callOp);
+    const redundant = findRedundantCalls(calls, callOp, accums);
     autoFiltered[sessionId] = [...redundant].sort();
 
     const deleted = opts.deletedCorrelationIds?.get(sessionId);

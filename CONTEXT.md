@@ -17,8 +17,10 @@ One observed request/response instance that occurred during a Session.
 _Avoid_: Event, API call, hit
 
 **Redundant Call**:
-A Call that produces no value an earlier Call to the same Operation in the same Session has not
-already produced.
+A later Call to an Operation, in the same Session, that tells the flow nothing new: either everything
+it produces an earlier kept Call to that Operation already produced, or every value it hands on to or
+receives from a different Operation an earlier kept Call to that Operation already did. The first
+Call to each Operation is never redundant, nor is any Call a kept Call still depends on.
 _Avoid_: Duplicate call, repeat, noise
 
 **Curated Session**:
