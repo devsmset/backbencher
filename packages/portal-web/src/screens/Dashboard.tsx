@@ -1,5 +1,5 @@
 import { trpc } from "../trpc.js";
-import { Muted, Panel, QueryState } from "../ui.js";
+import { Muted, Panel, QueryState, Stat } from "../ui.js";
 
 function pct(numerator: number, denominator: number): string {
   if (denominator === 0) return "—";
@@ -14,44 +14,29 @@ export function Dashboard() {
       <Panel title="Coverage">
         <QueryState isLoading={drift.isLoading} error={drift.error} />
         {d && (
-          <div className="flex flex-wrap gap-3">
-            <div className="inline-flex min-w-44 flex-col gap-0.5 rounded-[10px] border border-[--line] bg-[--panel2] px-[18px] py-3">
-              <b className="text-[26px]">{d.coverage.totalOperations}</b>
-              <span className="text-xs text-[--muted]">operations</span>
-            </div>
-            <div className="inline-flex min-w-44 flex-col gap-0.5 rounded-[10px] border border-[--line] bg-[--panel2] px-[18px] py-3">
-              <b className="text-[26px]">{d.coverage.reviewedOperations}</b>
-              <span className="text-xs text-[--muted]">reviewed</span>
-            </div>
-            <div className="inline-flex min-w-44 flex-col gap-0.5 rounded-[10px] border border-[--line] bg-[--panel2] px-[18px] py-3">
-              <b className="text-[26px]">{d.coverage.operationsWithApprovedComposition}</b>
-              <span className="text-xs text-[--muted]">with approved composition</span>
-            </div>
+          <div className="flex flex-wrap gap-y-4">
+            <Stat value={d.coverage.totalOperations} label="operations" />
+            <Stat value={d.coverage.reviewedOperations} label="reviewed" />
+            <Stat value={d.coverage.operationsWithApprovedComposition} label="with approved composition" />
           </div>
         )}
       </Panel>
       <Panel title="Composability (realignment guide §7)">
         <QueryState isLoading={drift.isLoading} error={drift.error} />
         {d && (
-          <div className="flex flex-wrap gap-3">
-            <div className="inline-flex min-w-44 flex-col gap-0.5 rounded-[10px] border border-[--line] bg-[--panel2] px-[18px] py-3">
-              <b className="text-[26px]">{pct(d.coverage.annotationReadyOperations, d.coverage.totalOperations)}</b>
-              <span className="text-xs text-[--muted]">
-                annotation-ready ({d.coverage.annotationReadyOperations}/{d.coverage.totalOperations})
-              </span>
-            </div>
-            <div className="inline-flex min-w-44 flex-col gap-0.5 rounded-[10px] border border-[--line] bg-[--panel2] px-[18px] py-3">
-              <b className="text-[26px]">{pct(d.coverage.exampleCoveredOperations, d.coverage.annotationReadyOperations)}</b>
-              <span className="text-xs text-[--muted]">
-                example-covered, of ready ({d.coverage.exampleCoveredOperations}/{d.coverage.annotationReadyOperations})
-              </span>
-            </div>
-            <div className="inline-flex min-w-44 flex-col gap-0.5 rounded-[10px] border border-[--line] bg-[--panel2] px-[18px] py-3">
-              <b className="text-[26px]">{pct(d.coverage.dependencyResolvableOperations, d.coverage.totalOperations)}</b>
-              <span className="text-xs text-[--muted]">
-                dependency-resolvable ({d.coverage.dependencyResolvableOperations}/{d.coverage.totalOperations})
-              </span>
-            </div>
+          <div className="flex flex-wrap gap-y-4">
+            <Stat
+              value={pct(d.coverage.annotationReadyOperations, d.coverage.totalOperations)}
+              label={<>annotation-ready ({d.coverage.annotationReadyOperations}/{d.coverage.totalOperations})</>}
+            />
+            <Stat
+              value={pct(d.coverage.exampleCoveredOperations, d.coverage.annotationReadyOperations)}
+              label={<>example-covered, of ready ({d.coverage.exampleCoveredOperations}/{d.coverage.annotationReadyOperations})</>}
+            />
+            <Stat
+              value={pct(d.coverage.dependencyResolvableOperations, d.coverage.totalOperations)}
+              label={<>dependency-resolvable ({d.coverage.dependencyResolvableOperations}/{d.coverage.totalOperations})</>}
+            />
           </div>
         )}
       </Panel>

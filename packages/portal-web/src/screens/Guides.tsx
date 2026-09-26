@@ -1,6 +1,7 @@
+import { PlusIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { trpc } from "../trpc.js";
-import { Chip, Field, Muted, Panel, QueryState } from "../ui.js";
+import { Chip, Field, Icon, Muted, Panel, QueryState } from "../ui.js";
 
 export function Guides() {
   const utils = trpc.useUtils();
@@ -61,6 +62,7 @@ export function Guides() {
           onClick={add}
           disabled={!title || upsert.isPending}
         >
+          <Icon icon={PlusIcon} className="mr-1.5" />
           Add guide
         </button>
       </Panel>
@@ -73,6 +75,7 @@ export function Guides() {
             <Chip variant={g.priority === "must_read" ? "warn" : "derived"}>{g.priority}</Chip>
             {g.scope.productArea && <Chip variant="human">{g.scope.productArea}</Chip>}
             <button type="button" onClick={() => remove.mutate({ guideId: g.guideId })}>
+              <Icon icon={Trash2Icon} className="mr-1.5" />
               delete
             </button>
           </div>

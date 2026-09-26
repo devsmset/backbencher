@@ -25,10 +25,7 @@
 
   body {
     @apply m-0 min-h-screen font-sans text-sm leading-6 text-[--text];
-    background:
-      radial-gradient(circle at 0% -10%, color-mix(in srgb, var(--bg-glow) 65%, transparent) 0%, transparent 40%),
-      radial-gradient(circle at 100% -20%, color-mix(in srgb, var(--accent) 18%, transparent) 0%, transparent 34%),
-      var(--bg);
+    background: var(--bg);
   }
 
   a {

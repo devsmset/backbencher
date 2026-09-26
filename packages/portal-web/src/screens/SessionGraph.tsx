@@ -1,14 +1,17 @@
+import { ArrowLeftIcon, ArrowRightIcon, ChevronsLeftIcon, ChevronsRightIcon, FunnelIcon, LoaderCircleIcon, LockIcon, LockOpenIcon, MaximizeIcon, RouteIcon, SaveIcon, Trash2Icon, TriangleAlertIcon, Undo2Icon, UnlinkIcon, WandSparklesIcon, XIcon, ZoomInIcon, ZoomOutIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
-import { findOrphanedConsumers } from "@backbencher/derive/orphans";
+import { findIsolatedCalls, findOrphanedConsumers } from "@backbencher/derive/orphans";
 import ReactFlow, {
   Background,
-  Controls,
   Handle,
   MiniMap,
+  Panel as FlowPanel,
   Position,
   ReactFlowProvider,
   useNodesState,
   useReactFlow,
+  useStore,
+  useStoreApi,
   type Edge,
   type Node,
   type NodeProps,
@@ -16,7 +19,8 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import type { SessionCallEdge } from "@backbencher/schemas";
 import { trpc } from "../trpc.js";
-import { Chip, JsonBlock, Muted, QueryState } from "../ui.js";
+import { useSessionName } from "../sessionName.js";
+import { Chip, Icon, JsonBlock, Muted, QueryState } from "../ui.js";
 
 // Session dependency graph (§ realignment guide — sessions page graph view). Lays out this
 // session's actual calls on a timeline (x = requestTimestamp) with a greedy lane-packing
@@ -68,7 +72,7 @@ function statusVariant(status: number | null): "ok" | "warn" {
   return status === null || status >= 400 ? "warn" : "ok";
 }
 
-type GraphMode = "trace" | "producers" | "consumers" | "both" | null;
+type GraphMode = "trace" | "producers" | "consumers" | null;
 
 // Transitive walk over SessionCallEdge: "up" follows consumer -> producer (ancestors that fed a
 // value into `startId`), "down" follows producer -> consumer (descendants that consumed one).
@@ -105,10 +109,7 @@ function computeFilteredIds(
 ): Set<string> | null {
   if (!mode || !selectedId || !presentIds.has(selectedId)) return null;
   if (mode === "trace" || mode === "producers") return transitiveClosure(selectedId, edges, "up");
-  if (mode === "consumers") return transitiveClosure(selectedId, edges, "down");
-  const up = transitiveClosure(selectedId, edges, "up");
-  const down = transitiveClosure(selectedId, edges, "down");
-  return new Set([...up, ...down]);
+  return transitiveClosure(selectedId, edges, "down");
 }
 
 // Kahn's algorithm over the producer -> consumer edges restricted to `nodeIds`, breaking ties
@@ -180,30 +181,42 @@ function assignLevels(nodeIds: Set<string>, edges: GraphEdge[]): Map<string, num
   return levels;
 }
 
-function CallNode({ data }: NodeProps<{ node: GraphCallNode; onDeleteClick: (correlationId: string) => void }>) {
-  const { node, onDeleteClick } = data;
+function CallNode({
+  data,
+}: NodeProps<{
+  node: GraphCallNode;
+  checked: boolean;
+  onToggleSelect: (correlationId: string) => void;
+  active: boolean;
+}>) {
+  const { node, checked, onToggleSelect, active } = data;
   return (
-    <div className="group relative rounded-md border border-[--line] bg-[--panel2] px-2 py-1.5 text-xs" style={{ width: NODE_WIDTH }}>
+    <div
+      className={`relative flex items-start gap-2 rounded-md border bg-[--panel2] px-2 py-1.5 text-xs ${
+        // Clicked and ticked share one highlight: a card is either highlighted or not.
+        checked || active ? "border-[--accent] ring-2 ring-[--accent]" : "border-[--line]"
+      }`}
+      style={{ width: NODE_WIDTH }}
+    >
       <Handle type="target" position={Position.Top} />
-      <button
-        type="button"
-        aria-label={`Delete ${node.method} ${node.pathname}`}
-        title="Delete call"
-        className="absolute -right-2 -top-2 hidden h-5 w-5 items-center justify-center rounded-full border border-[--line] bg-[--panel] text-[10px] font-bold leading-none text-[--muted] hover:border-[--bad] hover:text-[--bad] group-hover:flex"
-        // Stop the click from also bubbling into ReactFlow's onNodeClick (node selection).
-        onClick={(e) => {
-          e.stopPropagation();
-          onDeleteClick(node.correlationId);
-        }}
-      >
-        ✕
-      </button>
-      <div className="flex items-center gap-1.5">
-        <span className="font-bold">{node.method}</span>
-        <Chip variant={statusVariant(node.status)}>{node.status !== null ? String(node.status) : "?"}</Chip>
-      </div>
-      <div className="mt-0.5 truncate text-[--muted]" title={node.pathname}>
-        {node.pathname}
+      <input
+        type="checkbox"
+        aria-label={`Select ${node.method} ${node.pathname}`}
+        checked={checked}
+        // nodrag: ReactFlow would otherwise start a node drag from the checkbox.
+        className="nodrag mt-0.5 shrink-0 cursor-pointer"
+        // Stop the click from also bubbling into ReactFlow's onNodeClick (details panel).
+        onClick={(e) => e.stopPropagation()}
+        onChange={() => onToggleSelect(node.correlationId)}
+      />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <span className="font-bold">{node.method}</span>
+          <Chip variant={statusVariant(node.status)}>{node.status !== null ? String(node.status) : "?"}</Chip>
+        </div>
+        <div className="mt-0.5 truncate text-[--muted]" title={node.pathname}>
+          {node.pathname}
+        </div>
       </div>
       <Handle type="source" position={Position.Bottom} />
     </div>
@@ -214,6 +227,40 @@ const nodeTypes = { call: CallNode };
 
 // Re-fits the view whenever the graph pane's available width changes (divider drag or window
 // resize) — fitView otherwise only ever runs once, on mount. Must render inside <ReactFlow>.
+// Replaces React Flow's stock <Controls/> (light-themed, its own glyphs) with buttons that match the
+// portal. Same four actions; the lock toggles dragging and selection exactly as the stock one did.
+function GraphControls() {
+  const { zoomIn, zoomOut, fitView } = useReactFlow();
+  const store = useStoreApi();
+  const interactive = useStore((st) => st.nodesDraggable || st.nodesConnectable || st.elementsSelectable);
+  const buttons = [
+    ["Zoom in", ZoomInIcon, () => zoomIn({ duration: 150 })],
+    ["Zoom out", ZoomOutIcon, () => zoomOut({ duration: 150 })],
+    ["Fit view", MaximizeIcon, () => fitView({ duration: 150 })],
+    [
+      interactive ? "Lock graph" : "Unlock graph",
+      interactive ? LockOpenIcon : LockIcon,
+      () => store.setState({ nodesDraggable: !interactive, nodesConnectable: !interactive, elementsSelectable: !interactive }),
+    ],
+  ] as const;
+  return (
+    <FlowPanel position="bottom-left" className="flex flex-col gap-1">
+      {buttons.map(([label, icon, onClick]) => (
+        <button
+          key={label}
+          type="button"
+          aria-label={label}
+          title={label}
+          onClick={onClick}
+          className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[--line] bg-[--panel2] p-0 text-[--text]"
+        >
+          <Icon icon={icon} className="h-4 w-4" />
+        </button>
+      ))}
+    </FlowPanel>
+  );
+}
+
 function FitViewOnResize({ containerWidth, rightPanelWidth }: { containerWidth: number; rightPanelWidth: number }) {
   const { fitView } = useReactFlow();
   useEffect(() => {
@@ -246,7 +293,7 @@ function ConnectedEdges({
           <div key={i} className="flex items-center gap-1.5 border-b border-[--line] pb-2 text-xs">
             <Chip variant={produced ? "ok" : "human"}>{produced ? "produces" : "consumes"}</Chip>
             <code>{produced ? e.producerJsonPath : e.consumerJsonPath}</code>
-            <span className="text-[--muted]">{produced ? "→" : "←"}</span>
+            <Icon icon={produced ? ArrowRightIcon : ArrowLeftIcon} className="text-[--muted]" />
             <span className="truncate">{otherLabel}</span>
             {e.confidence === "weak" && <Chip variant="warn">weak</Chip>}
           </div>
@@ -331,13 +378,11 @@ function NodeDetails({
   node,
   edges,
   nodesById,
-  onRequestDelete,
 }: {
   sessionId: string;
   node: GraphCallNode;
   edges: GraphEdge[];
   nodesById: Map<string, GraphCallNode>;
-  onRequestDelete: (correlationId: string) => void;
 }) {
   const detail = trpc.sessions.callDetail.useQuery({ sessionId, correlationId: node.correlationId });
 
@@ -371,13 +416,6 @@ function NodeDetails({
       <div>
         <h4 className="mb-1.5 text-xs font-bold uppercase tracking-[0.4px] text-[--muted]">Connected values</h4>
         <ConnectedEdges edges={edges} correlationId={node.correlationId} nodesById={nodesById} />
-        <button
-          type="button"
-          className="mt-3 rounded-lg border border-[--line] px-2.5 py-1.5 text-xs font-semibold"
-          onClick={() => onRequestDelete(node.correlationId)}
-        >
-          Delete call
-        </button>
       </div>
       {node.operationId && (
         <div>
@@ -389,79 +427,20 @@ function NodeDetails({
   );
 }
 
-function DeleteConfirm({
-  correlationId,
-  edges,
-  pending,
-  nodesById,
-  onCancel,
-  onConfirm,
-}: {
-  correlationId: string;
-  edges: GraphEdge[];
-  pending: Set<string>;
-  nodesById: Map<string, GraphCallNode>;
-  onCancel: () => void;
-  onConfirm: () => void;
-}) {
-  const orphans = findOrphanedConsumers(edges, new Set([...pending, correlationId]));
-  const related = edges.filter(
-    (e) => e.producerCorrelationId === correlationId || e.consumerCorrelationId === correlationId,
-  );
-  const label = (id: string) => {
-    const n = nodesById.get(id);
-    return n ? `${n.method} ${n.pathname}` : id;
-  };
-  return (
-    <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60">
-      <div className="w-[520px] rounded-xl border border-[--line] bg-[--panel] p-4">
-        <h4 className="mb-2 text-sm font-bold">Delete {label(correlationId)}?</h4>
-        {related.length === 0 ? (
-          <Muted>This call has no connected values.</Muted>
-        ) : (
-          <ul className="mb-3 flex flex-col gap-1 text-xs">
-            {related.map((e, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: derived list, no stable id
-              <li key={i}>
-                {e.producerCorrelationId === correlationId
-                  ? `produces ${e.producerJsonPath} → ${label(e.consumerCorrelationId)}`
-                  : `consumes ${e.consumerJsonPath} ← ${label(e.producerCorrelationId)}`}
-              </li>
-            ))}
-          </ul>
-        )}
-        {orphans.length > 0 && (
-          <p className="mb-3 text-xs text-[--bad]">
-            This call is the only remaining producer for:{" "}
-            {orphans.map((o) => `${o.consumerJsonPath} on ${label(o.consumerCorrelationId)}`).join(", ")}.
-            Delete those calls first, or keep this one.
-          </p>
-        )}
-        <div className="flex justify-end gap-2">
-          <button type="button" onClick={onCancel} className="rounded-lg border border-[--line] px-2.5 py-1.5 text-xs">
-            Cancel
-          </button>
-          <button
-            type="button"
-            disabled={orphans.length > 0}
-            onClick={onConfirm}
-            className="rounded-lg border border-[--line] px-2.5 py-1.5 text-xs font-semibold disabled:opacity-40"
-          >
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; onClose: () => void }) {
   const utils = trpc.useUtils();
   const graph = trpc.sessions.graph.useQuery({ sessionId });
+  const sessionName = useSessionName(sessionId);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [graphMode, setGraphMode] = useState<GraphMode>(null);
   const [pendingDeletes, setPendingDeletes] = useState<Set<string>>(new Set());
-  const [confirming, setConfirming] = useState<string | null>(null);
+  // Calls ticked via their card checkbox; the toolbar's Delete stages them all at once.
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  // Shown when Remove / Keep only these would leave a call without its producer.
+  const [blockedWarning, setBlockedWarning] = useState<{
+    title: string;
+    calls: { label: string; paths: string[] }[];
+  } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const containerWidth = useContainerWidth(containerRef);
   const pointerDownOnBackdrop = useRef(false);
@@ -482,10 +461,10 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
   });
 
   const proposeFromSession = trpc.compose.proposeFromSession.useMutation({
-    onSuccess: async () => {
+    onSuccess: async (composition) => {
       // Refresh Compose's draft list first, so the new draft is there when the screen mounts.
       await utils.compose.drafts.invalidate();
-      window.location.hash = "#/compose";
+      window.location.hash = `#/compose/${composition.compositionId}`;
     },
   });
 
@@ -510,11 +489,13 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") requestClose();
+      if (e.key !== "Escape") return;
+      if (blockedWarning) setBlockedWarning(null);
+      else requestClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [pendingDeletes, onClose]);
+  }, [pendingDeletes, onClose, blockedWarning]);
 
   useEffect(() => {
     closeButtonRef.current?.focus();
@@ -625,17 +606,46 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
 
   useEffect(() => {
     setPendingDeletes(new Set());
-    setConfirming(null);
     setGraphMode(null);
+    setSelected(new Set());
   }, [graph.data]);
 
-  // Injects the node card's hover-X delete trigger here, kept out of the layoutNodes memo above
-  // (which already has enough dependencies) — it opens the same confirm dialog the side panel's
-  // "Delete call" button uses, so a node-card delete gets the same orphan-producer check and
-  // staged-save behavior, just from a second entry point.
+  // Trace/Producers/Consumers follow one call, so a multi-selection turns any active mode off.
+  const multiSelected = selected.size > 1;
+  useEffect(() => {
+    if (multiSelected) setGraphMode(null);
+  }, [multiSelected]);
+
+  // A selected call staged some other way ("Keep only these") leaves the selection, so Remove's
+  // count only ever covers calls still on the graph.
+  useEffect(() => {
+    setSelected((prev) => {
+      if (![...prev].some((id) => pendingDeletes.has(id))) return prev;
+      return new Set([...prev].filter((id) => !pendingDeletes.has(id)));
+    });
+  }, [pendingDeletes]);
+
+  // Selection state is injected here, kept out of the layoutNodes memo above (which already has
+  // enough dependencies), so ticking a checkbox never forces a relayout.
   const nodesWithHandlers = useMemo(
-    () => nodes.map((n) => ({ ...n, data: { ...n.data, onDeleteClick: setConfirming } })),
-    [nodes],
+    () =>
+      nodes.map((n) => ({
+        ...n,
+        data: {
+          ...n.data,
+          checked: selected.has(n.id),
+          // The call whose details are open in the side panel.
+          active: n.id === selectedId,
+          onToggleSelect: (id: string) =>
+            setSelected((prev) => {
+              const next = new Set(prev);
+              if (next.has(id)) next.delete(id);
+              else next.add(id);
+              return next;
+            }),
+        },
+      })),
+    [nodes, selected, selectedId],
   );
 
   const visibleNodesById = useMemo(() => {
@@ -658,13 +668,44 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
   const graphEdgesRaw = (graph.data?.edges ?? []).filter(
     (e) => !pendingDeletes.has(e.producerCorrelationId) && !pendingDeletes.has(e.consumerCorrelationId),
   );
+  // Computed over the whole visible session, not the Trace/Producers/Consumers scope: a call is an
+  // orphan by the session's graph, not by whatever subset happens to be on screen.
+  const isolatedIds = findIsolatedCalls(visibleNodesById.keys(), graphEdgesRaw);
+  // Everything below stages only; nothing is permanent until Save changes. Each staging action is
+  // checked against the same producer rule the server enforces, so it is disabled with the reason
+  // up front instead of failing at save time.
+  const blockersFor = (ids: Iterable<string>) =>
+    findOrphanedConsumers(graph.data?.edges ?? [], new Set([...pendingDeletes, ...ids]));
+  const removeBlockers = selected.size > 0 ? blockersFor(selected) : [];
+  // With Producers/Consumers/Trace on: every call still on the graph that the view hides.
+  const outsideView = filteredIds ? [...visibleNodesById.keys()].filter((id) => !filteredIds.has(id)) : [];
+  const keepOnlyBlockers = outsideView.length > 0 ? blockersFor(outsideView) : [];
+  // One entry per call that would lose its producer, with every value it would be missing.
+  const groupBlockers = (blockers: { consumerCorrelationId: string; consumerJsonPath: string }[]) => {
+    const byCall = new Map<string, string[]>();
+    for (const b of blockers) {
+      const paths = byCall.get(b.consumerCorrelationId) ?? [];
+      if (!paths.includes(b.consumerJsonPath)) paths.push(b.consumerJsonPath);
+      byCall.set(b.consumerCorrelationId, paths);
+    }
+    return [...byCall].map(([id, paths]) => ({ label: nodeLabel(id), paths }));
+  };
+  const nodeLabel = (id: string) => {
+    const n = allNodesById.get(id);
+    return n ? `${n.method} ${n.pathname}` : id;
+  };
+
+  const notices = [
+    deleteCalls.error?.message,
+    proposeFromSession.error?.message,
+  ].filter((n): n is string => Boolean(n));
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
       role="dialog"
       aria-modal="true"
-      aria-label={`Session ${sessionId} dependency graph`}
+      aria-label={`${sessionName}: dependency graph`}
       onMouseDown={(e) => {
         pointerDownOnBackdrop.current = e.target === e.currentTarget;
       }}
@@ -677,100 +718,172 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
         onClick={(e) => e.stopPropagation()}
       >
         <header className="flex items-center justify-between border-b border-[--line] bg-[--panel2] px-4 py-2.5">
-          <h3 className="m-0 text-sm">Session {sessionId} — dependency graph</h3>
+          <h3 className="m-0 text-sm">{sessionName} — dependency graph</h3>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5">
-              {(
-                [
-                  ["trace", "Trace to here"],
-                  ["producers", "Producers"],
-                  ["consumers", "Consumers"],
-                  ["both", "Both"],
-                ] as const
-              ).map(([mode, label]) => (
-                <button
-                  key={mode}
-                  type="button"
-                  className={`rounded-md border px-2 py-1 text-xs font-semibold disabled:opacity-40 ${
-                    graphMode === mode
-                      ? "border-[--accent] bg-[--accent] text-[--panel]"
-                      : "border-[--line]"
-                  }`}
-                  disabled={!selectedId}
-                  title={selectedId ? undefined : "Select a call first"}
-                  onClick={() => setGraphMode(mode)}
-                >
-                  {label}
-                </button>
-              ))}
-              {graphMode && (
-                <button
-                  type="button"
-                  className="rounded-md border border-[--line] px-2 py-1 text-xs"
-                  onClick={() => setGraphMode(null)}
-                >
-                  Show all
-                </button>
-              )}
-              {graphMode === "trace" && filteredIds && (
-                <button
-                  type="button"
-                  className="rounded-md border border-[--line] px-2 py-1 text-xs"
-                  onClick={() => {
-                    const others = (graph.data?.nodes ?? [])
-                      .map((n) => n.correlationId)
-                      .filter((id) => !pendingDeletes.has(id) && !filteredIds.has(id));
-                    if (others.length === 0) return;
-                    if (
-                      window.confirm(
-                        `Mark ${others.length} call(s) outside this trace for deletion? Nothing is removed until you click Save.`,
-                      )
-                    ) {
-                      setPendingDeletes((prev) => new Set([...prev, ...others]));
-                    }
-                  }}
-                >
-                  Keep only these
-                </button>
-              )}
-            </div>
-            <div className="flex flex-col items-end">
-              <button
-                type="button"
-                className="rounded-md border border-[--line] px-2 py-1 text-xs font-semibold disabled:opacity-40"
-                disabled={pendingDeletes.size === 0 || deleteCalls.isPending}
-                onClick={() => deleteCalls.mutate({ sessionId, correlationIds: [...pendingDeletes] })}
-              >
-                Save ({pendingDeletes.size})
-              </button>
-              {deleteCalls.error?.message && <div className="mt-1 text-xs text-[--bad]">{deleteCalls.error.message}</div>}
-            </div>
-            <div className="flex flex-col items-end">
-              <button
-                type="button"
-                className="rounded-md border border-[--line] px-2 py-1 text-xs font-semibold disabled:opacity-40"
-                // Unsaved deletions aren't persisted yet, so generating now would include calls the
-                // analyst is about to remove. Mirrors Save's own disabled rule, inverted.
-                disabled={pendingDeletes.size > 0 || proposeFromSession.isPending}
-                title={pendingDeletes.size > 0 ? "Save your pending deletions first" : undefined}
-                onClick={() => proposeFromSession.mutate({ sessionId })}
-              >
-                {proposeFromSession.isPending ? "Generating…" : "Generate automation script"}
-              </button>
-              {proposeFromSession.error?.message && (
-                <div className="mt-1 max-w-[320px] text-right text-xs text-[--bad]">{proposeFromSession.error.message}</div>
-              )}
+              {(() => {
+                const modeDisabled = !selectedId || multiSelected;
+                const modeTitle = multiSelected
+                  ? "Trace works on one call; select a single call"
+                  : selectedId
+                    ? undefined
+                    : "Select a call first";
+                const modeClass = (mode: GraphMode) =>
+                  `px-2 py-1 text-xs font-semibold disabled:opacity-40 ${
+                    graphMode === mode ? "border-[--accent] bg-[--accent] text-[--panel]" : "border-[--line]"
+                  }`;
+                return (
+                  // One segmented group; each button toggles its view, and clicking the active
+                  // one again returns to the full graph.
+                  <div className="flex" role="group" aria-label="Graph view">
+                    {(
+                      [
+                        ["producers", "Producers", ChevronsLeftIcon, "rounded-l-md border"],
+                        ["consumers", "Consumers", ChevronsRightIcon, "-ml-px border"],
+                        ["trace", "Trace", RouteIcon, "-ml-px rounded-r-md border"],
+                      ] as const
+                    ).map(([mode, label, icon, shape]) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        aria-pressed={graphMode === mode}
+                        className={`${shape} ${modeClass(mode)}`}
+                        disabled={modeDisabled}
+                        title={modeTitle}
+                        onClick={() => setGraphMode(graphMode === mode ? null : mode)}
+                      >
+                        <Icon icon={icon} className="mr-1" />
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
             <button
               type="button"
+              className="rounded-md border border-[--line] px-2 py-1 text-xs font-semibold disabled:opacity-40"
+              disabled={isolatedIds.length === 0}
+              title={
+                graphEdgesRaw.length === 0
+                  ? "Single-level session: no call depends on another, so nothing is orphaned"
+                  : "Select every call with no dependency in or out; untick any you want to keep"
+              }
+              onClick={() => setSelected(new Set(isolatedIds))}
+            >
+              <Icon icon={UnlinkIcon} className="mr-1.5" />
+              Orphans ({isolatedIds.length})
+            </button>
+            {selected.size > 0 && (
+              <button
+                type="button"
+                className="rounded-md border border-[--line] px-2 py-1 text-xs font-semibold disabled:opacity-40"
+                title="Take the selected calls off the graph. Nothing is permanent until Save changes."
+                onClick={() => {
+                  if (removeBlockers.length > 0) {
+                    setBlockedWarning({
+                      title: "These calls can't be removed yet",
+                      calls: groupBlockers(removeBlockers),
+                    });
+                    return;
+                  }
+                  setPendingDeletes((prev) => new Set([...prev, ...selected]));
+                  setSelected(new Set());
+                }}
+              >
+                <Icon icon={Trash2Icon} className="mr-1.5" />
+                Remove ({selected.size})
+              </button>
+            )}
+            {outsideView.length > 0 && (
+              <button
+                type="button"
+                className="rounded-md border border-[--line] px-2 py-1 text-xs font-semibold disabled:opacity-40"
+                title="Take every call this view hides off the graph. Nothing is permanent until Save changes."
+                onClick={() => {
+                  if (keepOnlyBlockers.length > 0) {
+                    setBlockedWarning({
+                      title: "Can't keep only this view",
+                      calls: groupBlockers(keepOnlyBlockers),
+                    });
+                    return;
+                  }
+                  setPendingDeletes((prev) => new Set([...prev, ...outsideView]));
+                  // The view now shows everything left, so there is nothing left for it to filter.
+                  setGraphMode(null);
+                }}
+              >
+                <Icon icon={FunnelIcon} className="mr-1.5" />
+                Keep only these
+              </button>
+            )}
+            {pendingDeletes.size > 0 && (
+              <>
+                <span className="ml-1 text-xs text-[--muted]">{pendingDeletes.size} staged</span>
+                <button
+                  type="button"
+                  className="rounded-md border border-[--accent] bg-[--accent] px-2 py-1 text-xs font-semibold text-[--panel] disabled:opacity-40"
+                  disabled={deleteCalls.isPending}
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        `Permanently delete ${pendingDeletes.size} call(s) from this session? This can't be undone.`,
+                      )
+                    ) {
+                      deleteCalls.mutate({ sessionId, correlationIds: [...pendingDeletes] });
+                    }
+                  }}
+                >
+                  <Icon icon={deleteCalls.isPending ? LoaderCircleIcon : SaveIcon} spin={deleteCalls.isPending} className="mr-1.5" />
+                  {deleteCalls.isPending ? "Saving…" : "Save changes"}
+                </button>
+                <button
+                  type="button"
+                  className="rounded-md border border-[--line] px-2 py-1 text-xs font-semibold disabled:opacity-40"
+                  disabled={deleteCalls.isPending}
+                  onClick={() => setPendingDeletes(new Set())}
+                >
+                  <Icon icon={Undo2Icon} className="mr-1.5" />
+                  Discard
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              className="rounded-md border border-[--line] px-2 py-1 text-xs font-semibold disabled:opacity-40"
+              // Staged removals aren't persisted yet, so composing now would include calls the
+              // analyst is about to remove. Enabled only once nothing is staged.
+              disabled={pendingDeletes.size > 0 || proposeFromSession.isPending}
+              title={pendingDeletes.size > 0 ? "Save or discard your staged changes first" : undefined}
+              onClick={() => proposeFromSession.mutate({ sessionId })}
+            >
+              <Icon icon={proposeFromSession.isPending ? LoaderCircleIcon : WandSparklesIcon} spin={proposeFromSession.isPending} className="mr-1.5" />
+              {proposeFromSession.isPending ? "Composing…" : "Compose TestSpec"}
+            </button>
+            <button
+              type="button"
               ref={closeButtonRef}
-              className="rounded-md border border-[--border] px-2 py-1 text-xs"
+              className="rounded-md p-1 opacity-70 hover:bg-[--panel2] hover:opacity-100"
+              aria-label="Close"
+              title="Close"
               onClick={requestClose}
             >
-              ✕ close
+              <Icon icon={XIcon} className="h-4 w-4" />
             </button>
           </div>
         </header>
+        {/* Why an action is disabled, or why it failed: one line each, kept out of the toolbar so the
+            buttons never reflow. The full text is on hover when a line is truncated. */}
+        {notices.length > 0 && (
+          <div className="flex flex-col gap-0.5 border-b border-[--line] bg-[--panel2] px-4 py-1.5 text-xs text-[--warn]">
+            {notices.map((n) => (
+              <div key={n} className="truncate" title={n}>
+                <Icon icon={TriangleAlertIcon} className="mr-1" />
+                {n}
+              </div>
+            ))}
+          </div>
+        )}
         <div ref={rowRef} className={`flex min-h-0 flex-1${isDraggingDivider ? " select-none" : ""}`}>
           <div ref={containerRef} className="relative min-h-0 flex-1">
             <QueryState isLoading={graph.isLoading} error={graph.error} />
@@ -787,12 +900,24 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
                   edges={edges}
                   nodeTypes={nodeTypes}
                   onNodesChange={onNodesChange}
-                  onNodeClick={(_, node) => setSelectedId(node.id)}
+                  // A card click selects that call alone (replacing any selection); only the card's
+                  // checkbox adds to or removes from a multi-selection.
+                  onNodeClick={(_, node) => {
+                    setSelectedId(node.id);
+                    setSelected(new Set([node.id]));
+                  }}
+                  // A click on empty canvas clears everything: ticks, the open call, and any view,
+                  // since Producers/Consumers/Trace follow the open call. Panning drags don't fire this.
+                  onPaneClick={() => {
+                    setSelected(new Set());
+                    setSelectedId(null);
+                    setGraphMode(null);
+                  }}
                   fitView
                   proOptions={{ hideAttribution: true }}
                 >
                   <Background />
-                  <Controls />
+                  <GraphControls />
                   <MiniMap />
                   <FitViewOnResize containerWidth={containerWidth} rightPanelWidth={rightPanelWidth} />
                 </ReactFlow>
@@ -827,25 +952,57 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
                 node={selectedNode}
                 edges={graphEdgesRaw}
                 nodesById={visibleNodesById}
-                onRequestDelete={(correlationId) => setConfirming(correlationId)}
               />
             ) : (
               <Muted>Select a call to see its details.</Muted>
             )}
           </div>
         </div>
-        {confirming !== null && (
-          <DeleteConfirm
-            correlationId={confirming}
-            edges={graph.data?.edges ?? []}
-            pending={pendingDeletes}
-            nodesById={allNodesById}
-            onCancel={() => setConfirming(null)}
-            onConfirm={() => {
-              setPendingDeletes((prev) => new Set([...prev, confirming]));
-              setConfirming(null);
-            }}
-          />
+        {blockedWarning && (
+          <div
+            className="absolute inset-0 z-20 flex items-center justify-center bg-black/60 p-4"
+            onClick={() => setBlockedWarning(null)}
+          >
+            <div
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="blocked-warning-title"
+              className="flex max-h-[70vh] w-[560px] max-w-full flex-col rounded-xl border border-[--warn] bg-[--panel] p-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h4 id="blocked-warning-title" className="m-0 mb-1 text-sm font-bold text-[--warn]">
+                <Icon icon={TriangleAlertIcon} className="mr-1.5" />
+                {blockedWarning.title}
+              </h4>
+              <p className="m-0 mb-3 text-xs text-[--muted]">
+                They are the only source of values these calls still use. Remove the calls below as well, or
+                untick the calls that provide them.
+              </p>
+              {/* Scrolls on its own so a long list never pushes the button off screen. */}
+              <ul className="m-0 mb-3 min-h-0 flex-1 list-none overflow-y-auto rounded-md border border-[--line] p-0">
+                {blockedWarning.calls.map((c) => (
+                  <li key={c.label} className="border-b border-[--line] px-3 py-2 text-xs last:border-b-0">
+                    <div className="truncate font-semibold" title={c.label}>
+                      {c.label}
+                    </div>
+                    <div className="mt-0.5 text-[--muted]">
+                      needs <code>{c.paths.join(", ")}</code>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  autoFocus
+                  className="rounded-md border border-[--line] px-3 py-1 text-xs font-semibold"
+                  onClick={() => setBlockedWarning(null)}
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

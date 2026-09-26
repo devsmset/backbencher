@@ -1,5 +1,6 @@
+import { HammerIcon, LoaderCircleIcon } from "lucide-react";
 import { trpc } from "../trpc.js";
-import { Muted, Panel, QueryState } from "../ui.js";
+import { Icon, Muted, Panel, QueryState } from "../ui.js";
 
 export function Pack() {
   const utils = trpc.useUtils();
@@ -16,6 +17,7 @@ export function Pack() {
           onClick={() => build.mutate()}
           disabled={build.isPending}
         >
+          <Icon icon={build.isPending ? LoaderCircleIcon : HammerIcon} spin={build.isPending} className="mr-1.5" />
           {build.isPending ? "Building…" : "Build pack"}
         </button>
       }
