@@ -17,6 +17,8 @@ export { detectVolatileFields } from "./volatile.js";
 export { findRedundantCalls } from "./redundant.js";
 export { findIsolatedCalls, findOrphanedConsumers } from "./orphans.js";
 export type { OrphanedConsumer } from "./orphans.js";
+export { linkKey, linkKeyGroup, linkKeyPath, withoutExcludedLinks } from "./linkKeys.js";
+export type { LinkKeyEdge, LinkKeyGroup } from "./linkKeys.js";
 export { buildDataflowGraph } from "./dataflow.js";
 export type { DataflowResult } from "./dataflow.js";
 export { buildSessionCallGraph } from "./sessionGraph.js";

@@ -11,6 +11,10 @@
     "./orphans": {
       "types": "./dist/orphans.d.ts",
       "import": "./dist/orphans.js"
+    },
+    "./linkKeys": {
+      "types": "./dist/linkKeys.d.ts",
+      "import": "./dist/linkKeys.js"
     }
   },
   "main": "./dist/index.js",
