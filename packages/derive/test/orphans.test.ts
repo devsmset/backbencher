@@ -56,3 +56,29 @@ describe("findIsolatedCalls", () => {
     expect(findIsolatedCalls(["a", "c", "x"], [edge("a", "b"), edge("c", "d"), edge("c", "a")])).toEqual(["x"]);
   });
 });
+
+describe("findIsolatedCalls with a link filter", () => {
+  it("keeps the two-argument behaviour", () => {
+    expect(findIsolatedCalls(["a", "b", "c"], [edge("a", "b")])).toEqual(["c"]);
+    expect(findIsolatedCalls(["a", "b"], [])).toEqual([]);
+  });
+
+  it("reports no orphans for a session that never had links", () => {
+    expect(findIsolatedCalls(["a", "b"], [], [])).toEqual([]);
+  });
+
+  it("reports every call when all of a session's links are filtered out", () => {
+    expect(findIsolatedCalls(["a", "b", "c"], [], [edge("a", "b")])).toEqual(["a", "b", "c"]);
+  });
+
+  it("isolates a call linked only through a filtered-out link", () => {
+    const all = [edge("a", "b"), edge("b", "c")];
+    const shown = [edge("b", "c")];
+    expect(findIsolatedCalls(["a", "b", "c"], shown, all)).toEqual(["a"]);
+  });
+
+  it("judges single-level only from links between the given calls", () => {
+    // the only link touches a call outside nodeIds (e.g. staged for deletion)
+    expect(findIsolatedCalls(["a", "b"], [], [edge("a", "x")])).toEqual([]);
+  });
+});

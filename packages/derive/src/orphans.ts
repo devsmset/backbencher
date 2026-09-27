@@ -45,21 +45,27 @@ export function findOrphanedConsumers(
     );
 }
 
-// Calls with no Dependency edge in or out among `nodeIds`. When no edge survives at all the
-// Session is single-level — every call stands alone — and nothing counts as isolated. Edges
-// touching calls outside `nodeIds` (e.g. ones staged for deletion) are ignored.
+type IsolationEdge = Pick<SessionCallEdge, "producerCorrelationId" | "consumerCorrelationId">;
+
+// Calls with no Dependency edge in or out among `nodeIds`, judged from `edges` (the links shown).
+// When the Session has no edge at all among `nodeIds` it is single-level — every call stands alone —
+// and nothing counts as isolated. That check uses `allEdges` (every link, before any Links filter)
+// when given, so filtering out all of a Session's links makes every call isolated instead of none.
+// Edges touching calls outside `nodeIds` (e.g. ones staged for deletion) are ignored.
 export function findIsolatedCalls(
   nodeIds: Iterable<string>,
-  edges: Pick<SessionCallEdge, "producerCorrelationId" | "consumerCorrelationId">[],
+  edges: IsolationEdge[],
+  allEdges: IsolationEdge[] = edges,
 ): string[] {
   const ids = [...nodeIds];
   const present = new Set(ids);
+  const within = (e: IsolationEdge) => present.has(e.producerCorrelationId) && present.has(e.consumerCorrelationId);
+  if (!allEdges.some(within)) return [];
   const linked = new Set<string>();
   for (const e of edges) {
-    if (!present.has(e.producerCorrelationId) || !present.has(e.consumerCorrelationId)) continue;
+    if (!within(e)) continue;
     linked.add(e.producerCorrelationId);
     linked.add(e.consumerCorrelationId);
   }
-  if (linked.size === 0) return [];
   return ids.filter((id) => !linked.has(id));
 }
