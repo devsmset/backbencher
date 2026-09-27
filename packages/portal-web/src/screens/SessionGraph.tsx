@@ -1,5 +1,6 @@
 import { ArrowLeftIcon, ArrowRightIcon, ChevronsLeftIcon, ChevronsRightIcon, FunnelIcon, LoaderCircleIcon, LockIcon, LockOpenIcon, MaximizeIcon, RouteIcon, SaveIcon, Trash2Icon, TriangleAlertIcon, Undo2Icon, UnlinkIcon, WandSparklesIcon, XIcon, ZoomInIcon, ZoomOutIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { withoutExcludedLinks } from "@backbencher/derive/linkKeys";
 import { findIsolatedCalls, findOrphanedConsumers } from "@backbencher/derive/orphans";
 import ReactFlow, {
   Background,
@@ -18,9 +19,11 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import type { SessionCallEdge } from "@backbencher/schemas";
+import { setKeys, summarizeLinkKeys } from "../linkKeySummary.js";
 import { trpc } from "../trpc.js";
 import { useSessionName } from "../sessionName.js";
 import { Chip, Icon, JsonBlock, Muted, QueryState } from "../ui.js";
+import { LinksFilter } from "./LinksFilter.js";
 
 // Session dependency graph (§ realignment guide — sessions page graph view). Lays out this
 // session's actual calls on a timeline (x = requestTimestamp) with a greedy lane-packing
@@ -273,15 +276,31 @@ function ConnectedEdges({
   edges,
   correlationId,
   nodesById,
+  hidden,
 }: {
   edges: GraphEdge[];
   correlationId: string;
   nodesById: Map<string, GraphCallNode>;
+  /** This call's links hidden by the Links filter. */
+  hidden: number;
 }) {
   const related = edges.filter(
     (e) => e.producerCorrelationId === correlationId || e.consumerCorrelationId === correlationId,
   );
-  if (related.length === 0) return <Muted>No connected values.</Muted>;
+  const hiddenNote =
+    hidden > 0 ? (
+      <Muted>
+        {hidden} {hidden === 1 ? "link" : "links"} hidden by the Links filter
+      </Muted>
+    ) : null;
+  if (related.length === 0) {
+    return (
+      <div className="flex flex-col gap-1">
+        <Muted>No connected values.</Muted>
+        {hiddenNote}
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col gap-2">
       {related.map((e, i) => {
@@ -299,6 +318,7 @@ function ConnectedEdges({
           </div>
         );
       })}
+      {hiddenNote}
     </div>
   );
 }
@@ -377,11 +397,14 @@ function NodeDetails({
   sessionId,
   node,
   edges,
+  allEdges,
   nodesById,
 }: {
   sessionId: string;
   node: GraphCallNode;
   edges: GraphEdge[];
+  /** The same links before the Links filter, to count what it hides. */
+  allEdges: GraphEdge[];
   nodesById: Map<string, GraphCallNode>;
 }) {
   const detail = trpc.sessions.callDetail.useQuery({ sessionId, correlationId: node.correlationId });
@@ -415,7 +438,17 @@ function NodeDetails({
       </div>
       <div>
         <h4 className="mb-1.5 text-xs font-bold uppercase tracking-[0.4px] text-[--muted]">Connected values</h4>
-        <ConnectedEdges edges={edges} correlationId={node.correlationId} nodesById={nodesById} />
+        <ConnectedEdges
+          edges={edges}
+          correlationId={node.correlationId}
+          nodesById={nodesById}
+          hidden={
+            allEdges.filter((e) => e.producerCorrelationId === node.correlationId || e.consumerCorrelationId === node.correlationId)
+              .length -
+            edges.filter((e) => e.producerCorrelationId === node.correlationId || e.consumerCorrelationId === node.correlationId)
+              .length
+          }
+        />
       </div>
       {node.operationId && (
         <div>
@@ -431,6 +464,36 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
   const utils = trpc.useUtils();
   const graph = trpc.sessions.graph.useQuery({ sessionId });
   const sessionName = useSessionName(sessionId);
+  // Keys the analyst switched off. Optimistic: a tick shows at once; the override is dropped once the
+  // saved list is back from the server (or on error, which reverts to what's saved). `saveSeq`
+  // makes sure only the latest of several quick ticks clears it.
+  const [excludedOverride, setExcludedOverride] = useState<string[] | null>(null);
+  const saveSeq = useRef(0);
+  const saveExcluded = trpc.sessions.setExcludedLinkKeys.useMutation();
+  const excludedLinkKeys = excludedOverride ?? graph.data?.excludedLinkKeys ?? [];
+  const excludedSignature = excludedLinkKeys.join("\n");
+  const allEdges = graph.data?.edges ?? [];
+  // Every graph view, orphan check and blocker check below reads these, never graph.data.edges.
+  const shownEdges = useMemo(
+    () => withoutExcludedLinks(graph.data?.edges ?? [], excludedSignature ? excludedSignature.split("\n") : []),
+    [graph.data, excludedSignature],
+  );
+  const updateExcluded = (next: string[]) => {
+    const seq = ++saveSeq.current;
+    setExcludedOverride(next);
+    saveExcluded.mutate(
+      { sessionId, keys: next },
+      {
+        onSuccess: async () => {
+          await utils.sessions.graph.invalidate({ sessionId });
+          if (saveSeq.current === seq) setExcludedOverride(null);
+        },
+        onError: () => {
+          if (saveSeq.current === seq) setExcludedOverride(null);
+        },
+      },
+    );
+  };
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [graphMode, setGraphMode] = useState<GraphMode>(null);
   const [pendingDeletes, setPendingDeletes] = useState<Set<string>>(new Set());
@@ -509,15 +572,15 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
     const presentIds = new Set(
       (graph.data?.nodes ?? []).filter((n) => !pendingDeletes.has(n.correlationId)).map((n) => n.correlationId),
     );
-    const graphEdgesRaw = (graph.data?.edges ?? []).filter(
+    const graphEdgesRaw = shownEdges.filter(
       (e) => !pendingDeletes.has(e.producerCorrelationId) && !pendingDeletes.has(e.consumerCorrelationId),
     );
     return computeFilteredIds(graphMode, selectedId, presentIds, graphEdgesRaw);
-  }, [graph.data, pendingDeletes, graphMode, selectedId]);
+  }, [graph.data, shownEdges, pendingDeletes, graphMode, selectedId]);
 
   const { nodes: layoutNodes, edges } = useMemo(() => {
     const visibleNodes = (graph.data?.nodes ?? []).filter((n) => !pendingDeletes.has(n.correlationId));
-    const graphEdgesRaw = (graph.data?.edges ?? []).filter(
+    const graphEdgesRaw = shownEdges.filter(
       (e) => !pendingDeletes.has(e.producerCorrelationId) && !pendingDeletes.has(e.consumerCorrelationId),
     );
     if (visibleNodes.length === 0) return { nodes: [] as Node[], edges: [] as Edge[] };
@@ -573,7 +636,7 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
     }));
 
     return { nodes: rfNodes, edges: rfEdges };
-  }, [graph.data, containerWidth, pendingDeletes, graphMode, filteredIds]);
+  }, [graph.data, shownEdges, containerWidth, pendingDeletes, graphMode, filteredIds]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState<{ node: GraphCallNode }>([]);
   useEffect(() => {
@@ -665,17 +728,17 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
   }, [graph.data]);
 
   const selectedNode = selectedId ? visibleNodesById.get(selectedId) ?? null : null;
-  const graphEdgesRaw = (graph.data?.edges ?? []).filter(
-    (e) => !pendingDeletes.has(e.producerCorrelationId) && !pendingDeletes.has(e.consumerCorrelationId),
-  );
+  const notStaged = (e: GraphEdge) => !pendingDeletes.has(e.producerCorrelationId) && !pendingDeletes.has(e.consumerCorrelationId);
+  const graphEdgesRaw = shownEdges.filter(notStaged);
+  const allEdgesRaw = allEdges.filter(notStaged);
   // Computed over the whole visible session, not the Trace/Producers/Consumers scope: a call is an
-  // orphan by the session's graph, not by whatever subset happens to be on screen.
-  const isolatedIds = findIsolatedCalls(visibleNodesById.keys(), graphEdgesRaw);
+  // orphan by the session's graph, not by whatever subset happens to be on screen. Single-level is
+  // judged from every link, so filtering all links out makes every call an orphan (spec §5).
+  const isolatedIds = findIsolatedCalls(visibleNodesById.keys(), graphEdgesRaw, allEdgesRaw);
   // Everything below stages only; nothing is permanent until Save changes. Each staging action is
-  // checked against the same producer rule the server enforces, so it is disabled with the reason
-  // up front instead of failing at save time.
-  const blockersFor = (ids: Iterable<string>) =>
-    findOrphanedConsumers(graph.data?.edges ?? [], new Set([...pendingDeletes, ...ids]));
+  // checked against the same producer rule the server enforces, over the same shown links, so it is
+  // disabled with the reason up front instead of failing at save time.
+  const blockersFor = (ids: Iterable<string>) => findOrphanedConsumers(shownEdges, new Set([...pendingDeletes, ...ids]));
   const removeBlockers = selected.size > 0 ? blockersFor(selected) : [];
   // With Producers/Consumers/Trace on: every call still on the graph that the view hides.
   const outsideView = filteredIds ? [...visibleNodesById.keys()].filter((id) => !filteredIds.has(id)) : [];
@@ -760,12 +823,20 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
                 );
               })()}
             </div>
+            <LinksFilter
+              summary={summarizeLinkKeys(allEdges, excludedLinkKeys)}
+              locked={pendingDeletes.size > 0}
+              saving={saveExcluded.isPending}
+              error={saveExcluded.error?.message ?? null}
+              onSetExcluded={(keys, excluded) => updateExcluded(setKeys(excludedLinkKeys, keys, excluded))}
+              onShowAll={() => updateExcluded([])}
+            />
             <button
               type="button"
               className="rounded-md border border-[--line] px-2 py-1 text-xs font-semibold disabled:opacity-40"
               disabled={isolatedIds.length === 0}
               title={
-                graphEdgesRaw.length === 0
+                allEdgesRaw.length === 0
                   ? "Single-level session: no call depends on another, so nothing is orphaned"
                   : "Select every call with no dependency in or out; untick any you want to keep"
               }
@@ -951,6 +1022,7 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
                 sessionId={sessionId}
                 node={selectedNode}
                 edges={graphEdgesRaw}
+                allEdges={allEdgesRaw}
                 nodesById={visibleNodesById}
               />
             ) : (
