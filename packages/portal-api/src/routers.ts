@@ -16,6 +16,7 @@ import {
   loadSession,
   pairCalls,
   writeCuratedEvents,
+  withoutExcludedLinks,
 } from "@backbencher/derive";
 import { type RecorderHandle, startRecording } from "@backbencher/recorder";
 import {
@@ -71,7 +72,10 @@ const sessionsRouter = router({
     .query(({ ctx, input }) => {
       const dir = join(dataDir(), "sessions", input.sessionId);
       const flows = ctx.store.flows.listBySession(input.sessionId);
-      if (!existsSync(dir) || flows.length === 0) return { nodes: [], edges: [], derived: false };
+      // All edges are returned regardless: the Links filter lists excluded keys too, so they can be
+      // switched back on. The client hides them.
+      const excludedLinkKeys = ctx.store.sessionCuration.get(input.sessionId)?.excludedLinkKeys ?? [];
+      if (!existsSync(dir) || flows.length === 0) return { nodes: [], edges: [], derived: false, excludedLinkKeys };
 
       const opByCorrelation = new Map(
         flows.flatMap((f) => f.steps.map((s) => [s.correlationId, s.operationId] as const)),
@@ -105,7 +109,7 @@ const sessionsRouter = router({
         )
         .map(({ value: _value, ...edge }) => edge);
 
-      return { nodes, edges, derived: true };
+      return { nodes, edges, derived: true, excludedLinkKeys };
     }),
   callDetail: publicProcedure
     .input(z.object({ sessionId: z.string(), correlationId: z.string() }))
@@ -167,7 +171,10 @@ const sessionsRouter = router({
       }
       const persistedEdges = ctx.store.sessionGraphs.listBySession(input.sessionId);
 
-      assertDeletable(persistedEdges, newlyDeleted);
+      // Links the analyst switched off in the graph don't make a call indispensable. Read from the
+      // store, never from the request, so a stale browser view can't loosen the check.
+      const excludedLinkKeys = ctx.store.sessionCuration.get(input.sessionId)?.excludedLinkKeys ?? [];
+      assertDeletable(withoutExcludedLinks(persistedEdges, excludedLinkKeys), newlyDeleted);
 
       // Everything already absent from the curated file stays absent: that set is the auto-filtered
       // Redundant Calls, which only a full re-derivation may recompute.
@@ -211,6 +218,20 @@ const sessionsRouter = router({
         action: "curate.reference",
         actor: ctx.actor,
         diff: { useAsReference: input.useAsReference },
+      });
+      return { ok: true as const };
+    }),
+  setExcludedLinkKeys: publicProcedure
+    .input(z.object({ sessionId: z.string(), keys: z.array(z.string()) }))
+    .mutation(({ ctx, input }) => {
+      // Not validated against current edges: a key can vanish on re-derivation and come back later.
+      ctx.store.sessionCuration.setExcludedLinkKeys(input.sessionId, input.keys, ctx.actor);
+      ctx.store.audit.append({
+        entityType: "session",
+        entityId: input.sessionId,
+        action: "curate.linkKeys",
+        actor: ctx.actor,
+        diff: { keys: input.keys },
       });
       return { ok: true as const };
     }),

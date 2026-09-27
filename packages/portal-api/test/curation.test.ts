@@ -147,6 +147,81 @@ describe("sessions router", () => {
     ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
   });
 
+  function tokenSession(sessionId: string) {
+    resetClock();
+    const token = "TOKEN-abcdef123456";
+    return completeSession(sessionId, [
+      ...apiCall("p1", { url: `${H}/auth/token`, body: { token } }),
+      ...apiCall("c1", {
+        method: "POST",
+        url: `${H}/api/things`,
+        reqHeaders: { "x-token": token },
+        postData: JSON.stringify({ ok: true }),
+        body: { ok: true },
+      }),
+    ]);
+  }
+
+  it("returns the saved excluded link keys with the graph", async () => {
+    const session = tokenSession("sess-linkkeys-graph");
+    seed(session, { derive: true });
+    const sessionId = session.meta.sessionId;
+
+    expect((await caller().sessions.graph({ sessionId })).excludedLinkKeys).toEqual([]);
+    await expect(
+      caller("alice").sessions.setExcludedLinkKeys({ sessionId, keys: ["requestHeader:x-token"] }),
+    ).resolves.toEqual({ ok: true });
+    expect((await caller().sessions.graph({ sessionId })).excludedLinkKeys).toEqual(["requestHeader:x-token"]);
+
+    const audit = store.audit.list("session", sessionId);
+    expect(audit.some((a) => a.action === "curate.linkKeys" && a.actor === "alice")).toBe(true);
+  });
+
+  it("returns an empty excluded list for a session that has not been derived", async () => {
+    const session = tokenSession("sess-linkkeys-underived");
+    seed(session);
+    expect(await caller().sessions.graph({ sessionId: session.meta.sessionId })).toMatchObject({
+      derived: false,
+      excludedLinkKeys: [],
+    });
+  });
+
+  it("lets deleteCalls remove a call needed only through an excluded link key", async () => {
+    const session = tokenSession("sess-linkkeys-delete");
+    seed(session, { derive: true });
+    const sessionId = session.meta.sessionId;
+    await caller().sessions.setExcludedLinkKeys({ sessionId, keys: ["requestHeader:x-token"] });
+
+    await expect(caller().sessions.deleteCalls({ sessionId, correlationIds: ["p1"] })).resolves.toMatchObject({
+      deleted: 1,
+    });
+  });
+
+  it("still rejects the deletion when a different key is excluded", async () => {
+    const session = tokenSession("sess-linkkeys-other");
+    seed(session, { derive: true });
+    const sessionId = session.meta.sessionId;
+    await caller().sessions.setExcludedLinkKeys({ sessionId, keys: ["requestHeader:Cookie.sid"] });
+
+    await expect(caller().sessions.deleteCalls({ sessionId, correlationIds: ["p1"] })).rejects.toMatchObject({
+      code: "PRECONDITION_FAILED",
+    });
+  });
+
+  it("uses only the saved exclusions, not any sent with the delete", async () => {
+    const session = tokenSession("sess-linkkeys-unsaved");
+    seed(session, { derive: true });
+    const sessionId = session.meta.sessionId;
+
+    await expect(
+      caller().sessions.deleteCalls({
+        sessionId,
+        correlationIds: ["p1"],
+        excludedLinkKeys: ["requestHeader:x-token"],
+      } as never),
+    ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
+  });
+
   it("rejects deleteCalls while derivation is running", async () => {
     resetClock();
     const session = completeSession("sess-curation-conflict", [
