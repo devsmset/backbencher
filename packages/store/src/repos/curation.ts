@@ -7,6 +7,8 @@ export interface SessionCurationRow {
   sessionId: string;
   deletedCorrelationIds: string[];
   useAsReference: boolean;
+  /** Link keys (see @backbencher/derive linkKeys) the analyst switched off in this Session's graph. */
+  excludedLinkKeys: string[];
   updatedBy: string;
   updatedAt: number;
 }
@@ -16,19 +18,26 @@ export function sessionCurationRepo(db: Db) {
     sessionId: r.sessionId,
     deletedCorrelationIds: JSON.parse(r.deletedCorrelationIds) as string[],
     useAsReference: r.useAsReference === 1,
+    excludedLinkKeys: JSON.parse(r.excludedLinkKeys) as string[],
     updatedBy: r.updatedBy,
     updatedAt: r.updatedAt,
   });
 
-  function upsert(sessionId: string, patch: { deleted?: string[]; useAsReference?: boolean }, actor: string): void {
+  function upsert(
+    sessionId: string,
+    patch: { deleted?: string[]; useAsReference?: boolean; excludedLinkKeys?: string[] },
+    actor: string,
+  ): void {
     const existing = db.select().from(sessionCuration).where(eq(sessionCuration.sessionId, sessionId)).get();
     const current = existing ? toRow(existing) : null;
     const deleted = patch.deleted ?? current?.deletedCorrelationIds ?? [];
     const useAsReference = patch.useAsReference ?? current?.useAsReference ?? false;
+    const excludedLinkKeys = patch.excludedLinkKeys ?? current?.excludedLinkKeys ?? [];
     const values = {
       sessionId,
       deletedCorrelationIds: JSON.stringify([...new Set(deleted)].sort()),
       useAsReference: useAsReference ? 1 : 0,
+      excludedLinkKeys: JSON.stringify([...new Set(excludedLinkKeys)].sort()),
       updatedBy: actor,
       updatedAt: Date.now(),
     };
@@ -62,6 +71,10 @@ export function sessionCurationRepo(db: Db) {
     },
     setUseAsReference: (sessionId: string, on: boolean, actor: string): void => {
       upsert(sessionId, { useAsReference: on }, actor);
+    },
+    /** Replaces the Session's excluded link keys; the graph and deleteCalls ignore links with them. */
+    setExcludedLinkKeys: (sessionId: string, keys: string[], actor: string): void => {
+      upsert(sessionId, { excludedLinkKeys: keys }, actor);
     },
   };
 }

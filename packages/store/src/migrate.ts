@@ -207,6 +207,12 @@ DELETE FROM embeddings WHERE kind = 'exemplar';
 DROP TABLE IF EXISTS exemplars;
 `,
   },
+  {
+    id: "0006_session_link_key_filter",
+    sql: `
+ALTER TABLE session_curation ADD COLUMN excluded_link_keys TEXT NOT NULL DEFAULT '[]';
+`,
+  },
 ];
 
 export function runMigrations(raw: Database.Database): void {

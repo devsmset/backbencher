@@ -94,6 +94,7 @@ export const sessionCuration = sqliteTable("session_curation", {
   sessionId: text("session_id").primaryKey(),
   deletedCorrelationIds: text("deleted_correlation_ids").notNull(), // JSON string[]
   useAsReference: integer("use_as_reference").notNull(),
+  excludedLinkKeys: text("excluded_link_keys").notNull().default("[]"), // JSON string[] of link keys
   updatedBy: text("updated_by").notNull(),
   updatedAt: integer("updated_at").notNull(),
 });
