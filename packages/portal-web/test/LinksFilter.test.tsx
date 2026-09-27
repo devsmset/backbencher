@@ -102,6 +102,17 @@ describe("LinksFilter", () => {
     window.removeEventListener("keydown", onWindowKey);
   });
 
+  it("Esc closes only the panel even when focus is outside it", () => {
+    setup();
+    const onWindowKey = vi.fn();
+    window.addEventListener("keydown", onWindowKey);
+    open();
+    fireEvent.keyDown(document.body, { key: "Escape" });
+    expect(screen.queryByRole("dialog", { name: "Links filter" })).toBeNull();
+    expect(onWindowKey).not.toHaveBeenCalled();
+    window.removeEventListener("keydown", onWindowKey);
+  });
+
   it("says so when the session has no links", () => {
     render(
       <LinksFilter

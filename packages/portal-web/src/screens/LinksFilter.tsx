@@ -51,7 +51,18 @@ export function LinksFilter({
       if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
     };
     document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
+    // The graph modal closes itself on Esc via a bubble-phase window listener. Catch Esc first, in
+    // the capture phase, so it closes only this panel wherever focus is.
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      e.stopPropagation();
+      setOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown, true);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("keydown", onKeyDown, true);
+    };
   }, [open]);
 
   const needle = query.trim().toLowerCase();
@@ -78,12 +89,6 @@ export function LinksFilter({
           role="dialog"
           aria-label="Links filter"
           className="absolute right-0 top-full z-20 mt-1 flex max-h-[60vh] w-[360px] flex-col rounded-lg border border-[--line] bg-[--panel] text-xs shadow-panel"
-          onKeyDown={(e) => {
-            if (e.key !== "Escape") return;
-            // The graph modal closes itself on Esc via a window listener; keep this Esc for the panel.
-            e.stopPropagation();
-            setOpen(false);
-          }}
         >
           <div className="border-b border-[--line] p-2">
             <input

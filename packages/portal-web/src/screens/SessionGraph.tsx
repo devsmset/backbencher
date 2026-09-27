@@ -19,6 +19,7 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import type { SessionCallEdge } from "@backbencher/schemas";
+import { graphContentChanged } from "../graphContent.js";
 import { setKeys, summarizeLinkKeys } from "../linkKeySummary.js";
 import { trpc } from "../trpc.js";
 import { useSessionName } from "../sessionName.js";
@@ -644,7 +645,7 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
     const previous = previousLayoutInputs.current;
     const shouldReset =
       !previous ||
-      previous.graphData !== graph.data ||
+      graphContentChanged(previous.graphData, graph.data) ||
       previous.windowWidth !== windowWidth ||
       previous.graphMode !== graphMode;
 
@@ -667,7 +668,13 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
     previousLayoutInputs.current = { graphData: graph.data, windowWidth, graphMode };
   }, [graph.data, layoutNodes, setNodes, graphMode]);
 
+  // Reset staging, mode and ticks only when the graph's calls or links change (e.g. after a Save),
+  // not when a refetch only brings back the Links filter's saved list.
+  const lastGraphContent = useRef(graph.data);
   useEffect(() => {
+    const changed = graphContentChanged(lastGraphContent.current, graph.data);
+    lastGraphContent.current = graph.data;
+    if (!changed) return;
     setPendingDeletes(new Set());
     setGraphMode(null);
     setSelected(new Set());
@@ -834,7 +841,7 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
             <button
               type="button"
               className="rounded-md border border-[--line] px-2 py-1 text-xs font-semibold disabled:opacity-40"
-              disabled={isolatedIds.length === 0}
+              disabled={isolatedIds.length === 0 || saveExcluded.isPending}
               title={
                 allEdgesRaw.length === 0
                   ? "Single-level session: no call depends on another, so nothing is orphaned"
@@ -849,6 +856,7 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
               <button
                 type="button"
                 className="rounded-md border border-[--line] px-2 py-1 text-xs font-semibold disabled:opacity-40"
+                disabled={saveExcluded.isPending}
                 title="Take the selected calls off the graph. Nothing is permanent until Save changes."
                 onClick={() => {
                   if (removeBlockers.length > 0) {
@@ -870,6 +878,7 @@ export function SessionGraphModal({ sessionId, onClose }: { sessionId: string; o
               <button
                 type="button"
                 className="rounded-md border border-[--line] px-2 py-1 text-xs font-semibold disabled:opacity-40"
+                disabled={saveExcluded.isPending}
                 title="Take every call this view hides off the graph. Nothing is permanent until Save changes."
                 onClick={() => {
                   if (keepOnlyBlockers.length > 0) {
